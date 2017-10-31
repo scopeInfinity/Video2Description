@@ -17,6 +17,7 @@ os.chdir('/home/gagan.cs14/btp')
 FILENAME_CAPTION = 'ImageDataset/annotations/captions_train2014.json'
 DIR_IMAGES = 'ImageDataset/train2014/'
 GLOVE_FILE = 'glove/glove.6B.100d.txt'
+OUTDIM_EMB = 100
 USE_GLOVE = True
 def get_image_fname(_id):
     return '%sCOCO_train2014_%012d.jpg' % (DIR_IMAGES, _id)
@@ -25,12 +26,13 @@ vocab = Set([])
 v_ind2word = {}
 v_word2ind = {}
 VOCAB_SIZE = 0
-
 embeddingIndex = {}
 embeddingLen = None
 embeddingMatrix = np.zeros((MAX_WORDS, 100))
 EMBEDDING_FILE = 'embedding'
 isEmbeddingPresent = os.path.exists(EMBEDDING_FILE)
+embeddingMatrixRef = [ embeddingMatrix ]
+
 #print isEmbeddingPresent
 
 def addToVocab(w):
@@ -41,6 +43,7 @@ def addToVocab(w):
     if not isEmbeddingPresent:
         if w in embeddingIndex.keys():
             embeddingMatrix[VOCAB_SIZE] = embeddingIndex[w]
+            print embeddingMatrix[VOCAB_SIZE]
     if VOCAB_SIZE<10:
         print "%d : %s" % (VOCAB_SIZE, w)
     VOCAB_SIZE += 1
@@ -175,7 +178,7 @@ def build_dataset(batch_size = -1):
             train_set.append( get_image_caption(_id,lst))
     else:
         mx = len(lst.keys())
-        #xmx = 1000 #########HERE###########
+        mx = 1000 #########HERE###########
         indicies = np.random.choice(mx, batch_size, replace=False)
         for i in indicies:
             _id = lst.keys()[i]

@@ -6,7 +6,7 @@ from keras.layers import TimeDistributed, Dense, Input, Flatten
 from keras.applications import VGG16
 from keras.optimizers import RMSprop
 from keras.layers.merge import Concatenate
-from preprocess import embeddingMatrix, MAX_WORDS
+from preprocess import embeddingMatrixRef,MAX_WORDS, OUTDIM_EMB
 '''
 Rough Estimate
 =============
@@ -33,13 +33,14 @@ def build_imodel():
 
 def build_model(VOCAB_SIZE, CAPTION_LEN):
     print "Creating Model with Vocab Size : %d " % VOCAB_SIZE
-    print np.shape(embeddingMatrix)
+    #print embeddingMatrixRef[0]
+    print np.shape(embeddingMatrixRef[0])
     cmodel  = Sequential()
     cmodel.add(Embedding(
             input_dim = MAX_WORDS,
-            output_dim = 100,
+            output_dim = OUTDIM_EMB,
             input_length = CAPTION_LEN,
-            weights = [embeddingMatrix],
+            weights = embeddingMatrixRef,
             trainable = False
             ))
     cmodel.add(LSTM(512, return_sequences=True))
