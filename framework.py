@@ -3,12 +3,12 @@ from keras import callbacks
 import os, sys
 import numpy as np
 import preprocess
-from preprocess import VOCAB_SIZE, CAPTION_LEN, imageToVec, get_image_fname, captionToVec, v_ind2word
+from preprocess import VOCAB_SIZE, CAPTION_LEN, imageToVec, get_image_fname, captionToVec, v_ind2word, v_word2ind
 from model import build_model
-from preprocess import build_vocab, build_dataset, ENG_SOS, ENG_EOS,W_SOS,W_EOS, onehot
+from preprocess import build_vocab, build_dataset, ENG_SOS, ENG_EOS, onehot, word2embd, embdToWord
 MFNAME='model_vgg_we_5.5_5.5.dat'
 STATE='state_vgg_we_5.5_5.5.txt'
-state = {'epochs':1000,'batch_size':5,'super_batch':100}
+state = {'epochs':1000,'batch_size':20,'super_batch':100}
 model = None
 
 
@@ -60,18 +60,23 @@ def train_model(trainset):
     i = 0
     print "Arranging Trainset"
     while i < len(trainset):
-        capS = [W_SOS] + trainset[i][0]
-        capE = trainset[i][0] + [W_EOS]
+        capS = [v_word2ind[ENG_SOS]] + trainset[i][0]
+        capE = trainset[i][0] + [v_word2ind[ENG_EOS]]
+        capE = [word2embd(w) for w in capE]
         image = trainset[i][1]
         trainX1.append( capS )
         trainX2.append( image )
-        trainY.append( onehot(capE) )
+        trainY.append( capE )
+        if i==0:
+            print "capS %s " % capS
+            print "capE %s " % capE
+
         i+=1
     trainX = [np.array( trainX1 ), np.array( trainX2 )]
     trainY = np.array(trainY)
 
     print "Attempt to Fit Data"
-    inEpochs = 10
+    inEpochs = 15
     model.fit(x=trainX,y=trainY,batch_size=state['batch_size'],epochs=inEpochs,verbose=2, callbacks=[ModelCallback()])
     print "Model Fit"
 
@@ -96,8 +101,8 @@ def predict_model(_id):
         newCapS = model.predict([np.array([cap]),np.array([imgVec])])[0]
         newWord = newCapS[l]
         print newWord
-        ind = np.argmax(newWord)
-        newWord = v_ind2word[ind]
+        #ind = np.argmax(newWord)
+        newWord = embdToWord(newWord)
         print "NWord %s " % newWord
         l+=1
         

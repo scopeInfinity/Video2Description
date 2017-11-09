@@ -33,6 +33,7 @@ def build_imodel():
 
 def build_model(VOCAB_SIZE, CAPTION_LEN):
     print "Creating Model with Vocab Size : %d " % VOCAB_SIZE
+    #np.set_printoptions(threshold=np.nan)
     #print embeddingMatrixRef[0]
     print np.shape(embeddingMatrixRef[0])
     cmodel  = Sequential()
@@ -68,7 +69,7 @@ def build_model(VOCAB_SIZE, CAPTION_LEN):
     #model.add(RepeatVector(CAPTION_LEN))
     model.add(LSTM(512,return_sequences=True))
     model.add(LSTM(512,return_sequences=True))
-    model.add(TimeDistributed(Dense(VOCAB_SIZE)))
+    model.add(TimeDistributed(Dense(OUTDIM_EMB)))
     model.add(Activation('softmax'))
     optimizer = RMSprop() #lr=0.1)
     model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])

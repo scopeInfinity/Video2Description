@@ -30,8 +30,10 @@ embeddingIndex = {}
 embeddingLen = None
 embeddingMatrix = np.zeros((MAX_WORDS, 100))
 EMBEDDING_FILE = 'embedding'
+EMBEDDINGI_FILE = 'embeddingI'
 isEmbeddingPresent = os.path.exists(EMBEDDING_FILE)
 embeddingMatrixRef = [ embeddingMatrix ]
+embeddingIndexRef = [ embeddingIndex ]
 
 #print isEmbeddingPresent
 
@@ -43,7 +45,7 @@ def addToVocab(w):
     if not isEmbeddingPresent:
         if w in embeddingIndex.keys():
             embeddingMatrix[VOCAB_SIZE] = embeddingIndex[w]
-            print embeddingMatrix[VOCAB_SIZE]
+            #print embeddingMatrix[VOCAB_SIZE]
     if VOCAB_SIZE<10:
         print "%d : %s" % (VOCAB_SIZE, w)
     VOCAB_SIZE += 1
@@ -56,17 +58,24 @@ ENG_SOS = "start"
 ENG_EOS = "end"
 def iniVocab():
     global W_SOS,W_EOS
-    addToVocab("none")
-    addToVocab("extra")
-    W_SOS = addToVocab(ENG_SOS)
-    W_EOS = addToVocab(ENG_EOS)
+    #addToVocab("none")
+    #addToVocab("extra")
+    #W_SOS = addToVocab(ENG_SOS)
+    #W_EOS = addToVocab(ENG_EOS)
+
 
 
 def build_gloveVocab():
     logger.debug("Started")
     if isEmbeddingPresent:
         with open(EMBEDDING_FILE,'r') as f:
+            global embeddingMatrix
             embeddingMatrix = pickle.load(f)
+            embeddingMatrixRef[0] = embeddingMatrix
+        with open(EMBEDDINGI_FILE,'r') as f:
+            global embeddingIndex
+            embeddingIndex = pickle.load(f)
+            embeddingIndexRef[0] = embeddingIndex
         print "Embedding Loaded"
     else:
         with open(GLOVE_FILE,'r') as f:
@@ -81,7 +90,13 @@ def build_gloveVocab():
     
                 word = tokens[0]
                 embeddingLen = len(tokens)-1
+                if word == "none":
+                    print "YoFound you"
+                if i<5:
+                    print word
+                    #print tokens[1:]
                 embeddingIndex[word] = np.asarray(tokens[1:], dtype='float32')
+            #exit()
     iniVocab()
     logger.debug("Completed")
             
@@ -111,6 +126,8 @@ def build_image_caption_pair():
         isEmbeddingPresent = True
         with open(EMBEDDING_FILE,'w') as f:
             pickle.dump(embeddingMatrix,f)
+        with open(EMBEDDINGI_FILE,'w') as f:
+            pickle.dump(embeddingIndex,f)
         print "Embedding Saved!"
 
     logger.debug("Completed, Vocab Size %s " % VOCAB_SIZE)
@@ -135,9 +152,15 @@ def imageToVec(_id):
     print "BW Shape %s " % (str(np.shape(bw)))
 
 
+def getWord2Ind(w):
+    w=w.lower()
+    if w not in v_word2ind.keys():
+        w='extra'
+    return v_word2ind[w]
 def captionToVec(cap):
     #print [w.lower() for w in cap.split(' ')]
-    nums = [v_word2ind[w.lower()] for w in cap.split(' ')]
+    print cap
+    nums = [getWord2Ind(w) for w in cap.split(' ')]
     vec = sequence.pad_sequences([nums],maxlen=CAPTION_LEN,padding='post', truncating='post')[0]
     return vec
 
@@ -149,6 +172,24 @@ def onehot(vec):
         vector.append( t )
     return np.asarray(vector)
 
+def word2embd(word):
+    if word not in embeddingIndexRef[0].keys():
+        word = "none"
+    return embeddingIndexRef[0][word]
+
+def embdToWord(embd):
+    bestWord = None
+    distance = float('inf')
+    for word in embeddingIndex.keys():
+        e=embeddingIndex[word]
+        d = 0
+        for a,b in zip(e,embd):
+            d+=(a-b)*(a-b)
+        if d<distance:
+            distance=d
+            bestWord = word
+    assert(bestWord is not None)
+    return bestWord
 
 def get_image_caption(_id, lst):
     cap = lst[_id]
@@ -180,9 +221,12 @@ def build_dataset(batch_size = -1):
         mx = len(lst.keys())
         mx = 1000 #########HERE###########
         indicies = np.random.choice(mx, batch_size, replace=False)
-        for i in indicies:
+        for c,i in enumerate(indicies):
             _id = lst.keys()[i]
-            train_set.append( get_image_caption(_id,lst))
+            capimg = get_image_caption(_id,lst)
+            if c==0:
+                print "First Image Id %s with caption : %s " % (str(_id), capimg[0])
+            train_set.append( capimg )
 
     print "Shape of Training Set %s " % str(np.shape(train_set))
     logger.debug("Completed")
