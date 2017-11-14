@@ -2,13 +2,14 @@ import shutil,json
 from keras import callbacks
 import os, sys
 import numpy as np
-import preprocess
-from preprocess import VOCAB_SIZE, CAPTION_LEN, imageToVec, get_image_fname, captionToVec, v_ind2word, v_word2ind
+#import preprocess
+from preprocess import CAPTION_LEN, ENG_SOS, ENG_EOS, ENG_NONE, DIR_IMAGES
+from preprocess import  embeddingIndexRef, imageToVec, word2embd, embdToWord, captionToVec, get_image_caption, build_vocab, build_dataset, build_gloveVocab, get_image_fname
 from model import build_model
-from preprocess import build_vocab, build_dataset, ENG_SOS, ENG_EOS, onehot, word2embd, embdToWord
-MFNAME='model_vgg_we_5.5_5.5.dat'
-STATE='state_vgg_we_5.5_5.5.txt'
-state = {'epochs':1000,'batch_size':20,'super_batch':100}
+
+MFNAME='model_vgg16_we_5.5_5.5_v1.dat'
+STATE='state_vgg16_we_5.5_5.5_v1.txt'
+state = {'epochs':1000,'inepochs':20,'batch_size':30,'super_batch':100,'val_batch':20}
 model = None
 
 
@@ -47,85 +48,94 @@ class ModelCallback(callbacks.Callback):
 
 def loadmodel():
     global model
-    model = build_model(preprocess.VOCAB_SIZE, preprocess.CAPTION_LEN)
+    model = build_model(CAPTION_LEN)
     loadstate()
 
-def train_model(trainset):
-    #print [x for x in train_generator(trainset)]
-    #return
-    #model.fit_generator(train_generator(trainset),steps_per_epoch=20,epochs=30,verbose=2)
+def prepare_feedkeras(trainset):
     trainX1 = []
     trainX2 = []
     trainY = []
     i = 0
+    we_sos = [word2embd(ENG_SOS)]
+    we_eos = [word2embd(ENG_EOS)]
+    print we_sos
+    print we_eos
     print "Arranging Trainset"
     while i < len(trainset):
-        capS = [v_word2ind[ENG_SOS]] + trainset[i][0]
-        capE = trainset[i][0] + [v_word2ind[ENG_EOS]]
-        capE = [word2embd(w) for w in capE]
+        capS =  we_sos + trainset[i][0] 
+        capE =  trainset[i][0] + we_eos
         image = trainset[i][1]
+        #print "%d ; %d " %(len(capS),len(capE))
         trainX1.append( capS )
         trainX2.append( image )
         trainY.append( capE )
         if i==0:
             print "capS %s " % capS
             print "capE %s " % capE
+            print "Image %s" % str(image)
 
         i+=1
     trainX = [np.array( trainX1 ), np.array( trainX2 )]
     trainY = np.array(trainY)
+    return (trainX,trainY)
 
+def train_model(trainvalset):
+    #print [x for x in train_generator(trainset)]
+    #return
+    #model.fit_generator(train_generator(trainset),steps_per_epoch=20,epochs=30,verbose=2)
+    (trainX,trainY) = prepare_feedkeras(trainvalset[0])
+    valset = prepare_feedkeras(trainvalset[1])
     print "Attempt to Fit Data"
-    inEpochs = 15
-    model.fit(x=trainX,y=trainY,batch_size=state['batch_size'],epochs=inEpochs,verbose=2, callbacks=[ModelCallback()])
+    inEpochs = state['inepochs']
+    model.fit(x=trainX,y=trainY,batch_size=state['batch_size'],epochs=inEpochs, validation_data=valset, verbose=2, callbacks=[ModelCallback()])
     print "Model Fit"
 
-def train():
+def train(lst):
     MX = state['epochs']
     for it in range(MX):
-        dataset = build_dataset(state['super_batch'])
+        dataset = build_dataset(lst, state['super_batch'],state['val_batch'])
         print "Outer Iteration %3d of %3d " % (it+1,MX)
-        train_model(dataset[0])
+        train_model(dataset)
         state['epochs']-=1
         savestate()
         
-
-def predict_model(_id):
+def predict_model(lst,_id):
     imgVec = imageToVec(_id)
     fname = get_image_fname(_id)
     print "Predicting for Image %s " % fname
     l = 0
     capS = ENG_SOS
-    while l < preprocess.CAPTION_LEN:
-        cap = captionToVec(capS)
+    while l < CAPTION_LEN:
+        cap = captionToVec(capS, addOne=True)
         newCapS = model.predict([np.array([cap]),np.array([imgVec])])[0]
         newWord = newCapS[l]
         print newWord
         #ind = np.argmax(newWord)
-        newWord = embdToWord(newWord)
-        print "NWord %s " % newWord
+        newWord,dis = embdToWord(newWord)
+        print "NWord %s\tDistance= %f" % (newWord,dis)
         l+=1
         
         if newWord == ENG_EOS:
             break
         capS = "%s %s" % (capS, newWord)
         print newCapS
-    print fname
+    print "eog %s%s" % (DIR_IMAGES,fname)
     print "Observed : %s " % capS
-    actualC = preprocess.lst[_id]
+    actualC = lst[_id]
     print "Actual   : %s " % actualC
 
     
-def predict(_id):
-    predict_model(_id)
+def predict(lst,_id):
+    predict_model(lst,_id)
 
 def run():
-    build_vocab()
+    build_gloveVocab() 
+    lst = build_vocab()
     loadmodel()
     if len(sys.argv) < 3 or '-predict' != sys.argv[1]:
-        train()
+        train(lst)
     else:
-        predict(int(sys.argv[2]))
+        predict(lst,int(sys.argv[2]))
     
 if __name__ == '__main__':
     run()
