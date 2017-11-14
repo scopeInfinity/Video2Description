@@ -2,17 +2,37 @@ import shutil,json
 from keras import callbacks
 import os, sys
 import numpy as np
+import csv
 #import preprocess
-from preprocess import CAPTION_LEN, ENG_SOS, ENG_EOS, ENG_NONE, DIR_IMAGES
+from preprocess import CAPTION_LEN, ENG_SOS, ENG_EOS, ENG_NONE, DIR_IMAGES, isEmbeddingPresent
 from preprocess import  embeddingIndexRef, imageToVec, word2embd, embdToWord, captionToVec, get_image_caption, build_vocab, build_dataset, build_gloveVocab, get_image_fname
 from model import build_model
 
-MFNAME='model_vgg16_we_5.5_5.5_v1.dat'
-STATE='state_vgg16_we_5.5_5.5_v1.txt'
-state = {'epochs':1000,'inepochs':20,'batch_size':30,'super_batch':100,'val_batch':20}
+CLABEL= 'vgg16_we_5.5_5.5_v1_100'
+state = {'epochs':1000,'inepochs':100,'batch_size':10,'super_batch':50,'val_batch':5}
+
+MFNAME= 'model_'+CLABEL+'.dat'
+ELOGS = CLABEL + "_logs.txt"
+STATE = 'state_'+CLABEL+'.txt'
 model = None
 
-
+epochLogHistory = []
+def flushLogEpoch():
+    global epochLogHistory
+    if not os.path.exists(ELOGS):
+        with open(ELOGS,"w") as f:
+            wr = csv.writer(f)
+            # Iteration is row id
+            wr.writerow(["EpochId","Acc","Loss","Val Acc","Val loss"])
+    if len(epochLogHistory)>0:
+        with open(ELOGS,"ab") as f:
+            wr = csv.writer(f)
+            #wr.writerow([])
+            for h in epochLogHistory:
+                wr.writerow(h)
+            epochLogHistory = []
+            print "ELogs written"
+    
 def loadstate():
     global model
     global state
@@ -44,6 +64,7 @@ class ModelCallback(callbacks.Callback):
     def on_epoch_end(self, epoch, logs={}):
         #state['epochs']-=1
         #savestate()
+        epochLogHistory.append([epoch,logs['acc'],logs['loss'],logs['val_acc'],logs['val_loss']])
         return
 
 def loadmodel():
@@ -98,6 +119,7 @@ def train(lst):
         train_model(dataset)
         state['epochs']-=1
         savestate()
+        flushLogEpoch()
         
 def predict_model(lst,_id):
     imgVec = imageToVec(_id)

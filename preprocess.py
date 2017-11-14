@@ -170,7 +170,7 @@ def imageToVec(_id):
     print fname
     img = image.load_img(fname, target_size=(NEED_H, NEED_W))
     ############################################ REMOVE HERE ###
-    img.save("temp.jpg")
+    #img.save("temp.jpg")
     #img = cv2.imread(fname)
     #print img
     #img = cv2.resize(img, (NEED_H, NEED_W))
@@ -266,10 +266,10 @@ def build_dataset(lst, batch_size = -1, val_size = 0):
             train_set.append( get_image_caption(_id,lst))
     else:
         mx = len(lst.keys())
+        mx = 1000 #########HERE###########
         splitKey = int(mx*0.9)
         print "Max Keys %d\tSplit keys %d" % (mx, splitKey)
         todolist = [("Train set",train_set, batch_size,0,splitKey),("Validation Set",val_set, val_size,splitKey,mx-splitKey)]
-        ###mx = 1000 #########HERE###########
         for (s,cset, batchsz, offset, datasz) in todolist:
             indicies = np.random.choice(datasz, batchsz, replace=False)
             indicies = indicies + offset

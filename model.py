@@ -80,7 +80,8 @@ def build_model(CAPTION_LEN):
     #model.add(LSTM(512,return_sequences=True))
     model.add(TimeDistributed(Dense(OUTDIM_EMB,kernel_initializer='random_normal')))
     model.add(Activation('softmax'))
-    optimizer = RMSprop() #lr=0.1)
+    #optimizer = RMSprop(lr=0.001, rho=0.9, epsilon=1e-8, decay=0)
+    optimizer = RMSprop(lr=0.002, rho=0.9, epsilon=1e-8, decay=0)
     model.compile(optimizer=optimizer, loss='mean_squared_error', metrics=['accuracy'])
     model.summary()
     print "Model Created"
