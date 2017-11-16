@@ -5,11 +5,11 @@ import numpy as np
 import csv
 #import preprocess
 from preprocess import CAPTION_LEN, ENG_SOS, ENG_EOS, ENG_NONE, DIR_IMAGES, isEmbeddingPresent
-from preprocess import  embeddingIndexRef, imageToVec, word2embd, embdToWord, captionToVec, get_image_caption, build_vocab, build_dataset, build_gloveVocab, get_image_fname
+from preprocess import  embeddingIndexRef, imageToVec, word2embd, embdToWord, captionToVec, get_image_caption, build_vocab, build_dataset, build_gloveVocab, get_image_fname, word2embd, WordToWordDistance
 from model import build_model
 
-CLABEL= 'vgg16_we_5.5_5.5_v1_100'
-state = {'epochs':1000,'inepochs':100,'batch_size':10,'super_batch':50,'val_batch':5}
+CLABEL= 'vgg16_tanh_gs5'
+state = {'epochs':1000,'inepochs':100,'batch_size':50,'super_batch':200,'val_batch':5}
 
 MFNAME= 'model_'+CLABEL+'.dat'
 ELOGS = CLABEL + "_logs.txt"
@@ -64,7 +64,8 @@ class ModelCallback(callbacks.Callback):
     def on_epoch_end(self, epoch, logs={}):
         #state['epochs']-=1
         #savestate()
-        epochLogHistory.append([epoch,logs['acc'],logs['loss'],logs['val_acc'],logs['val_loss']])
+        print logs.keys()
+        epochLogHistory.append([epoch,logs['acc'],logs['loss'],logs['val_acc'],logs['val_loss'],logs['sentence_distance'],logs['val_sentence_distance']])
         return
 
 def loadmodel():
@@ -121,34 +122,46 @@ def train(lst):
         savestate()
         flushLogEpoch()
         
-def predict_model(lst,_id):
-    imgVec = imageToVec(_id)
-    fname = get_image_fname(_id)
-    print "Predicting for Image %s " % fname
+def predict_model(lst,_ids):
+    imgVecs = np.array([imageToVec(_id) for _id in _ids])
+    fnames = [get_image_fname(_id) for _id in _ids]
+    for fname in fnames:
+        print "Predicting for Image %s " % fname
     l = 0
-    capS = ENG_SOS
+    cnt = len(_ids)
+    _capS = np.array([ [word2embd(ENG_SOS)] + ([word2embd(ENG_EOS)] * CAPTION_LEN) ] * cnt)
+    strCap = [[]]*cnt
     while l < CAPTION_LEN:
-        cap = captionToVec(capS, addOne=True)
-        newCapS = model.predict([np.array([cap]),np.array([imgVec])])[0]
-        newWord = newCapS[l]
-        print newWord
+        #_cap = [captionToVec(capS, addOne=True) for capS in _capS]
+        _newCapS = model.predict([_capS,imgVecs])
+        _newWord = [newCapS[l] for newCapS in _newCapS]
+        #print _newWord
         #ind = np.argmax(newWord)
-        newWord,dis = embdToWord(newWord)
-        print "NWord %s\tDistance= %f" % (newWord,dis)
+        for j,newWordE in enumerate(_newWord):
+            newWord,dis = embdToWord(newWordE)
+            _capS[j][l+1] = newWordE #word2embd(newWord) ############################# TEST FOR TWEEKING, and MAKING RUN FAST
+            print "NWord %s\tDistance= %f" % (newWord,dis)
+            strCap[j].append(newWord)
+        #newWord_dis = [embdToWord(newWord) for newWord in _newWord]
         l+=1
         
-        if newWord == ENG_EOS:
-            break
-        capS = "%s %s" % (capS, newWord)
-        print newCapS
-    print "eog %s%s" % (DIR_IMAGES,fname)
-    print "Observed : %s " % capS
-    actualC = lst[_id]
-    print "Actual   : %s " % actualC
+        #if newWord == ENG_EOS:
+        #    break
+        #for j in range(cnt):
+        #    capS[j] = "%s %s"
+        #capS = "%s %s" % (capS, newWord)
+        #print newCapS
+
+    for j,out in enumerate(strCap):
+        print "eog %s%s" % (DIR_IMAGES,fnames[j])
+        print "Observed : %s " % strCap[j]
+        actualC = lst[_ids[j]]
+        print "Actual   : %s " % actualC
+        print [WordToWordDistance(a,b) for a,b in zip(strCap[j],actualC)]
 
     
-def predict(lst,_id):
-    predict_model(lst,_id)
+def predict(lst,_ids):
+    predict_model(lst,_ids)
 
 def run():
     build_gloveVocab() 
@@ -157,7 +170,7 @@ def run():
     if len(sys.argv) < 3 or '-predict' != sys.argv[1]:
         train(lst)
     else:
-        predict(lst,int(sys.argv[2]))
+        predict(lst,[int(x) for x in sys.argv[2].split(",")])
     
 if __name__ == '__main__':
     run()

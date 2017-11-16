@@ -7,7 +7,9 @@ from keras.layers import TimeDistributed, Dense, Input, Flatten
 from keras.applications import ResNet50, VGG16
 from keras.optimizers import RMSprop
 from keras.layers.merge import Concatenate
-from preprocess import MAX_WORDS, OUTDIM_EMB
+from preprocess import MAX_WORDS, OUTDIM_EMB, WordToWordDistance
+import keras.backend as K
+
 '''
 Rough Estimate
 =============
@@ -33,6 +35,9 @@ def build_imodel():
     return imodel
 '''
 
+def sentence_distance(y_true, y_pred):
+    return K.sqrt(K.sum(K.square(K.abs(y_true-y_pred)),axis=1,keepdims=True))
+        
 def build_model(CAPTION_LEN):
     print "Creating Model with Vocab Size : NONE " #% VOCAB_SIZE
     #assert os.path.exists('resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5')
@@ -47,8 +52,8 @@ def build_model(CAPTION_LEN):
     #        weights = embeddingMatrixRef,
     #        trainable = False
     #        ))
-    cmodel.add(LSTM(OUTDIM_EMB, input_shape=(CAPTION_LEN+1,OUTDIM_EMB ), return_sequences=True,kernel_initializer='random_normal'))
-    cmodel.add(TimeDistributed(Dense(OUTDIM_EMB/2,kernel_initializer='random_normal')))
+    cmodel.add(LSTM(OUTDIM_EMB, input_shape=(CAPTION_LEN+1,OUTDIM_EMB ), return_sequences=True))#,kernel_initializer='random_normal'))
+    cmodel.add(TimeDistributed(Dense(OUTDIM_EMB*2)))#,kernel_initializer='random_normal')))
     #cmodel.add(LSTM(OUTDIM_EMB, return_sequences=True))
     #cmodel.add(LSTM(128, return_sequences=False))
     cmodel.summary()
@@ -76,13 +81,14 @@ def build_model(CAPTION_LEN):
     model = Sequential()
     model.add(Merge([cmodel,imodel],mode='concat'))
     #model.add(RepeatVector(CAPTION_LEN))
-    model.add(LSTM(OUTDIM_EMB,return_sequences=True,kernel_initializer='random_normal'))
+    model.add(LSTM(OUTDIM_EMB*2,return_sequences=True))#,kernel_initializer='random_normal'))
+    model.add(LSTM(OUTDIM_EMB*2,return_sequences=True))#,kernel_initializer='random_normal'))
     #model.add(LSTM(512,return_sequences=True))
     model.add(TimeDistributed(Dense(OUTDIM_EMB,kernel_initializer='random_normal')))
-    model.add(Activation('softmax'))
+    model.add(Activation('tanh'))
     #optimizer = RMSprop(lr=0.001, rho=0.9, epsilon=1e-8, decay=0)
-    optimizer = RMSprop(lr=0.002, rho=0.9, epsilon=1e-8, decay=0)
-    model.compile(optimizer=optimizer, loss='mean_squared_error', metrics=['accuracy'])
+    optimizer = RMSprop(lr=0.0005, rho=0.9, epsilon=1e-8, decay=0)
+    model.compile(optimizer=optimizer, loss='mean_squared_error', metrics=['accuracy',sentence_distance])
     model.summary()
     print "Model Created"
     return model

@@ -35,7 +35,8 @@ embeddingLen = None
 '''
 ICAPPF = 'imcap.dat'
 embeddingIndex = {}
-EMBEDDINGI_FILE = 'embeddingI'
+EMBEDDINGI_FILE = 'embeddingIScaled5'
+EMBEDDING_OUT_SCALEFACT = 5 #(-4.0665998, 3.575) needs to be mapped to -1 to +1
 isEmbeddingPresent = os.path.exists(EMBEDDINGI_FILE)
 embeddingIndexRef = [ embeddingIndex ]
 
@@ -87,11 +88,18 @@ def build_gloveVocab():
             embeddingMatrix = pickle.load(f)
             embeddingMatrixRef[0] = embeddingMatrix
         '''
+        minVal = float('inf')
+        maxVal = -minVal
         with open(EMBEDDINGI_FILE,'r') as f:
             global embeddingIndex
             embeddingIndex = pickle.load(f)
             embeddingIndexRef[0] = embeddingIndex
-        
+            for v in embeddingIndex.values():
+                for x in v:
+                    minVal = min(minVal,x)
+                    maxVal = max(maxVal,x)
+            #print "minVal, maxVal %s " % str((minVal,maxVal))
+            #exit()
         print "Embedding Loaded"
     else:
         with open(GLOVE_FILE,'r') as f:
@@ -111,7 +119,9 @@ def build_gloveVocab():
                 if i<5:
                     print word
                     #print tokens[1:]
-                embeddingIndex[word] = np.asarray(tokens[1:], dtype='float32')
+                embeddingIndex[word] = np.asarray(tokens[1:], dtype='float32') * (1.0/EMBEDDING_OUT_SCALEFACT)
+                #print embeddingIndex[word]
+                #exit()
             #exit()
         global isEmbeddingPresent
         assert isEmbeddingPresent == False
@@ -212,6 +222,14 @@ def embdToWord(embd):
     assert(bestWord is not None)
     return (bestWord, distance)
 
+def WordToWordDistance(word1,word2):
+    vec1 = word2embd(word1)
+    vec2 = word2embd(word2)
+    d = 0
+    for a,b in zip(vec1,vec2):
+        d+=(a-b)*(a-b)
+    return d
+       
 def captionToVec(cap, addOne=False):
     l = CAPTION_LEN
     if addOne:
