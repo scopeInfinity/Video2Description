@@ -130,18 +130,22 @@ def predict_model(lst,_ids):
     l = 0
     cnt = len(_ids)
     _capS = np.array([ [word2embd(ENG_SOS)] + ([word2embd(ENG_EOS)] * CAPTION_LEN) ] * cnt)
-    strCap = [[]]*cnt
+    print np.shape(_capS)
+    strCap = [""]*cnt
+    #CAPTION_LEN = 2
     while l < CAPTION_LEN:
         #_cap = [captionToVec(capS, addOne=True) for capS in _capS]
         _newCapS = model.predict([_capS,imgVecs])
         _newWord = [newCapS[l] for newCapS in _newCapS]
         #print _newWord
         #ind = np.argmax(newWord)
+        print "Got Update %s " % str(np.shape(_newWord))
         for j,newWordE in enumerate(_newWord):
             newWord,dis = embdToWord(newWordE)
-            _capS[j][l+1] = newWordE #word2embd(newWord) ############################# TEST FOR TWEEKING, and MAKING RUN FAST
+            _capS[j][l+1] = word2embd(newWord) ############################# TEST FOR TWEEKING, and MAKING RUN FAST
             print "NWord %s\tDistance= %f" % (newWord,dis)
-            strCap[j].append(newWord)
+            strCap[j] = "%s %s" % (strCap[j],newWord)
+            print strCap[j]
         #newWord_dis = [embdToWord(newWord) for newWord in _newWord]
         l+=1
         
@@ -153,7 +157,7 @@ def predict_model(lst,_ids):
         #print newCapS
 
     for j,out in enumerate(strCap):
-        print "eog %s%s" % (DIR_IMAGES,fnames[j])
+        print "eog %s" % (fnames[j])
         print "Observed : %s " % strCap[j]
         actualC = lst[_ids[j]]
         print "Actual   : %s " % actualC

@@ -68,6 +68,7 @@ def build_model(CAPTION_LEN):
         #l.trainable = False
     #    imodel.add(l)
     for lay in imodel.layers:
+        print lay.get_weights()
         lay.trainable = False
     imodel.add(Flatten())
     imodel.add(RepeatVector(CAPTION_LEN + 1))
@@ -87,7 +88,7 @@ def build_model(CAPTION_LEN):
     model.add(TimeDistributed(Dense(OUTDIM_EMB,kernel_initializer='random_normal')))
     model.add(Activation('tanh'))
     #optimizer = RMSprop(lr=0.001, rho=0.9, epsilon=1e-8, decay=0)
-    optimizer = RMSprop(lr=0.0005, rho=0.9, epsilon=1e-8, decay=0)
+    optimizer = RMSprop(lr=0.00005, rho=0.9, epsilon=1e-8, decay=0)
     model.compile(optimizer=optimizer, loss='mean_squared_error', metrics=['accuracy',sentence_distance])
     model.summary()
     print "Model Created"
