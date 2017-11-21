@@ -1,3 +1,4 @@
+import random
 import pickle
 import sys
 from sets import Set
@@ -177,7 +178,7 @@ def imageToVec(_id):
     NEED_W = 224
     NEED_H = 224
     fname = get_image_fname(_id)
-    print fname
+    #print fname
     img = image.load_img(fname, target_size=(NEED_H, NEED_W))
     ############################################ REMOVE HERE ###
     #img.save("temp.jpg")
@@ -236,7 +237,7 @@ def captionToVec(cap, addOne=False):
         l = l+1
     #print [w.lower() for w in cap.split(' ')]
     cap = cap.lower().split(' ')
-    print cap
+    #print cap
     cap = cap[:l]
     while len(cap)<l:
         cap.append(ENG_EOS)
@@ -267,7 +268,7 @@ def build_vocab():
     print "Vocabulary Size NONE for %d captions" % (len(lst))
     return lst
     
-def build_dataset(lst, batch_size = -1, val_size = 0):
+def build_dataset(lst, batch_size = -1, val_size = 0,outerepoch=random.randint(0,10000)):
     logger.debug("Started")
 
     #_id = lst.keys()[0]
@@ -283,20 +284,31 @@ def build_dataset(lst, batch_size = -1, val_size = 0):
                 break
             train_set.append( get_image_caption(_id,lst))
     else:
-        mx = len(lst.keys())
-        mx = 1000 #########HERE###########
-        splitKey = int(mx*0.9)
+        tsize = batch_size
+        count = (len(lst.keys())-val_size)/tsize
+        print "Max Unique Outer Batches %d " % count
+        outerepoch = outerepoch%count
+        oinds = outerepoch*tsize
+        einds = (outerepoch+1)*tsize
+        mylst = lst.keys()[oinds:einds]
+        mylst.extend(lst.keys()[-val_size-1:])
+        mx = len(mylst)
+        #mx = 1000 #########HERE###########
+        splitKey =  tsize #int(mx*0.9)
+
         print "Max Keys %d\tSplit keys %d" % (mx, splitKey)
         todolist = [("Train set",train_set, batch_size,0,splitKey),("Validation Set",val_set, val_size,splitKey,mx-splitKey)]
         for (s,cset, batchsz, offset, datasz) in todolist:
-            indicies = np.random.choice(datasz, batchsz, replace=False)
-            indicies = indicies + offset
-            for c,i in enumerate(indicies):
-                _id = lst.keys()[i]
+            #indicies = np.random.choice(datasz, batchsz, replace=False)
+            #indicies = indicies + offset
+            for c,_id in enumerate(mylst[offset:(datasz+offset)]):# enumerate(indicies):
+                #_id = lst.keys()[i]
                 capimg = get_image_caption(_id,lst)
-                if c==0:
-                    print "%s First Image Id %s with caption : %s " % (s,str(_id), capimg[0])
+                #if c==0:
+                #    print "%s First Image Id %s with caption : %s " % (s,str(_id), capimg[0])
                 cset.append(capimg)
+                if (c*100)%batchsz == 0:
+                    print "%s %d %% Loaded!" % (s, c*100/batchsz)
     print "BS %d, VS %d " % (batch_size, val_size)
     print "Shape of Training Set %s " % str(np.shape(train_set))
     print "Shape of Validation Set %s " % str(np.shape(val_set))

@@ -1,3 +1,4 @@
+import random
 import shutil,json
 from keras import callbacks
 import os, sys
@@ -8,8 +9,8 @@ from preprocess import CAPTION_LEN, ENG_SOS, ENG_EOS, ENG_NONE, DIR_IMAGES, isEm
 from preprocess import  embeddingIndexRef, imageToVec, word2embd, embdToWord, captionToVec, get_image_caption, build_vocab, build_dataset, build_gloveVocab, get_image_fname, word2embd, WordToWordDistance
 from model import build_model
 
-CLABEL= 'vgg16_tanh_gs5'
-state = {'epochs':1000,'inepochs':100,'batch_size':50,'super_batch':200,'val_batch':5}
+CLABEL= 'vgg16_tanh_gs5_ml'
+state = {'epochs':1000,'inepochs':1000,'batch_size':200,'super_batch':800,'val_batch':5}
 
 MFNAME= 'model_'+CLABEL+'.dat'
 ELOGS = CLABEL + "_logs.txt"
@@ -80,8 +81,8 @@ def prepare_feedkeras(trainset):
     i = 0
     we_sos = [word2embd(ENG_SOS)]
     we_eos = [word2embd(ENG_EOS)]
-    print we_sos
-    print we_eos
+    #print we_sos
+    #print we_eos
     print "Arranging Trainset"
     while i < len(trainset):
         capS =  we_sos + trainset[i][0] 
@@ -91,7 +92,7 @@ def prepare_feedkeras(trainset):
         trainX1.append( capS )
         trainX2.append( image )
         trainY.append( capE )
-        if i==0:
+        if False and i==0:
             print "capS %s " % capS
             print "capE %s " % capE
             print "Image %s" % str(image)
@@ -115,7 +116,7 @@ def train_model(trainvalset):
 def train(lst):
     MX = state['epochs']
     for it in range(MX):
-        dataset = build_dataset(lst, state['super_batch'],state['val_batch'])
+        dataset = build_dataset(lst, state['super_batch'],state['val_batch'],outerepoch=it)
         print "Outer Iteration %3d of %3d " % (it+1,MX)
         train_model(dataset)
         state['epochs']-=1
@@ -165,16 +166,26 @@ def predict_model(lst,_ids):
 
     
 def predict(lst,_ids):
+    if type(_ids) == type(0):
+        l = os.listdir(DIR_IMAGES)
+        cnt = _ids
+        _ids = []
+        for j in range(cnt):
+            _ids.append(random.choice(l))
+        _ids = [int(fn.split("_")[-1].split(".")[0]) for fn in _ids]
     predict_model(lst,_ids)
 
 def run():
     build_gloveVocab() 
     lst = build_vocab()
     loadmodel()
-    if len(sys.argv) < 3 or '-predict' != sys.argv[1]:
+    if len(sys.argv) < 3:
         train(lst)
-    else:
+    elif len(sys.argv)== 3 and '-predict' == sys.argv[1]:
         predict(lst,[int(x) for x in sys.argv[2].split(",")])
-    
+    elif len(sys.argv)== 3 and '-prandom' == sys.argv[1]:
+        predict(lst,int(sys.argv[2]))
+    else:
+        print "Invalid Argument"
 if __name__ == '__main__':
     run()
