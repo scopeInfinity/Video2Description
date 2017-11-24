@@ -7,7 +7,7 @@ from keras.layers import TimeDistributed, Dense, Input, Flatten
 from keras.applications import ResNet50, VGG16
 from keras.optimizers import RMSprop
 from keras.layers.merge import Concatenate
-from preprocess import MAX_WORDS, OUTDIM_EMB, WordToWordDistance
+from preprocess import MAX_WORDS, OUTDIM_EMB, WordToWordDistance, VOCAB_SIZE
 import keras.backend as K
 
 '''
@@ -38,7 +38,7 @@ def build_imodel():
 def sentence_distance(y_true, y_pred):
     return K.sqrt(K.sum(K.square(K.abs(y_true-y_pred)),axis=1,keepdims=True))
         
-def build_model(CAPTION_LEN):
+def model_vgg_tanh_endglove(CAPTION_LEN):
     print "Creating Model with Vocab Size : NONE " #% VOCAB_SIZE
     #assert os.path.exists('resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5')
     #np.set_printoptions(threshold=np.nan)
@@ -93,5 +93,44 @@ def build_model(CAPTION_LEN):
     optimizer = RMSprop(lr=0.001, rho=0.9, epsilon=1e-8, decay=0)
     model.compile(optimizer=optimizer, loss='mean_squared_error', metrics=['accuracy',sentence_distance])
     model.summary()
-    print "Model Created"
+    print "Model Created model_vgg_tanh_endglove"
     return model
+
+def model_vgg_tanh_endonehot(CAPTION_LEN):
+    print "Creating Model with Vocab Size :  %d " % VOCAB_SIZE[0]
+    cmodel  = Sequential()
+    cmodel.add(LSTM(OUTDIM_EMB, input_shape=(CAPTION_LEN+1,OUTDIM_EMB ), return_sequences=True))#,kernel_initializer='random_normal'))
+    cmodel.add(TimeDistributed(Dense(500)))
+    cmodel.add(TimeDistributed(Dense(1000)))
+    cmodel.add(LSTM(1000, return_sequences = True))
+    #cmodel.add(LSTM(OUTDIM_EMB, return_sequences=True))
+    #cmodel.add(LSTM(128, return_sequences=False))
+    cmodel.summary()
+    
+    input_tensor = Input(shape=(224,224,3))
+    res = VGG16(include_top=False, weights='imagenet', input_tensor=input_tensor) #build_imodel() 
+    res.summary()
+    imodel = Sequential(layers=res.layers)
+    for lay in imodel.layers:
+        #print lay.get_weights()
+        lay.trainable = False
+    imodel.add(Flatten())
+    imodel.add(RepeatVector(CAPTION_LEN + 1))
+    
+    imodel.summary()
+
+    model = Sequential()
+    model.add(Merge([cmodel,imodel],mode='concat'))
+    #model.add(RepeatVector(CAPTION_LEN))
+    model.add(LSTM(1000,return_sequences=True))#,kernel_initializer='random_normal'))
+    model.add(TimeDistributed(Dense(2000)))#,kernel_initializer='random_normal'))
+    model.add(TimeDistributed(Dense(VOCAB_SIZE[0],kernel_initializer='random_normal')))
+    model.add(Activation('softmax'))
+    optimizer = RMSprop(lr=0.001, rho=0.9, epsilon=1e-8, decay=0)
+    model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy',sentence_distance])
+    model.summary()
+    print "Model Created model_vgg_tanh_endonehot"
+    return model
+
+def build_model(CAPTION_LEN):
+    return model_vgg_tanh_endonehot(CAPTION_LEN)

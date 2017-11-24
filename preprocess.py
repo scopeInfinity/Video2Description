@@ -1,3 +1,4 @@
+import collections
 import random
 import pickle
 import sys
@@ -12,40 +13,54 @@ from logger import logger
 from keras.preprocessing import sequence
 from keras import callbacks
 
+GITBRANCH = os.popen('git branch | grep "*"').read().split(" ")[1][:-1] 
+GITBRANCHPREFIX = "/home/gagan.cs14/btp_"+GITBRANCH+"/"
 # Parameters
 CAPTION_LEN = 10
 MAX_WORDS = 400000
+OUTENCODINGGLOVE = False
 
 os.chdir('/home/gagan.cs14/btp')
+BADLOGS = GITBRANCHPREFIX+"badlogs.txt"
 FILENAME_CAPTION = 'ImageDataset/annotations/captions_train2014.json'
 DIR_IMAGES = 'ImageDataset/train2014/'
+VOCAB_FILE = GITBRANCHPREFIX+"vocab.dat"
 GLOVE_FILE = 'glove/glove.6B.100d.txt'
 OUTDIM_EMB = 100
 USE_GLOVE = True
+WORD_MIN_FREQ = 5
 def get_image_fname(_id):
     return '%sCOCO_train2014_%012d.jpg' % (DIR_IMAGES, _id)
-'''
+
+
 vocab = Set([])
 v_ind2word = {}
 v_word2ind = {}
-VOCAB_SIZE = 0
+VOCAB_SIZE = [0]
+
 embeddingLen = None
+
 #embeddingMatrix = np.zeros((MAX_WORDS, 100))
 #EMBEDDING_FILE = 'embedding'
 #embeddingMatrixRef = [ embeddingMatrix ]
-'''
-ICAPPF = 'imcap.dat'
+#################################################ADD GIT BRANCH
+ICAPPF = GITBRANCHPREFIX+'imcap.dat'
 embeddingIndex = {}
-EMBEDDINGI_FILE = 'embeddingIScaled5'
+EMBEDDINGI_FILE = GITBRANCHPREFIX+'embeddingIScaled5'
 EMBEDDING_OUT_SCALEFACT = 5 #(-4.0665998, 3.575) needs to be mapped to -1 to +1
-isEmbeddingPresent = os.path.exists(EMBEDDINGI_FILE)
 embeddingIndexRef = [ embeddingIndex ]
 
-print "Embedding Present %s " % isEmbeddingPresent
+
+def createDirs():
+    try: 
+        os.makedirs(GITBRANCHPREFIX)
+    except OSError:
+        if not os.path.isdir(GITBRANCHPREFIX):
+            raise
 
 def badLogs(msg):
     print msg
-    with open("badlogs.txt","a") as f:
+    with open(BADLOGS,"a") as f:
         f.write(msg)
 
 '''
@@ -67,9 +82,12 @@ def addToVocab(w):
 Add NULL Word
 Add NonVocab Word
 '''  
-ENG_SOS = "start"
-ENG_EOS = "end"
-ENG_NONE = "none"
+ENG_SOS = ">"
+ENG_EOS = "<"
+ENG_EXTRA = "___"
+ENG_NONE = "?!?"
+
+
 '''
 def iniVocab():
     global W_SOS,W_EOS
@@ -82,6 +100,11 @@ def iniVocab():
 
 def build_gloveVocab():
     logger.debug("Started")
+    if len(embeddingIndexRef[0].keys()) > 0:
+        logger.debug("Embedding Already Present %d " % len(embeddingIndexRef[0].keys()))
+        return
+    isEmbeddingPresent = os.path.exists(EMBEDDINGI_FILE)
+    print "Embedding Present %s " % isEmbeddingPresent
     if isEmbeddingPresent:
         
         '''with open(EMBEDDING_FILE,'r') as f:
@@ -124,7 +147,6 @@ def build_gloveVocab():
                 #print embeddingIndex[word]
                 #exit()
             #exit()
-        global isEmbeddingPresent
         assert isEmbeddingPresent == False
         isEmbeddingPresent = True
         #with open(EMBEDDING_FILE,'w') as f:
@@ -147,29 +169,48 @@ def op_on_caption(cap):
 def build_image_caption_pair():
     if os.path.exists(ICAPPF):
         with open(ICAPPF,'r') as f:
-            x = pickle.load(f)
+            x,mywords = pickle.load(f)
             print "Image Caption Pair Data Model Loaded"
-        return x
+        return x,mywords
     
     x = {}
     logger.debug("Started")
+    wordFreq = {}
+    uwords = set([])
     with open(FILENAME_CAPTION) as f:
         captions = json.load(f)['annotations']
         count = 0
         for cap in captions:
-            cap['caption']= re.sub('[^a-zA-Z]+', ' ', cap['caption'].encode('utf-8'))
-
+            cap['caption']= re.sub('[^a-zA-Z]+', ' ', cap['caption'].encode('utf-8')).lower()
+            for w in cap['caption'].split(' '):
+                if w in uwords:
+                    wordFreq[w]+=1
+                else:
+                    wordFreq[w] =1
+                    uwords.add(w)
             #op_on_caption(cap['caption'])
             if True or count < 100:
                 x[cap['image_id']] = cap['caption']
             count+=1
+    #nmywords = wordFreq.keys()
+    #sorted(nmywords, key=lambda key: wordFreq[key], reverse=True)
+    #print wordFreq.keys()
+    mywords = set([w for w in wordFreq.keys() if wordFreq[w]>=WORD_MIN_FREQ])
+    mywords.add(ENG_SOS)
+    mywords.add(ENG_EOS)
+    mywords.add(ENG_NONE)
+    mywords.add(ENG_EXTRA)
+
+    print mywords
+    print len(mywords)
+    #mywords = mywords[:WORD_TOP]
     with open(ICAPPF,'w') as f:
-        pickle.dump(x,f)
+        pickle.dump([x,mywords],f)
         print "Image Caption Pair Data Model Saved"
         
     
-    logger.debug("Completed, Vocab Size NONE ")
-    return x
+    logger.debug("Completed, Vocab Size NONE   ")#%len(v_word2ind))
+    return (x,mywords)
 
 #def rgb2gray(rgb):
 #    return np.dot(rgb[...,:3], [0.299, 0.587, 0.114])
@@ -198,15 +239,16 @@ def imageToVec(_id):
     #print "BW Shape %s " % (str(np.shape(bw)))
 
 
-#def getWord2Ind(w):
-#    w=w.lower()
-#    if w not in v_word2ind.keys():
-#        w='extra'
-#    return v_word2ind[w]
+def getWord2Ind(w):
+    w=w.lower()
+    if w not in v_word2ind.keys():
+        w=ENG_EXTRA
+    #print w
+    return v_word2ind[w]
 
 def word2embd(word):
     if word not in embeddingIndexRef[0].keys():
-        word = ENG_NONE
+        word = ENG_EXTRA
     return embeddingIndexRef[0][word]
 
 def embdToWord(embd):
@@ -231,7 +273,22 @@ def WordToWordDistance(word1,word2):
         d+=(a-b)*(a-b)
     return d
        
-def captionToVec(cap, addOne=False):
+
+def onehot(vind):
+    #print "Vobab Size %d " % VOCAB_SIZE[0]
+    t =  [0]*VOCAB_SIZE[0]
+    t[vind] = 1
+    return t
+
+def wordToEncode(w, encodeType = None):
+    if encodeType is None:
+        encodeType = "glove"
+    if encodeType == "glove":
+        return word2embd(w)
+    else:
+        return onehot(getWord2Ind(w))
+
+def captionToVec(cap, addOne=False, oneHot=False):
     l = CAPTION_LEN
     if addOne:
         l = l+1
@@ -239,33 +296,57 @@ def captionToVec(cap, addOne=False):
     cap = cap.lower().split(' ')
     #print cap
     cap = cap[:l]
-    while len(cap)<l:
+    if len(cap)<l:
         cap.append(ENG_EOS)
-    vec = [word2embd(w) for w in cap]
-#    nums = [getWord2Ind(w) for w in cap.split(' ')]
-#    vec = sequence.pad_sequences([nums],maxlen=CAPTION_LEN,padding='post', truncating='post')[0]
-    
+    while len(cap)<l:
+        cap.append(ENG_NONE)
+
+    if oneHot:
+        vec = [wordToEncode(w,"onehot") for w in cap]
+    else:
+        vec = [wordToEncode(w,"glove") for w in cap]
     return vec
 
-'''
-def onehot(vec):
-    vector = []
-    for i in vec:
-        t =  [0]*VOCAB_SIZE
-        t[i] = 1
-        vector.append( t )
-    return np.asarray(vector)
-'''
 
 def get_image_caption(_id, lst):
     cap = lst[_id]
-    capVec = captionToVec(cap)
+    capVec = captionToVec(cap, oneHot=False)
+    capVecOneHot = captionToVec(cap, oneHot=True)
     img = imageToVec(_id)
-    return np.asarray([capVec,img])
+    return np.asarray([img,capVec,capVecOneHot])
 
 def build_vocab():
-    lst = build_image_caption_pair()
-    print "Vocabulary Size NONE for %d captions" % (len(lst))
+    lst,topwords = build_image_caption_pair()
+    if os.path.exists(VOCAB_FILE):
+        with open(VOCAB_FILE,'r') as f:
+            [v_ind2word_,v_word2ind_, VOCAB_SIZE[0]] = pickle.load(f)
+            v_ind2word.clear()
+            v_ind2word.update(v_ind2word_)
+            v_word2ind.clear()
+            v_word2ind.update(v_word2ind_)
+            print "Vocab Model Loaded"
+    else:
+        build_gloveVocab()
+
+        assert len(embeddingIndex.keys())>0
+        assert len(v_ind2word) == 0
+        assert len(v_word2ind) == 0
+        for i,w in enumerate(embeddingIndex.keys()):
+            if w in topwords:
+                v_ind2word[i]=w
+                v_word2ind[w]=i
+        VOCAB_SIZE[0] = len(embeddingIndex.keys())
+        print "Embedding Index Len %d " % len(embeddingIndex.keys())
+        #exit()
+        with open(VOCAB_FILE,'w') as f:
+            pickle.dump([v_ind2word,v_word2ind, VOCAB_SIZE[0]],f)
+            print "Vocab Model Saved"
+    
+    assert ENG_SOS in v_word2ind.keys()
+    assert ENG_EOS in v_word2ind.keys()
+    assert ENG_NONE in v_word2ind.keys()
+    assert ENG_EXTRA in v_word2ind.keys()
+    print "Vocabulary Size %d for %d captions" % (VOCAB_SIZE[0], len(lst))
     return lst
     
 def build_dataset(lst, batch_size = -1, val_size = 0,outerepoch=random.randint(0,10000)):

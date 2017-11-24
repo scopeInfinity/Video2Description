@@ -55,14 +55,14 @@ pdis = host.twinx()
 
 _e,=host.plot(x,ep,color= plt.cm.viridis(0.95),label='Epochs')
 
-_a,=pacc.plot(x,acc,'-',label="Accuracy",color= plt.cm.viridis(0))
-pacc.plot(x,val_acc,'-',label="Val Accuracy",color= plt.cm.viridis(0.5))
+_a,=pacc.plot(x,acc,'-.',label="Accuracy",color= plt.cm.viridis(0))
+pacc.plot(x,val_acc,'-.',label="Val Accuracy",color= plt.cm.viridis(0.5))
 
 _l,=ploss.plot(x,loss, '--', label="Loss", color = plt.cm.viridis(0))
 ploss.plot(x,val_loss,'--', label="Val Loss",color= plt.cm.viridis(0.5))
 
-_d,=pdis.plot(x,dis,'-.',label="Distance",color= plt.cm.viridis(0))
-pdis.plot(x,val_dis,'-.',label="Val Distance",color= plt.cm.viridis(0.5))
+_d,=pdis.plot(x,dis,'-',label="Distance",color= plt.cm.viridis(0.75))
+pdis.plot(x,val_dis,'-',label="Val Distance",color= plt.cm.viridis(0.95))
 
 
 ploss.legend(loc='lower right')

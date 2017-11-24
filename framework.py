@@ -5,16 +5,19 @@ import os, sys
 import numpy as np
 import csv
 #import preprocess
-from preprocess import CAPTION_LEN, ENG_SOS, ENG_EOS, ENG_NONE, DIR_IMAGES, isEmbeddingPresent
-from preprocess import  embeddingIndexRef, imageToVec, word2embd, embdToWord, captionToVec, get_image_caption, build_vocab, build_dataset, build_gloveVocab, get_image_fname, word2embd, WordToWordDistance
+from preprocess import CAPTION_LEN, ENG_SOS, ENG_EOS, ENG_EXTRA, ENG_NONE, DIR_IMAGES, OUTENCODINGGLOVE, GITBRANCHPREFIX
+from preprocess import  embeddingIndexRef, imageToVec, word2embd, embdToWord, captionToVec, get_image_caption, build_vocab, build_dataset, build_gloveVocab, get_image_fname, word2embd, WordToWordDistance, wordToEncode
+from preprocess import createDirs
 from model import build_model
 
-CLABEL= 'vgg16_tanh_gs5_ml'
-state = {'epochs':1000,'inepochs':1000,'batch_size':200,'super_batch':800,'val_batch':5}
 
-MFNAME= 'model_'+CLABEL+'.dat'
-ELOGS = CLABEL + "_logs.txt"
-STATE = 'state_'+CLABEL+'.txt'
+CLABEL= 'vgg16_onehot'
+state = {'epochs':1000,'inepochs':10,'batch_size':3,'super_batch':10,'val_batch':2}
+
+MFNAME= GITBRANCHPREFIX+'model_'+CLABEL+'.dat'
+_MFNAME= GITBRANCHPREFIX+'model_'+CLABEL+'.dat.bak'
+ELOGS = GITBRANCHPREFIX+CLABEL + "_logs.txt"
+STATE = GITBRANCHPREFIX+'state_'+CLABEL+'.txt'
 model = None
 
 epochLogHistory = []
@@ -51,7 +54,7 @@ def savestate():
     try:
         pass
     finally:
-        tname = "_"+MFNAME
+        tname = _MFNAME
         model.save_weights(tname)
         shutil.copy2(tname, MFNAME)
         os.remove(tname)
@@ -79,15 +82,27 @@ def prepare_feedkeras(trainset):
     trainX2 = []
     trainY = []
     i = 0
+    # Glove
     we_sos = [word2embd(ENG_SOS)]
     we_eos = [word2embd(ENG_EOS)]
+    # One Hot
+    we_eosOH = [wordToEncode(ENG_EOS,encodeType="onehot")]
     #print we_sos
     #print we_eos
     print "Arranging Trainset"
     while i < len(trainset):
-        capS =  we_sos + trainset[i][0] 
-        capE =  trainset[i][0] + we_eos
-        image = trainset[i][1]
+        image = trainset[i][0]
+        # Glove
+        capS =  we_sos + trainset[i][1] 
+        outWord = None
+        # Chose according to out embedding
+        if OUTENCODINGGLOVE:
+            outWord = trainset[i][1]
+        else:
+            # one hot
+            outWord = trainset[i][2]
+        capE =  outWord + we_eosOH
+
         #print "%d ; %d " %(len(capS),len(capE))
         trainX1.append( capS )
         trainX2.append( image )
@@ -110,6 +125,9 @@ def train_model(trainvalset):
     valset = prepare_feedkeras(trainvalset[1])
     print "Attempt to Fit Data"
     inEpochs = state['inepochs']
+    #print "Train X Shape %s " % str(np.shape(trainX))
+    print "Train Y Shape %s " % str(np.shape(trainY))
+
     model.fit(x=trainX,y=trainY,batch_size=state['batch_size'],epochs=inEpochs, validation_data=valset, verbose=2, callbacks=[ModelCallback()])
     print "Model Fit"
 
@@ -122,7 +140,16 @@ def train(lst):
         state['epochs']-=1
         savestate()
         flushLogEpoch()
-        
+
+def wordFromOutModel(embWord):
+    # Return (word,acc_mertrics)
+    if OUTENCODINGGLOVE:
+        return embdToWord(newWordE)
+    else:
+        # return argmax word
+        ind = np.argmax(embdToWord)
+        return (v_ind2word[ind], embdToWord[ind])
+
 def predict_model(lst,_ids):
     imgVecs = np.array([imageToVec(_id) for _id in _ids])
     fnames = [get_image_fname(_id) for _id in _ids]
@@ -130,24 +157,20 @@ def predict_model(lst,_ids):
         print "Predicting for Image %s " % fname
     l = 0
     cnt = len(_ids)
-    _capS = np.array([ [word2embd(ENG_SOS)] + ([word2embd(ENG_EOS)] * CAPTION_LEN) ] * cnt)
+    _capS = np.array([ [word2embd(ENG_SOS)] + ([word2embd(ENG_NONE)] * CAPTION_LEN) ] * cnt)
     print np.shape(_capS)
     strCap = [""]*cnt
     #CAPTION_LEN = 2
     while l < CAPTION_LEN:
-        #_cap = [captionToVec(capS, addOne=True) for capS in _capS]
         _newCapS = model.predict([_capS,imgVecs])
         _newWord = [newCapS[l] for newCapS in _newCapS]
-        #print _newWord
-        #ind = np.argmax(newWord)
-        print "Got Update %s " % str(np.shape(_newWord))
+        print "Got Update Shape %s " % str(np.shape(_newWord))
         for j,newWordE in enumerate(_newWord):
-            newWord,dis = embdToWord(newWordE)
-            _capS[j][l+1] = word2embd(newWord) ############################# TEST FOR TWEEKING, and MAKING RUN FAST
-            print "NWord %s\tDistance= %f" % (newWord,dis)
+            newWord,metrics = wordFromOutModel(newWordE)
+            _capS[j][l+1] = wordToEncode(newWord)
+            print "NWord %s\tMetrics= %f" % (newWord,metrics)
             strCap[j] = "%s %s" % (strCap[j],newWord)
             print strCap[j]
-        #newWord_dis = [embdToWord(newWord) for newWord in _newWord]
         l+=1
         
         #if newWord == ENG_EOS:
@@ -188,4 +211,5 @@ def run():
     else:
         print "Invalid Argument"
 if __name__ == '__main__':
+    createDirs()
     run()
