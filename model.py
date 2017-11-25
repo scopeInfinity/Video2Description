@@ -99,12 +99,13 @@ def model_vgg_tanh_endglove(CAPTION_LEN):
 def model_vgg_tanh_endonehot(CAPTION_LEN):
     print "Creating Model with Vocab Size :  %d " % VOCAB_SIZE[0]
     cmodel  = Sequential()
-    cmodel.add(LSTM(OUTDIM_EMB, input_shape=(CAPTION_LEN+1,OUTDIM_EMB ), return_sequences=True))#,kernel_initializer='random_normal'))
-    cmodel.add(TimeDistributed(Dense(500)))
-    cmodel.add(TimeDistributed(Dense(1000)))
-    cmodel.add(LSTM(1000, return_sequences = True))
+    cmodel.add(LSTM(256, input_shape=(CAPTION_LEN+1,OUTDIM_EMB ), return_sequences=True))#,kernel_initializer='random_normal'))
+    cmodel.add(TimeDistributed(Dense(128)))
+    #cmodel.add(TimeDistributed(Dense(1000)))
+    #cmodel.add(LSTM(1000, return_sequences = True))
     #cmodel.add(LSTM(OUTDIM_EMB, return_sequences=True))
     #cmodel.add(LSTM(128, return_sequences=False))
+    cmodel.add(TimeDistributed(Dropout(0.2)))
     cmodel.summary()
     
     input_tensor = Input(shape=(224,224,3))
@@ -115,6 +116,8 @@ def model_vgg_tanh_endonehot(CAPTION_LEN):
         #print lay.get_weights()
         lay.trainable = False
     imodel.add(Flatten())
+    imodel.add(Dense(128,activation='relu'))
+    imodel.add(Dropout(0.2))
     imodel.add(RepeatVector(CAPTION_LEN + 1))
     
     imodel.summary()
@@ -123,7 +126,8 @@ def model_vgg_tanh_endonehot(CAPTION_LEN):
     model.add(Merge([cmodel,imodel],mode='concat'))
     #model.add(RepeatVector(CAPTION_LEN))
     model.add(LSTM(1000,return_sequences=True))#,kernel_initializer='random_normal'))
-    model.add(TimeDistributed(Dense(2000)))#,kernel_initializer='random_normal'))
+    #model.add(TimeDistributed(Dense(8256)))#,kernel_initializer='random_normal'))
+    model.add(TimeDistributed(Dropout(0.2)))
     model.add(TimeDistributed(Dense(VOCAB_SIZE[0],kernel_initializer='random_normal')))
     model.add(Activation('softmax'))
     optimizer = RMSprop(lr=0.001, rho=0.9, epsilon=1e-8, decay=0)

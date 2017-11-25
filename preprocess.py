@@ -201,7 +201,7 @@ def build_image_caption_pair():
     mywords.add(ENG_NONE)
     mywords.add(ENG_EXTRA)
 
-    print mywords
+    #print mywords
     print len(mywords)
     #mywords = mywords[:WORD_TOP]
     with open(ICAPPF,'w') as f:
@@ -275,7 +275,7 @@ def WordToWordDistance(word1,word2):
        
 
 def onehot(vind):
-    #print "Vobab Size %d " % VOCAB_SIZE[0]
+    #print "Vobab Size %d  Ind %d " % (VOCAB_SIZE[0],vind)
     t =  [0]*VOCAB_SIZE[0]
     t[vind] = 1
     return t
@@ -331,13 +331,20 @@ def build_vocab():
         assert len(embeddingIndex.keys())>0
         assert len(v_ind2word) == 0
         assert len(v_word2ind) == 0
-        for i,w in enumerate(embeddingIndex.keys()):
+        counter = 0
+        for w in embeddingIndex.keys():
             if w in topwords:
-                v_ind2word[i]=w
-                v_word2ind[w]=i
-        VOCAB_SIZE[0] = len(embeddingIndex.keys())
-        print "Embedding Index Len %d " % len(embeddingIndex.keys())
+                v_ind2word[counter]=w
+                v_word2ind[w]=counter
+                counter += 1
+                # ENG_* words present in embeddingIndex and topwords
+        VOCAB_SIZE[0] = counter
+        #print "Embedding Index Len %d " % len(embeddingIndex.keys())
         #exit()
+        print "TOPWords %d " % len(topwords)
+        print "Embeddding Words %d " % len(embeddingIndex.keys())
+        print "Cal Vocab Size %d " % VOCAB_SIZE[0]
+
         with open(VOCAB_FILE,'w') as f:
             pickle.dump([v_ind2word,v_word2ind, VOCAB_SIZE[0]],f)
             print "Vocab Model Saved"

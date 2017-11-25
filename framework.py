@@ -5,19 +5,20 @@ import os, sys
 import numpy as np
 import csv
 #import preprocess
-from preprocess import CAPTION_LEN, ENG_SOS, ENG_EOS, ENG_EXTRA, ENG_NONE, DIR_IMAGES, OUTENCODINGGLOVE, GITBRANCHPREFIX
+from preprocess import CAPTION_LEN, ENG_SOS, ENG_EOS, ENG_EXTRA, ENG_NONE, DIR_IMAGES, OUTENCODINGGLOVE, GITBRANCHPREFIX, v_ind2word
 from preprocess import  embeddingIndexRef, imageToVec, word2embd, embdToWord, captionToVec, get_image_caption, build_vocab, build_dataset, build_gloveVocab, get_image_fname, word2embd, WordToWordDistance, wordToEncode
 from preprocess import createDirs
 from model import build_model
 
 
 CLABEL= 'vgg16_onehot'
-state = {'epochs':1000,'inepochs':10,'batch_size':3,'super_batch':10,'val_batch':2}
+state = {'epochs':1000,'startOutEpoch':0,'inepochs':10,'batch_size':3,'super_batch':10,'val_batch':2}
 
 MFNAME= GITBRANCHPREFIX+'model_'+CLABEL+'.dat'
 _MFNAME= GITBRANCHPREFIX+'model_'+CLABEL+'.dat.bak'
 ELOGS = GITBRANCHPREFIX+CLABEL + "_logs.txt"
 STATE = GITBRANCHPREFIX+'state_'+CLABEL+'.txt'
+FRESTART = GITBRANCHPREFIX+'restart'
 model = None
 
 epochLogHistory = []
@@ -133,11 +134,17 @@ def train_model(trainvalset):
 
 def train(lst):
     MX = state['epochs']
-    for it in range(MX):
+    startIt = state['startOutEpoch']
+    
+    for it in range(startIt,MX):
+        if os.path.exists(FRESTART):
+            os.remove(FRESTART)
+            exit()
         dataset = build_dataset(lst, state['super_batch'],state['val_batch'],outerepoch=it)
         print "Outer Iteration %3d of %3d " % (it+1,MX)
         train_model(dataset)
         state['epochs']-=1
+        state['startOutEpoch'] = it+1
         savestate()
         flushLogEpoch()
 
@@ -147,8 +154,8 @@ def wordFromOutModel(embWord):
         return embdToWord(newWordE)
     else:
         # return argmax word
-        ind = np.argmax(embdToWord)
-        return (v_ind2word[ind], embdToWord[ind])
+        ind = np.argmax(embWord)
+        return (v_ind2word[ind], embWord[ind])
 
 def predict_model(lst,_ids):
     imgVecs = np.array([imageToVec(_id) for _id in _ids])
