@@ -7,12 +7,14 @@ import json,re
 import os, shutil
 import cv2
 from keras.preprocessing import image
+from keras.applications import imagenet_utils 
 #from PIL import Image as pil_image
 import numpy as np
 from logger import logger
 from keras.preprocessing import sequence
 from keras import callbacks
 
+ROOT_DIR = '/home/gagan.cs14/btp'
 GITBRANCH = os.popen('git branch | grep "*"').read().split(" ")[1][:-1] 
 GITBRANCHPREFIX = "/home/gagan.cs14/btp_"+GITBRANCH+"/"
 # Parameters
@@ -20,10 +22,11 @@ CAPTION_LEN = 10
 MAX_WORDS = 400000
 OUTENCODINGGLOVE = False
 
-os.chdir('/home/gagan.cs14/btp')
+os.chdir(ROOT_DIR)
 BADLOGS = GITBRANCHPREFIX+"badlogs.txt"
 FILENAME_CAPTION = 'ImageDataset/annotations/captions_train2014.json'
 DIR_IMAGES = 'ImageDataset/train2014/'
+DIR_IMAGESP = 'ImageDataset/processed/'
 VOCAB_FILE = GITBRANCHPREFIX+"vocab.dat"
 GLOVE_FILE = 'glove/glove.6B.100d.txt'
 OUTDIM_EMB = 100
@@ -54,6 +57,7 @@ embeddingIndexRef = [ embeddingIndex ]
 def createDirs():
     try: 
         os.makedirs(GITBRANCHPREFIX)
+        os.makedirs(ROOT_DIR + '/' + DIR_IMAGESP)
     except OSError:
         if not os.path.isdir(GITBRANCHPREFIX):
             raise
@@ -219,8 +223,21 @@ def imageToVec(_id):
     NEED_W = 224
     NEED_H = 224
     fname = get_image_fname(_id)
+    #afname = DIR_IMAGESP + fname.split('/')[-1] + '.pickle'
+    #if os.path.exists(afname):
+    #    with open(afname,'r') as f:
+    #        return pickle.load(f)
     #print fname
     img = image.load_img(fname, target_size=(NEED_H, NEED_W))
+    x = image.img_to_array(img)
+    x /= 255.
+    x -= 0.5
+    x *= 2.
+    x = np.asarray(x)
+    #with open(afname,'w') as f:
+    #    pickle.dump(x,f)
+    return x
+
     ############################################ REMOVE HERE ###
     #img.save("temp.jpg")
     #img = cv2.imread(fname)
@@ -230,11 +247,11 @@ def imageToVec(_id):
     #img = np.asarray(img)
     #print "Shape %s " % (str(np.shape(img)))
     #cv2.imwrite('temp.jpg',img)
-    vec = np.asarray(img)
-    if not vec.any():
-        badLogs("All zero for %s\n" % str(_id))
-    vec = vec/255.0
-    return vec
+    #vec = np.asarray(img)
+    #if not vec.any():
+    #    badLogs("All zero for %s\n" % str(_id))
+    #vec = vec/255.0
+    #return vec
     #bw = rgb2gray(img)
     #print "BW Shape %s " % (str(np.shape(bw)))
 
@@ -356,6 +373,62 @@ def build_vocab():
     print "Vocabulary Size %d for %d captions" % (VOCAB_SIZE[0], len(lst))
     return lst
     
+def feed_image_caption(_id,lst):
+    img,capGl,capOH = get_image_caption(_id,lst)
+    # Glove
+    we_sos = [word2embd(ENG_SOS)]
+    we_eos = [word2embd(ENG_EOS)]
+    # One Hot
+    we_eosOH = [wordToEncode(ENG_EOS,encodeType="onehot")]
+    return ( (we_sos+list(capGl)), img, (list(capOH) + we_eosOH))
+    
+def data_generator(lst, batch_size, start=0, isTrainSet = True):
+    count = (len(lst.keys()))/batch_size
+    #print "Max Unique Batches %d " % count
+    countValidation = 5#100
+    countTrain = count - 100
+    print "Validation Data : %d , Train Batches %d, BatchSize %d\tBatchOffset : %d" % (countValidation, countTrain, batch_size, start)
+    offset = 0
+    left = countTrain
+    extra = 0
+    #start = 0
+    if not isTrainSet:
+        left = countValidation
+        offset = countTrain * batch_size
+        idlst = lst.keys()[offset:offset+left]
+    else:
+        offset = start * batch_size
+        extra  = offset
+        left   = left - extra
+        idlst = lst.keys()[offset:offset+left] + lst.keys()[0:offset] 
+
+    c=0
+    images = []
+    capS   = []
+    capE   = []
+    #for i in range(extra/batch_size):
+    #    print "Extra Batch %d " % i
+    #    yield [[np.array([]),np.array([])],np.array([])]
+    for _id in idlst:
+        #print _id
+        _capS,_img,_capE = feed_image_caption(_id,lst)
+        #print "loaded"
+        images.append(_img)
+        capS.append(_capS)
+        capE.append(_capE)
+        c+=1
+        if c==batch_size:
+            try:
+                yield [[np.asarray(capS),np.asarray(images)],np.asarray(capE)]
+            except Exception as e:
+                print str(e)
+                exit()
+            images = []
+            capE   = []
+            capS   = []
+            c=0
+        
+
 def build_dataset(lst, batch_size = -1, val_size = 0,outerepoch=random.randint(0,10000)):
     logger.debug("Started")
 

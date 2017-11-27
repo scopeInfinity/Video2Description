@@ -96,27 +96,21 @@ def model_vgg_tanh_endglove(CAPTION_LEN):
     print "Model Created model_vgg_tanh_endglove"
     return model
 
-def model_vgg_tanh_endonehot(CAPTION_LEN):
+def model_resnet_endonehot(CAPTION_LEN):
     print "Creating Model with Vocab Size :  %d " % VOCAB_SIZE[0]
     cmodel  = Sequential()
-    cmodel.add(LSTM(256, input_shape=(CAPTION_LEN+1,OUTDIM_EMB ), return_sequences=True))#,kernel_initializer='random_normal'))
-    cmodel.add(TimeDistributed(Dense(128)))
-    #cmodel.add(TimeDistributed(Dense(1000)))
-    #cmodel.add(LSTM(1000, return_sequences = True))
-    #cmodel.add(LSTM(OUTDIM_EMB, return_sequences=True))
-    #cmodel.add(LSTM(128, return_sequences=False))
+    cmodel.add(LSTM(256, input_shape=(CAPTION_LEN+1,OUTDIM_EMB ), return_sequences=True))
+    cmodel.add(TimeDistributed(Dense(512)))
     cmodel.add(TimeDistributed(Dropout(0.2)))
     cmodel.summary()
     
     input_tensor = Input(shape=(224,224,3))
-    res = VGG16(include_top=False, weights='imagenet', input_tensor=input_tensor) #build_imodel() 
-    res.summary()
-    imodel = Sequential(layers=res.layers)
-    for lay in imodel.layers:
-        #print lay.get_weights()
-        lay.trainable = False
+    res = ResNet50(include_top=False, weights='imagenet', input_tensor=input_tensor)
+    res.trainable = False
+    imodel = Sequential()
+    imodel.add(res)
     imodel.add(Flatten())
-    imodel.add(Dense(128,activation='relu'))
+    imodel.add(Dense(512,activation='relu'))
     imodel.add(Dropout(0.2))
     imodel.add(RepeatVector(CAPTION_LEN + 1))
     
@@ -124,17 +118,15 @@ def model_vgg_tanh_endonehot(CAPTION_LEN):
 
     model = Sequential()
     model.add(Merge([cmodel,imodel],mode='concat'))
-    #model.add(RepeatVector(CAPTION_LEN))
-    model.add(LSTM(1000,return_sequences=True))#,kernel_initializer='random_normal'))
-    #model.add(TimeDistributed(Dense(8256)))#,kernel_initializer='random_normal'))
     model.add(TimeDistributed(Dropout(0.2)))
+    model.add(LSTM(1024,return_sequences=True))#,kernel_initializer='random_normal'))
     model.add(TimeDistributed(Dense(VOCAB_SIZE[0],kernel_initializer='random_normal')))
     model.add(Activation('softmax'))
     optimizer = RMSprop(lr=0.001, rho=0.9, epsilon=1e-8, decay=0)
-    model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy',sentence_distance])
+    model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
     model.summary()
-    print "Model Created model_vgg_tanh_endonehot"
+    print "Model Created model_resnet_endonehot"
     return model
 
 def build_model(CAPTION_LEN):
-    return model_vgg_tanh_endonehot(CAPTION_LEN)
+    return model_resnet_endonehot(CAPTION_LEN)

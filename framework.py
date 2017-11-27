@@ -6,13 +6,13 @@ import numpy as np
 import csv
 #import preprocess
 from preprocess import CAPTION_LEN, ENG_SOS, ENG_EOS, ENG_EXTRA, ENG_NONE, DIR_IMAGES, OUTENCODINGGLOVE, GITBRANCHPREFIX, v_ind2word
-from preprocess import  embeddingIndexRef, imageToVec, word2embd, embdToWord, captionToVec, get_image_caption, build_vocab, build_dataset, build_gloveVocab, get_image_fname, word2embd, WordToWordDistance, wordToEncode
+from preprocess import  embeddingIndexRef, imageToVec, word2embd, embdToWord, captionToVec, get_image_caption, build_vocab, build_dataset, build_gloveVocab, get_image_fname, word2embd, WordToWordDistance, wordToEncode, data_generator
 from preprocess import createDirs
 from model import build_model
 
 
-CLABEL= 'vgg16_onehot'
-state = {'epochs':1000,'startOutEpoch':0,'inepochs':10,'batch_size':3,'super_batch':10,'val_batch':2}
+CLABEL= 'res_onehot_gen'
+state = {'epochs':1000,'startEpoch':0,'batchOffset':0,'batch_size':30,'val_batch':100, 'saveAtBatch':2}
 
 MFNAME= GITBRANCHPREFIX+'model_'+CLABEL+'.dat'
 _MFNAME= GITBRANCHPREFIX+'model_'+CLABEL+'.dat.bak'
@@ -27,8 +27,6 @@ def flushLogEpoch():
     if not os.path.exists(ELOGS):
         with open(ELOGS,"w") as f:
             wr = csv.writer(f)
-            # Iteration is row id
-            wr.writerow(["EpochId","Acc","Loss","Val Acc","Val loss"])
     if len(epochLogHistory)>0:
         with open(ELOGS,"ab") as f:
             wr = csv.writer(f)
@@ -50,14 +48,17 @@ def loadstate():
             print "State Loaded"
 
 
-def savestate():
+def savestate(epoch='xx'):
     global model
     try:
         pass
     finally:
         tname = _MFNAME
         model.save_weights(tname)
-        shutil.copy2(tname, MFNAME)
+        fname = MFNAME
+        if epoch != 'xx':
+             fname = MFNAME + '_' + epoch
+        shutil.copy2(tname,fname)
         os.remove(tname)
         print "Weights Saved"
         with open(STATE,'w') as f:
@@ -148,6 +149,52 @@ def train(lst):
         savestate()
         flushLogEpoch()
 
+lastloss = str('inf')
+class ModelGeneratorCallback(callbacks.Callback):
+ 
+    def on_epoch_end(self, epoch, logs={}):
+        print "Epoch %d End " % epoch
+        state['epochs']-=1
+        state['batchOffset'] = 0
+        savestate(epoch=("%03d_loss_%s" % (state['epochs'],str(lastloss))))
+        return
+
+    def on_batch_end(self, batch, logs={}):
+        #print "Batch %d ends" % batch
+        loss = logs['loss']
+        acc  = logs['acc']
+        global lastloss
+        lastloss = loss
+        valloss = 0#logs['val_loss']
+        valacc  = 0#logs['val_acc']
+        epochLogHistory.append([batch,loss,acc,valloss,valacc])
+        #print str(logs)
+        state['batchOffset'] += 1
+        if state['batchOffset'] % state['saveAtBatch'] == 0:
+            print "Preparing To Save"
+            savestate()
+            flushLogEpoch()
+
+        
+
+def train_generator(lst):
+    MX = state['epochs']
+    bs=state['batch_size']
+    steps_per_epoch = len(lst.keys())/bs
+    dg = data_generator(lst,bs, start=state['batchOffset'], isTrainSet =  True)
+    vdg = data_generator(lst,bs, False)
+    #print dg.next()
+    #print vdg.next()
+    print "Starting to fit"
+    callbacklist = [ModelGeneratorCallback()]
+    #for i in range(steps_per_epoch):
+    #    #print "loading batch %d" % i
+    #    #data = dg.next()
+    #    #print len(data[1])
+    #    #assert len(data[1]) == bs
+    # validation_data=vdg, validation_steps=1,
+    model.fit_generator(dg, steps_per_epoch=steps_per_epoch, epochs=MX, verbose=1,  initial_epoch=0, callbacks=callbacklist)
+
 def wordFromOutModel(embWord):
     # Return (word,acc_mertrics)
     if OUTENCODINGGLOVE:
@@ -172,7 +219,7 @@ def predict_model(lst,_ids):
         _newCapS = model.predict([_capS,imgVecs])
         _newWord = [newCapS[l] for newCapS in _newCapS]
         print "Got Update Shape %s " % str(np.shape(_newWord))
-        for j,newWordE in enumerate(_newWord):
+        for (j,newWordE) in enumerate(_newWord):
             newWord,metrics = wordFromOutModel(newWordE)
             _capS[j][l+1] = wordToEncode(newWord)
             print "NWord %s\tMetrics= %f" % (newWord,metrics)
@@ -210,7 +257,7 @@ def run():
     lst = build_vocab()
     loadmodel()
     if len(sys.argv) < 3:
-        train(lst)
+        train_generator(lst)
     elif len(sys.argv)== 3 and '-predict' == sys.argv[1]:
         predict(lst,[int(x) for x in sys.argv[2].split(",")])
     elif len(sys.argv)== 3 and '-prandom' == sys.argv[1]:
