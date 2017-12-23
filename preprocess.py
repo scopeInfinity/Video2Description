@@ -381,7 +381,19 @@ def feed_image_caption(_id,lst):
     # One Hot
     we_eosOH = [wordToEncode(ENG_EOS,encodeType="onehot")]
     return ( (we_sos+list(capGl)), img, (list(capOH) + we_eosOH))
-    
+  
+def datas_from_ids(idlst,lst):
+    images = []
+    capS   = []
+    capE   = []
+    for _id in idlst:
+        _capS,_img,_capE = feed_image_caption(_id,lst)
+        images.append(_img)
+        capS.append(_capS)
+        capE.append(_capE)
+    return [[np.asarray(capS),np.asarray(images)],np.asarray(capE)]
+ 
+# Train for batch order 0,0,1,0,1,2,0,1,2,3,4,0,1,2,3,4,5..
 def data_generator(lst, batch_size, start=0, isTrainSet = True):
     count = (len(lst.keys()))/batch_size
     #print "Max Unique Batches %d " % count
@@ -393,41 +405,27 @@ def data_generator(lst, batch_size, start=0, isTrainSet = True):
     extra = 0
     #start = 0
     if not isTrainSet:
+        # Validation Data
         left = countValidation
         offset = countTrain * batch_size
         idlst = lst.keys()[offset:offset+left]
-    else:
-        offset = start * batch_size
-        extra  = offset
-        left   = left - extra
-        idlst = lst.keys()[offset:offset+left] + lst.keys()[0:offset] 
+        yield datas_from_ids(idlst,lst)
+        return
+    # Training Data
+    maxSequenceLength = countTrain*(countTrain+1)/2
+    cbatch = 0
+    batchId = 0
 
-    c=0
-    images = []
-    capS   = []
-    capE   = []
-    #for i in range(extra/batch_size):
-    #    print "Extra Batch %d " % i
-    #    yield [[np.array([]),np.array([])],np.array([])]
-    for _id in idlst:
-        #print _id
-        _capS,_img,_capE = feed_image_caption(_id,lst)
-        #print "loaded"
-        images.append(_img)
-        capS.append(_capS)
-        capE.append(_capE)
-        c+=1
-        if c==batch_size:
-            try:
-                yield [[np.asarray(capS),np.asarray(images)],np.asarray(capE)]
-            except Exception as e:
-                print str(e)
-                exit()
-            images = []
-            capE   = []
-            capS   = []
-            c=0
-        
+    for it in range(maxSequenceLength):
+        cbatch += 1
+        batchId += 1
+        if batchId -1 == countTrain:
+            batchId = 1  
+        if cbatch<=start:
+            continue
+        idlst = lst.keys()[(batchId-1)*batch_size:batchId*batch_size]
+        yield datas_from_ids(idlst,lst)
+    return
 
 def build_dataset(lst, batch_size = -1, val_size = 0,outerepoch=random.randint(0,10000)):
     logger.debug("Started")

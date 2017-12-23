@@ -198,7 +198,7 @@ def train_generator(lst):
 def wordFromOutModel(embWord):
     # Return (word,acc_mertrics)
     if OUTENCODINGGLOVE:
-        return embdToWord(newWordE)
+        return embdToWord(embWord)
     else:
         # return argmax word
         ind = np.argmax(embWord)
@@ -254,6 +254,17 @@ def predict(lst,_ids):
             _ids.append(random.choice(lst.keys()[-100:]))
     predict_model(lst,_ids)
 
+def isImageExtension(fname):
+    for ext in ['jpg','jpeg','png']:
+        if fname.endswith('.'+ext):
+            return True
+    return False
+
+def predict_test(lst,dirpath,mxc):
+    images = [img for img in os.listdir(dirpath) if isImageExtension(img)][0:mxc]
+    print "Predicting for %s" % str(images)
+    predict_model(lst,images)
+
 def run():
     build_gloveVocab() 
     lst = build_vocab()
@@ -264,6 +275,8 @@ def run():
         predict(lst,[int(x) for x in sys.argv[2].split(",")])
     elif len(sys.argv)== 3 and '-prandom' == sys.argv[1]:
         predict(lst,int(sys.argv[2]))
+    elif len(sys.argv)== 4 and '-ptest' == sys.argv[1]:
+        predict_test(lst,sys.argv[2],int(sys.argv[3]))
     else:
         print "Invalid Argument"
 if __name__ == '__main__':

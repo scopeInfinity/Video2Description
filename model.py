@@ -19,22 +19,6 @@ Vocab Size = 37737
 
 OutNeuronLang = 128
 
-'''
-def build_imodel():
-    kernel = (3,3)
-    imodel = Sequential()
-    imodel.add(Conv2D(32,kernel,activation='relu', input_shape=(320,240,3)))
-    imodel.add(Conv2D(32,kernel,activation='relu'))
-    imodel.add(MaxPooling2D(pool_size=(2,2)))
-    imodel.add(Dropout(0.25))
-    imodel.add(Conv2D(64, kernel, activation='relu'))
-    imodel.add(Conv2D(64, kernel, activation='relu'))
-    imodel.add(MaxPooling2D(pool_size=(2, 2)))
-    imodel.add(Dropout(0.25))
-    imodel.add(Flatten())
-    return imodel
-'''
-
 def sentence_distance(y_true, y_pred):
     return K.sqrt(K.sum(K.square(K.abs(y_true-y_pred)),axis=1,keepdims=True))
         
@@ -111,7 +95,7 @@ def model_resnet_endonehot(CAPTION_LEN):
     imodel.add(res)
     imodel.add(Flatten())
     imodel.add(Dense(512,kernel_initializer='random_normal'))
-    imodel.add(Dropout(0.2))
+    imodel.add(Dropout(0.4))
     imodel.add(RepeatVector(CAPTION_LEN + 1))
     
     imodel.summary()
