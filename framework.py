@@ -182,7 +182,7 @@ def train_generator(lst):
     bs=state['batch_size']
     steps_per_epoch = len(lst.keys())/bs
     dg = data_generator(lst,bs, start=state['batchOffset'], isTrainSet =  True)
-    vdg = data_generator(lst,bs, False)
+    vddg = data_generator(lst,bs, False).next()
     #print dg.next()
     #print vdg.next()
     print "Starting to fit"
@@ -193,7 +193,7 @@ def train_generator(lst):
     #    #print len(data[1])
     #    #assert len(data[1]) == bs
     # validation_data=vdg, validation_steps=1,
-    model.fit_generator(dg, steps_per_epoch=steps_per_epoch, epochs=MX, verbose=1,  initial_epoch=0, callbacks=callbacklist)
+    model.fit_generator(dg, steps_per_epoch=steps_per_epoch, epochs=MX, verbose=1,validation_data=vddg, initial_epoch=0, callbacks=callbacklist)
 
 def wordFromOutModel(embWord):
     # Return (word,acc_mertrics)
@@ -244,12 +244,14 @@ def predict_model(lst,_ids):
     
 def predict(lst,_ids):
     if type(_ids) == type(0):
-        l = os.listdir(DIR_IMAGES)
+        #l = os.listdir(DIR_IMAGES)
         cnt = _ids
         _ids = []
+        #for j in range(cnt):
+        #    _ids.append(random.choice(l))
+        #_ids = [int(fn.split("_")[-1].split(".")[0]) for fn in _ids]
         for j in range(cnt):
-            _ids.append(random.choice(l))
-        _ids = [int(fn.split("_")[-1].split(".")[0]) for fn in _ids]
+            _ids.append(random.choice(lst.keys()[-100:]))
     predict_model(lst,_ids)
 
 def run():

@@ -99,8 +99,8 @@ def model_vgg_tanh_endglove(CAPTION_LEN):
 def model_resnet_endonehot(CAPTION_LEN):
     print "Creating Model with Vocab Size :  %d " % VOCAB_SIZE[0]
     cmodel  = Sequential()
-    cmodel.add(LSTM(256, input_shape=(CAPTION_LEN+1,OUTDIM_EMB ), return_sequences=True))
-    cmodel.add(TimeDistributed(Dense(512)))
+    cmodel.add(LSTM(256, input_shape=(CAPTION_LEN+1,OUTDIM_EMB ), return_sequences=True,kernel_initializer='random_normal'))
+    cmodel.add(TimeDistributed(Dense(512,kernel_initializer='random_normal')))
     cmodel.add(TimeDistributed(Dropout(0.2)))
     cmodel.summary()
     
@@ -110,7 +110,7 @@ def model_resnet_endonehot(CAPTION_LEN):
     imodel = Sequential()
     imodel.add(res)
     imodel.add(Flatten())
-    imodel.add(Dense(512,activation='relu'))
+    imodel.add(Dense(512,kernel_initializer='random_normal'))
     imodel.add(Dropout(0.2))
     imodel.add(RepeatVector(CAPTION_LEN + 1))
     
@@ -119,7 +119,7 @@ def model_resnet_endonehot(CAPTION_LEN):
     model = Sequential()
     model.add(Merge([cmodel,imodel],mode='concat'))
     model.add(TimeDistributed(Dropout(0.2)))
-    model.add(LSTM(1024,return_sequences=True))#,kernel_initializer='random_normal'))
+    model.add(LSTM(1024,return_sequences=True, kernel_initializer='random_normal'))
     model.add(TimeDistributed(Dense(VOCAB_SIZE[0],kernel_initializer='random_normal')))
     model.add(Activation('softmax'))
     optimizer = RMSprop(lr=0.001, rho=0.9, epsilon=1e-8, decay=0)
