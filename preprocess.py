@@ -413,17 +413,24 @@ def data_generator(lst, batch_size, start=0, isTrainSet = True):
         return
     # Training Data
     maxSequenceLength = countTrain*(countTrain+1)/2
-    cbatch = 0
-    batchId = 0
+    cbatch = 1
+    batchId = 1
+    iterBatch = 0
 
     for it in range(maxSequenceLength):
-        cbatch += 1
-        batchId += 1
-        if batchId -1 == countTrain:
+        if batchId == cbatch:
             batchId = 1  
-        if cbatch<=start:
+            cbatch *= 2
+            if cbatch > countTrain:
+                cbatch = countTrain
+        else:
+            batchId += 1
+
+        iterBatch+=1
+        if iterBatch<=start:
             continue
-        idlst = lst.keys()[(batchId-1)*batch_size:batchId*batch_size]
+        idlst = lst.keys()[(batchId-1)*batch_size:(batchId)*batch_size]
+        print "Batch Id %d Loaded" % (batchId-1)
         yield datas_from_ids(idlst,lst)
     return
 

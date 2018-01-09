@@ -150,8 +150,9 @@ def train(lst):
         flushLogEpoch()
 
 lastloss = str('inf')
+batchDoneCounter = 0
 class ModelGeneratorCallback(callbacks.Callback):
- 
+    
     def on_epoch_end(self, epoch, logs={}):
         print "Epoch %d End " % epoch
         state['epochs']-=1
@@ -170,7 +171,10 @@ class ModelGeneratorCallback(callbacks.Callback):
         epochLogHistory.append([batch,loss,acc,valloss,valacc])
         #print str(logs)
         state['batchOffset'] += 1
-        if state['batchOffset'] % state['saveAtBatch'] == 0:
+        global batchDoneCounter
+        batchDoneCounter += 1
+        print "Batch Done %d" % batchDoneCounter
+        if batchDoneCounter % state['saveAtBatch'] == 0:
             print "Preparing To Save"
             savestate()
             flushLogEpoch()
@@ -275,8 +279,8 @@ def run():
         predict(lst,[int(x) for x in sys.argv[2].split(",")])
     elif len(sys.argv)== 3 and '-prandom' == sys.argv[1]:
         predict(lst,int(sys.argv[2]))
-    elif len(sys.argv)== 4 and '-ptest' == sys.argv[1]:
-        predict_test(lst,sys.argv[2],int(sys.argv[3]))
+    #elif len(sys.argv)== 4 and '-ptest' == sys.argv[1]:
+    #    predict_test(lst,sys.argv[2],int(sys.argv[3]))
     else:
         print "Invalid Argument"
 if __name__ == '__main__':
