@@ -2,11 +2,12 @@ import os, urllib
 import json
 import urlparse
 import time
+import shutil
 
 class VideoHandler:
     fname_offset = "VideoDataset"
     fname_train = "videodatainfo_2017.json"
-    SLEEPTIME = 30
+    SLEEPTIME = 300
     STHRES = 10*1024
     
     def __init__(self, maindir, fname):
@@ -18,7 +19,10 @@ class VideoHandler:
         self.captions = dict()
         for sen in self.data['sentences']:
             self.captions[self.stringIdToInt(sen['video_id'])] = sen['caption']
-            
+
+    def getCaptionData(self):
+        return self.captions
+
     def stringIdToInt(self,sid):
         assert(sid[:5]=='video')
         return int(sid[5:])
@@ -48,7 +52,7 @@ class VideoHandler:
         sfname = "%s/%d.mp4" % (self.vdir, _id)
         if os.path.exists(sfname):
             print "Video Id [%d] Already Downloaded" % _id
-            return
+            return sfname
         youtubeId = self.getYoutubeId(url)
         turl = "curl 'http://hesetube.com/download.php?id=%s'" % (youtubeId)
         durl = "http://hesetube.com/video/%s.mp4?start=%f&end=%f" % (youtubeId, stime, etime) 
@@ -60,15 +64,34 @@ class VideoHandler:
             print "Video Id [%d] Downloaded : %s " % (_id, youtubeId)
         fs = os.path.getsize(sfname)
         if fs < VideoHandler.STHRES:
+            print "Crosscheck failed, File Size : %d" % fs
             with open(self.logfile,"a") as f:
                 f.write("Crosscheck file %d, %s with size %d\n" % (_id, youtubeId, fs))
             os.remove(sfname)
             open(sfname,'a').close()
-        self.takebreak()
+            self.takebreak()
+            return None
+        else:
+            self.takebreak()
+            return sfname
 
     def takebreak(self):
         time.sleep(VideoHandler.SLEEPTIME)
 
+    def get_frames(self,_id):
+        sfname = downloadVideo(_id)
+        if sfname == None:
+            return None
+        edir = "%s/%s" % (self.vdir, 'extract')
+        if os.path.exists(edir):
+            shutil.rmtree(edir)
+        os.mkdir(edir)
+        cmd = "ffmpeg -i %s -vf fps=%d -s 224x224 %s/0_%%03d.jpg" % (sfname, 5, edir)
+        print cmd
+        os.system(cmd)
+        files = os.listdir(edir)
+        files = [("%s/%s"%(edir,f)) for f in files]
+        return files
 
 def autodownload():
     vHandler = VideoHandler("/home/gagan.cs14/btp/",VideoHandler.fname_train)
