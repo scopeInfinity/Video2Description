@@ -222,7 +222,10 @@ def build_image_caption_pair():
 def imageToVec(_id):
     NEED_W = 224
     NEED_H = 224
-    fname = get_image_fname(_id)
+    if type("")==type(_id):
+        fname = _id
+    else:
+        fname = get_image_fname(_id)
     #afname = DIR_IMAGESP + fname.split('/')[-1] + '.pickle'
     #if os.path.exists(afname):
     #    with open(afname,'r') as f:

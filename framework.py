@@ -246,6 +246,31 @@ def predict_model(lst,_ids):
         print [WordToWordDistance(a,b) for a,b in zip(strCap[j],actualC)]
 
     
+def predict_model_direct(lst,fnames):
+    imgVecs = np.array([imageToVec(f) for f in fnames])
+    print "Predicting for Image %s " % fnames
+    l = 0
+    cnt = len(imgVecs)
+    _capS = np.array([ [word2embd(ENG_SOS)] + ([word2embd(ENG_NONE)] * CAPTION_LEN) ] * cnt)
+    print np.shape(_capS)
+    strCap = [""]*cnt
+    #CAPTION_LEN = 2
+    while l < CAPTION_LEN:
+        _newCapS = model.predict([_capS,imgVecs])
+        _newWord = [newCapS[l] for newCapS in _newCapS]
+        print "Got Update Shape %s " % str(np.shape(_newWord))
+        for (j,newWordE) in enumerate(_newWord):
+            newWord,metrics = wordFromOutModel(newWordE)
+            _capS[j][l+1] = wordToEncode(newWord)
+            print "NWord %s\tMetrics= %f" % (newWord,metrics)
+            strCap[j] = "%s %s" % (strCap[j],newWord)
+            print strCap[j]
+        l+=1
+
+    for j,out in enumerate(strCap):
+        print "eog %s" % (fnames[j])
+        print "Observed : %s " % strCap[j]
+
 def predict(lst,_ids):
     if type(_ids) == type(0):
         #l = os.listdir(DIR_IMAGES)
@@ -265,9 +290,9 @@ def isImageExtension(fname):
     return False
 
 def predict_test(lst,dirpath,mxc):
-    images = [img for img in os.listdir(dirpath) if isImageExtension(img)][0:mxc]
+    images = ["%s/%s" % (dirpath,img) for img in os.listdir(dirpath) if isImageExtension(img)][0:mxc]
     print "Predicting for %s" % str(images)
-    predict_model(lst,images)
+    predict_model_direct(lst,images)
 
 def run():
     build_gloveVocab() 
@@ -279,8 +304,8 @@ def run():
         predict(lst,[int(x) for x in sys.argv[2].split(",")])
     elif len(sys.argv)== 3 and '-prandom' == sys.argv[1]:
         predict(lst,int(sys.argv[2]))
-    #elif len(sys.argv)== 4 and '-ptest' == sys.argv[1]:
-    #    predict_test(lst,sys.argv[2],int(sys.argv[3]))
+    elif len(sys.argv)== 4 and '-ptest' == sys.argv[1]:
+        predict_test(lst,sys.argv[2],int(sys.argv[3]))
     else:
         print "Invalid Argument"
 if __name__ == '__main__':
