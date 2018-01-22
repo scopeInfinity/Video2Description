@@ -39,6 +39,16 @@ class VideoHandler:
                     vfiles.append(int(f[:-4]))
         return vfiles
 
+    def getTrainingIds(self):
+        pass
+
+    def getValidationIds(self):
+        pass
+
+    def getTestIds(self):
+        pass
+
+
     def getYoutubeId(self,url):
         query = urlparse.parse_qs(urlparse.urlparse(url).query)
         print query
@@ -79,7 +89,7 @@ class VideoHandler:
         time.sleep(VideoHandler.SLEEPTIME)
 
     def get_frames(self,_id):
-        sfname = downloadVideo(_id)
+        sfname = self.downloadVideo(_id)
         if sfname == None:
             return None
         edir = "%s/%s" % (self.vdir, 'extract')

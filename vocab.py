@@ -11,10 +11,11 @@ class Vocab:
     GLOVE_FILE = 'glove/glove.6B.100d.txt'
     OUTDIM_EMB = 100
     WORD_MIN_FREQ = 5
+    VOCAB_SIZE = 1456
+    CAPTION_LEN = 15
 
-    def __init__(self,data,data_dir,working_dir,vocab_size = 1456):
+    def __init__(self,data,data_dir,working_dir):
         # data = dict(id => captions)
-        self.vocab_size = vocab_size
         embeddingI = "%s/glove.dat" % (working_dir)
         glove_file = "%s/%s" % (data_dir, Vocab.GLOVE_FILE)
         self.vocab_file = "%s/vocab.dat" % (working_dir)
@@ -86,8 +87,42 @@ class Vocab:
         self.word2ind = dict()
         for i,w in enumerate(self.ind2word):
             self.word2ind[w]=i
-        assert len(self.ind2word) == self.vocab_size
+        assert len(self.ind2word) == Vocab.VOCAB_SIZE
 
+    def get_filteredword(self,w):
+        if w in self.word2ind.keys():
+            return w
+        return self.specialWords['EXTRA']
+
+    def fit_caption_tokens(self,tokens,length,addPrefix,addSuffix):
+        tok = []
+        tokens = tokens[0:length]
+        if addPrefix:
+            tok.append(self.specialWords['START'])
+        tok.extend(tokens)
+        for i in range(length-len(tokens)):
+            tok.append(self.specialWords['NONE'])
+        if addSuffix:
+            tok.append(self.specialWords['END'])
+        return tokens
+        
+    def onehot_word(self,w):
+        encode = [0] * Vocab.VOCAB_SIZE
+        encode[self.word2ind[w]] = 1
+        return encode
+        
+    def get_caption_encoded(self,caption,glove):
+        tokens = caption_tokenize(caption)
+        tokens = self.fit_caption_tokens(tokens, Vocab.CAPTION_LEN, addPrefix, addSuffix)
+        tokens = [self.get_filteredword(x) for x in tokens]
+        if glove: 
+            return [self.wordEmbedding[x] for x in tokens]
+        else:
+            return [self.onehot_word(x)] for x in tokens]
+
+    def get_caption_from_indexs(self,indx):
+        s = ' '.join([self.ind2word[x] for x in indx])
+        return s
         
 def vocabBuilder(datadir, workdir):
     vHandler = VideoHandler(datadir,VideoHandler.fname_train)
