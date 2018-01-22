@@ -5,6 +5,26 @@ Branch : [VideoCaption](https://github.com/scopeInfinity/Video2Description/tree/
 
 Status : Ongoing
 
+### Data Directory
+File | Reference
+--- | --- 
+*/path/to/data_dir/VideoDataset/videodatainfo_2017.json* | http://ms-multimedia-challenge.com/2017/dataset
+*/path/to/data_dir/VideoDataset/videos/[0-9]+.mp4* | Download videos based on above dataset
+*/path/to/data_dir/glove/glove.6B.100d.txt* | https://nlp.stanford.edu/projects/glove/
+
+### Working Directory
+File | Content
+--- | --- 
+*/path/to/working_dir/glove.dat* | Pickle Dumped Glove Embedding
+*/path/to/working_dir/vocab.dat* | Pickle Dumped Vocabulary Words
+  
+### Download Dataset
+* Execute `python videohandler.py` from *VideoDataset* Directory
+  
+  
+  
+
+
 # Image Captioning
 Generate caption for the given images
 
