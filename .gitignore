@@ -1,3 +1,16 @@
+# Local Files to ignore
+display
+
+# Backup Files
+*~
+*#
+.#*
+
+# Dynamically Generated Files
+vocab.dat
+glove.dat
+log.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

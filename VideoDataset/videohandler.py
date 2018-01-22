@@ -14,7 +14,7 @@ class VideoHandler:
         self.fname = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, fname)
         self.vdir = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, "videos")
         self.logfile = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, "log.txt")
-        with open(fname) as f:
+        with open(self.fname) as f:
             self.data = json.load(f)
         self.captions = dict()
         for sen in self.data['sentences']:
