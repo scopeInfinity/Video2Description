@@ -1,4 +1,5 @@
 import os
+import random
 from keras.preprocessing import image
 import numpy as np
 from logger import logger
@@ -28,8 +29,13 @@ class Preprocessor:
         x *= 2.
         return x
 
-    def videoToVec(self, _id):
-        fnames = self.vHandler.get_frames(_id)
+    '''
+    Either convert videos from ids or frame file names
+    '''
+    def videoToVec(self, _id = None, fnames = None):
+        assert (_id is None) ^ (fnames is None)
+        if fnames is None:
+            fnames = self.vHandler.get_frames(_id = _id)
         if fnames is None:
             return None
         content = []
@@ -37,17 +43,22 @@ class Preprocessor:
             content.append(self.imageToVec(fname))
         return content
 
+    def get_video_content(self, vfname):
+        fnames = self.vHandler.get_frames(sfname = vfname)
+        return self.videoToVec(fnames = fnames)
+
     def get_video_caption(self, _id):
         data = self.vHandler.getCaptionData()
         cur_caption = data[_id]
-        captionIn = self.vocab.get_caption_encoded(cur_caption, True)
-        captionOut = self.vocab.get_caption_encoded(cur_caption, False)
-        vid = videoToVec(_id)
+        captionIn = self.vocab.get_caption_encoded(cur_caption, True, True, False)
+        captionOut = self.vocab.get_caption_encoded(cur_caption, False, False, True)
+        vid = self.videoToVec(_id)
         if vid is None:
             return None
         return np.asarray([vid,captionIn,captionOut])
 
     def datas_from_ids(self, idlst):
+        log.debug("Loading Video/Captions for ids\n%s" % str(idlst))
         vids   = []
         capIn  = []
         capOut = []
@@ -58,7 +69,6 @@ class Preprocessor:
             capOut.append(_capOut)
             return [[np.asarray(capIn),np.asarray(vids)],np.asarray(capOut)]
  
-
     '''
     typeSet 0:Training dataset, 1: Validation dataset, 2: Test Dataset
     '''
@@ -72,9 +82,18 @@ class Preprocessor:
         else:
             assert False
         count = (len(ids))/batch_size
+        if start == -1:
+            start = random.randint(count)
         log.debug("Max Batches of type %d : %d " % (typeSet, count))
         assert count > 0
+        start = start % count
         while True:
             idlst = ids[start*batch_size:(start+1)*batch_size]
-            yield self.datas_from_ids(idlst)
+            data = self.datas_from_ids(idlst)
+            ndata = []
+            for d in data:
+                if d is not None:
+                    ndata.append(d)
+            if len(ndata) > 0:
+                yield ndata
             start = (start + 1)%count

@@ -4,310 +4,192 @@ from keras import callbacks
 import os, sys
 import numpy as np
 import csv
-#import preprocess
-from preprocess import CAPTION_LEN, ENG_SOS, ENG_EOS, ENG_EXTRA, ENG_NONE, DIR_IMAGES, OUTENCODINGGLOVE, GITBRANCHPREFIX, v_ind2word
-from preprocess import  embeddingIndexRef, imageToVec, word2embd, embdToWord, captionToVec, get_image_caption, build_vocab, build_dataset, build_gloveVocab, get_image_fname, word2embd, WordToWordDistance, wordToEncode, data_generator
-from preprocess import createDirs
+from vpreprocess import WORKING_DIR
+from vpreprocess import  Preprocessor
+from logger import logger
 from model import build_model
 
 
-CLABEL= 'res_onehot_gen'
-state = {'epochs':1000,'startEpoch':0,'batchOffset':0,'batch_size':30,'val_batch':100, 'saveAtBatch':2}
+CLABEL= 'res'
+state = {'epochs':1000,'start_batch':0,'batch_size':5, 'saveAtBatch':2}
 
-MFNAME= GITBRANCHPREFIX+'model_'+CLABEL+'.dat'
-_MFNAME= GITBRANCHPREFIX+'model_'+CLABEL+'.dat.bak'
-ELOGS = GITBRANCHPREFIX+CLABEL + "_logs.txt"
-STATE = GITBRANCHPREFIX+'state_'+CLABEL+'.txt'
-FRESTART = GITBRANCHPREFIX+'restart'
-model = None
+MFNAME= WORKING_DIR+'/model_'+CLABEL+'.dat'
+_MFNAME= WORKING_DIR+'/model_'+CLABEL+'.dat.bak'
+ELOGS = WORKING_DIR+'/'+CLABEL + "_logs.txt"
+STATE = WORKING_DIR+'/state_'+CLABEL+'.txt'
+FRESTART = WORKING_DIR+'/restart'
 
-epochLogHistory = []
-def flushLogEpoch():
-    global epochLogHistory
-    if not os.path.exists(ELOGS):
-        with open(ELOGS,"w") as f:
-            wr = csv.writer(f)
-    if len(epochLogHistory)>0:
-        with open(ELOGS,"ab") as f:
-            wr = csv.writer(f)
-            #wr.writerow([])
-            for h in epochLogHistory:
-                wr.writerow(h)
-            epochLogHistory = []
-            print "ELogs written"
+class TrainingLogs:
+    def __init__(self):
+        self.epochLogHistory = []
     
-def loadstate():
-    global model
-    global state
-    if os.path.exists(MFNAME):
-        model.load_weights(MFNAME)
-        print "Weights Loaded"
-    if os.path.exists(STATE):
-        with open(STATE) as f:
-            state = json.load(f)
-            print "State Loaded"
+    def flush(self):
+        if not os.path.exists(ELOGS):
+            with open(ELOGS,"w") as f:
+                wr = csv.writer(f)
+        if len(self.epochLogHistory) > 0:
+            with open(ELOGS,"a") as f:
+                wr = csv.writer(f)
+            for h in self.epochLogHistory:
+                wr.writerow(h)
+            self.epochLogHistory = []
+            logger.debug("Training Logs flushed")
 
+    def add(self,cont):
+        MXCol = 15
+        dat = [-1] * 15
+        for i in range(min(MXCol,len(cont))):
+            dat[i]=cont[i]
+        self.epochLogHistory.append(dat)
 
-def savestate(epoch='xx'):
-    global model
+class ModelGeneratorCallback(callbacks.Callback):
+
+    def __init__(self, state, tlogs):
+        self.state = state
+        self.lastloss = str('inf')
+        self.tlogs = tlogs
+        self.batchDoneCounter = 0
+
+    def on_epoch_end(self, epoch, logs={}):
+        logger.debug("Epoch %d End " % epoch)
+        self.state['epochs']-=1
+        self.state['batchOffset'] = 0
+        self.state.save(epoch=("%03d_loss_%s" % (self.state['epochs'],str(self.lastloss))))
+        return
+
+    def on_batch_end(self, batch, logs={}):
+        logger.debug("Batch %d ends" % batch)
+        valloss = -1
+        valacc  = -1
+        loss = logs['loss']
+        acc  = logs['acc']
+        self.lastloss = loss
+        self.tlogs.add([batch,loss,acc,valloss,valacc])
+        self.state['start_batch'] += 1
+        self.batchTrainedCounter += 1
+        logger.debug("Batches Trained : %d" % self.batchTrainedCounter)
+        if batchTrainedCounter % state['saveAtBatch'] == 0:
+            logger.debug("Preparing To Save")
+            self.state.save()
+            self.tlogs.flush()
+        
+class Framework():
+    
+    def __init__(self):
+        self.state = None          # Init in self.load()
+        self.tlogs = TrainingLogs()
+        self.model = None          # Init in self.build_model()
+        self.preprocess = Preprocessor()
+        self.build_model()
+        self.load()
+
+    def buildmodel(self):
+        vocab = self.preprocess.vocab
+        self.model = build_model(vocab.CAPTION_LEN, vocab.VOCAB_SIZE)
+
+    def load(self):
+        if os.path.exists(MFNAME):
+            self.model.load_weights(MFNAME)
+            logger.debug("Weights Loaded")
+        if os.path.exists(STATE):
+            with open(STATE) as f:
+                self.state = json.load(f)
+                logger.debug("State Loaded")
+
+    def save(self, epoch='xx'):
     try:
         pass
     finally:
         tname = _MFNAME
-        model.save_weights(tname)
+        self.model.save_weights(tname)
         fname = MFNAME
         if epoch != 'xx':
              fname = MFNAME + '_' + epoch
         shutil.copy2(tname,fname)
         os.remove(tname)
-        print "Weights Saved"
+        logger.debug("Weights Saved")
         with open(STATE,'w') as f:
-            json.dump(state,f)
-            print "State Saved"
+            json.dump(self.state,f)
+            logger.debug("State Saved")
 
-class ModelCallback(callbacks.Callback):
- 
-    def on_epoch_end(self, epoch, logs={}):
-        #state['epochs']-=1
-        #savestate()
-        print logs.keys()
-        epochLogHistory.append([epoch,logs['acc'],logs['loss'],logs['val_acc'],logs['val_loss'],logs['sentence_distance'],logs['val_sentence_distance']])
-        return
+    def train_generator(self):
+        epochs = state['epochs']
+        bs=state['batch_size']
+        steps_per_epoch = 1000
+        logger.debug("Epochs Left : %d " % epochs)
+        logger.debug("Batch Size  : %d " % bs)
 
-def loadmodel():
-    global model
-    model = build_model(CAPTION_LEN)
-    loadstate()
+        train_dg = data_generator(bs, start=state['start_batch'], typeSet = 0)
+        val_ds = data_generator(bs, -1, typeSet = 1).next()
+        logger.debug("Attemping to fit")
+        callbacklist = [ModelGeneratorCallback()]
+        self.model.fit_generator(train_dg, steps_per_epoch=steps_per_epoch, epochs=epochs, verbose=1,validation_data=val_ds, initial_epoch=0, callbacks=callbacklist)
 
-def prepare_feedkeras(trainset):
-    trainX1 = []
-    trainX2 = []
-    trainY = []
-    i = 0
-    # Glove
-    we_sos = [word2embd(ENG_SOS)]
-    we_eos = [word2embd(ENG_EOS)]
-    # One Hot
-    we_eosOH = [wordToEncode(ENG_EOS,encodeType="onehot")]
-    #print we_sos
-    #print we_eos
-    print "Arranging Trainset"
-    while i < len(trainset):
-        image = trainset[i][0]
-        # Glove
-        capS =  we_sos + trainset[i][1] 
-        outWord = None
-        # Chose according to out embedding
-        if OUTENCODINGGLOVE:
-            outWord = trainset[i][1]
-        else:
-            # one hot
-            outWord = trainset[i][2]
-        capE =  outWord + we_eosOH
+    def predict_model_direct(self, fnames):
+        videoVecs =np.array([self.preprocess.get_video_content(f) for f  in fnames])
+        count = len(fnames)
+        for video in videoVecs:
+            assert video is not None
+        log.debug("Predicting for Videos :- \n\t%s " % fnames)
+        l = 0
+        vocab = self.preprocess.vocab
+        embeddedCap = np.array([vocab.get_caption_encoded(vocab.specialWords['START'])] * count)
+        logger.debug("Shape of Caption : %s", str(np.shape(embeddedCap)))
+        stringCaption = [[] * count]
+        while l < vocab.CAPTION_LEN:
+            newOneHotCap = model.predict([embeddedCap, videoVec])
+            for i,newOneHotWord in enumerate(newOneHotCap):
+                nword = vocab.word_fromonehot(newOneHotWord)
+                stringCaption[i].append( nword )
+                if l + 1 != vocab.CAPTION_LEN:
+                    embeddedCap[i][l+1] = vocab.wordEmbedding[nword]
+            print [' '.join(cap) for cap in stringCaption]
+        logger.debug("Prediction Complete")
+        return stringCaption
 
-        #print "%d ; %d " %(len(capS),len(capE))
-        trainX1.append( capS )
-        trainX2.append( image )
-        trainY.append( capE )
-        if False and i==0:
-            print "capS %s " % capS
-            print "capE %s " % capE
-            print "Image %s" % str(image)
+    def predict_model(self, _ids = None, fnames = None):
+        assert (_ids is None) ^ (fnames is None)
+        vHandler = self.preprocess.vHandler
+        if fnames is None:
+            fnames = []
+            for _id in _ids:
+                logger.debug("Obtaining fname for %d" % _id)
+                fname = vHandler.downloadVideo(_id)
+                if fname is None:
+                    logger.info("Ignoring %d video " % _id)
+                else:
+                    fnames.append(fname)
+        predictions = self.predict_model_direct(fnames)
+        for i in range(len(fnames)):
+            logger.debug("For eog %s" % fnames[i]))
+            predictedCaption = ' '.join(predictions[i]
+            logger.debug("Predicted Caption : %s" % predictedCaption )
+            if _ids is not None:
+                actualCaption = vHandler.getCaptionData()[_ids[i]]
+                logger.debug("Actual Caption : %s" % actualCaption )
+                                        
+    def isVideoExtension(self, fname):
+        for ext in ['mp4','jpeg','png']:
+            if fname.endswith('.'+ext):
+                return True
+        return False
 
-        i+=1
-    trainX = [np.array( trainX1 ), np.array( trainX2 )]
-    trainY = np.array(trainY)
-    return (trainX,trainY)
+    def predict_test(self, dirpath, mxc):
+        videos = ["%s/%s" % (dirpath,vid) for img in os.listdir(dirpath) if self.isVideoExtension(vid)][0:mxc]
+        self.predict_model(fnames = videos)
 
-def train_model(trainvalset):
-    #print [x for x in train_generator(trainset)]
-    #return
-    #model.fit_generator(train_generator(trainset),steps_per_epoch=20,epochs=30,verbose=2)
-    (trainX,trainY) = prepare_feedkeras(trainvalset[0])
-    valset = prepare_feedkeras(trainvalset[1])
-    print "Attempt to Fit Data"
-    inEpochs = state['inepochs']
-    #print "Train X Shape %s " % str(np.shape(trainX))
-    print "Train Y Shape %s " % str(np.shape(trainY))
-
-    model.fit(x=trainX,y=trainY,batch_size=state['batch_size'],epochs=inEpochs, validation_data=valset, verbose=2, callbacks=[ModelCallback()])
-    print "Model Fit"
-
-def train(lst):
-    MX = state['epochs']
-    startIt = state['startOutEpoch']
-    
-    for it in range(startIt,MX):
-        if os.path.exists(FRESTART):
-            os.remove(FRESTART)
-            exit()
-        dataset = build_dataset(lst, state['super_batch'],state['val_batch'],outerepoch=it)
-        print "Outer Iteration %3d of %3d " % (it+1,MX)
-        train_model(dataset)
-        state['epochs']-=1
-        state['startOutEpoch'] = it+1
-        savestate()
-        flushLogEpoch()
-
-lastloss = str('inf')
-batchDoneCounter = 0
-class ModelGeneratorCallback(callbacks.Callback):
-    
-    def on_epoch_end(self, epoch, logs={}):
-        print "Epoch %d End " % epoch
-        state['epochs']-=1
-        state['batchOffset'] = 0
-        savestate(epoch=("%03d_loss_%s" % (state['epochs'],str(lastloss))))
-        return
-
-    def on_batch_end(self, batch, logs={}):
-        #print "Batch %d ends" % batch
-        loss = logs['loss']
-        acc  = logs['acc']
-        global lastloss
-        lastloss = loss
-        valloss = 0#logs['val_loss']
-        valacc  = 0#logs['val_acc']
-        epochLogHistory.append([batch,loss,acc,valloss,valacc])
-        #print str(logs)
-        state['batchOffset'] += 1
-        global batchDoneCounter
-        batchDoneCounter += 1
-        print "Batch Done %d" % batchDoneCounter
-        if batchDoneCounter % state['saveAtBatch'] == 0:
-            print "Preparing To Save"
-            savestate()
-            flushLogEpoch()
-
-        
-
-def train_generator(lst):
-    MX = state['epochs']
-    bs=state['batch_size']
-    steps_per_epoch = len(lst.keys())/bs
-    dg = data_generator(lst,bs, start=state['batchOffset'], isTrainSet =  True)
-    vddg = data_generator(lst,bs, False).next()
-    #print dg.next()
-    #print vdg.next()
-    print "Starting to fit"
-    callbacklist = [ModelGeneratorCallback()]
-    #for i in range(steps_per_epoch):
-    #    #print "loading batch %d" % i
-    #    #data = dg.next()
-    #    #print len(data[1])
-    #    #assert len(data[1]) == bs
-    # validation_data=vdg, validation_steps=1,
-    model.fit_generator(dg, steps_per_epoch=steps_per_epoch, epochs=MX, verbose=1,validation_data=vddg, initial_epoch=0, callbacks=callbacklist)
-
-def wordFromOutModel(embWord):
-    # Return (word,acc_mertrics)
-    if OUTENCODINGGLOVE:
-        return embdToWord(embWord)
-    else:
-        # return argmax word
-        ind = np.argmax(embWord)
-        return (v_ind2word[ind], embWord[ind])
-
-def predict_model(lst,_ids):
-    imgVecs = np.array([imageToVec(_id) for _id in _ids])
-    fnames = [get_image_fname(_id) for _id in _ids]
-    for fname in fnames:
-        print "Predicting for Image %s " % fname
-    l = 0
-    cnt = len(_ids)
-    _capS = np.array([ [word2embd(ENG_SOS)] + ([word2embd(ENG_NONE)] * CAPTION_LEN) ] * cnt)
-    print np.shape(_capS)
-    strCap = [""]*cnt
-    #CAPTION_LEN = 2
-    while l < CAPTION_LEN:
-        _newCapS = model.predict([_capS,imgVecs])
-        _newWord = [newCapS[l] for newCapS in _newCapS]
-        print "Got Update Shape %s " % str(np.shape(_newWord))
-        for (j,newWordE) in enumerate(_newWord):
-            newWord,metrics = wordFromOutModel(newWordE)
-            _capS[j][l+1] = wordToEncode(newWord)
-            print "NWord %s\tMetrics= %f" % (newWord,metrics)
-            strCap[j] = "%s %s" % (strCap[j],newWord)
-            print strCap[j]
-        l+=1
-        
-        #if newWord == ENG_EOS:
-        #    break
-        #for j in range(cnt):
-        #    capS[j] = "%s %s"
-        #capS = "%s %s" % (capS, newWord)
-        #print newCapS
-
-    for j,out in enumerate(strCap):
-        print "eog %s" % (fnames[j])
-        print "Observed : %s " % strCap[j]
-        actualC = lst[_ids[j]]
-        print "Actual   : %s " % actualC
-        print [WordToWordDistance(a,b) for a,b in zip(strCap[j],actualC)]
-
-    
-def predict_model_direct(lst,fnames):
-    imgVecs = np.array([imageToVec(f) for f in fnames])
-    print "Predicting for Image %s " % fnames
-    l = 0
-    cnt = len(imgVecs)
-    _capS = np.array([ [word2embd(ENG_SOS)] + ([word2embd(ENG_NONE)] * CAPTION_LEN) ] * cnt)
-    print np.shape(_capS)
-    strCap = [""]*cnt
-    #CAPTION_LEN = 2
-    while l < CAPTION_LEN:
-        _newCapS = model.predict([_capS,imgVecs])
-        _newWord = [newCapS[l] for newCapS in _newCapS]
-        print "Got Update Shape %s " % str(np.shape(_newWord))
-        for (j,newWordE) in enumerate(_newWord):
-            newWord,metrics = wordFromOutModel(newWordE)
-            _capS[j][l+1] = wordToEncode(newWord)
-            print "NWord %s\tMetrics= %f" % (newWord,metrics)
-            strCap[j] = "%s %s" % (strCap[j],newWord)
-            print strCap[j]
-        l+=1
-
-    for j,out in enumerate(strCap):
-        print "eog %s" % (fnames[j])
-        print "Observed : %s " % strCap[j]
-
-def predict(lst,_ids):
-    if type(_ids) == type(0):
-        #l = os.listdir(DIR_IMAGES)
-        cnt = _ids
-        _ids = []
-        #for j in range(cnt):
-        #    _ids.append(random.choice(l))
-        #_ids = [int(fn.split("_")[-1].split(".")[0]) for fn in _ids]
-        for j in range(cnt):
-            _ids.append(random.choice(lst.keys()[-100:]))
-    predict_model(lst,_ids)
-
-def isImageExtension(fname):
-    for ext in ['jpg','jpeg','png']:
-        if fname.endswith('.'+ext):
-            return True
-    return False
-
-def predict_test(lst,dirpath,mxc):
-    images = ["%s/%s" % (dirpath,img) for img in os.listdir(dirpath) if isImageExtension(img)][0:mxc]
-    print "Predicting for %s" % str(images)
-    predict_model_direct(lst,images)
-
-def run():
-    build_gloveVocab() 
-    lst = build_vocab()
-    loadmodel()
-    if len(sys.argv) < 3:
-        train_generator(lst)
-    elif len(sys.argv)== 3 and '-predict' == sys.argv[1]:
-        predict(lst,[int(x) for x in sys.argv[2].split(",")])
-    elif len(sys.argv)== 3 and '-prandom' == sys.argv[1]:
-        predict(lst,int(sys.argv[2]))
-    elif len(sys.argv)== 4 and '-ptest' == sys.argv[1]:
-        predict_test(lst,sys.argv[2],int(sys.argv[3]))
+def main(self):
+    framework = Framework()                                            
+    if len(sys.argv) == 1 and '-train' == sys.argv[1]:
+        framework.train_generator()
+    elif len(sys.argv) == 3 and '-p_ids' == sys.argv[1]:
+        framework.predict_model(_ids = [int(x) for x in sys.argv[2].split(",")])
+    elif len(sys.argv) == 3 and '-p_names' == sys.argv[1]:
+        framework.predict_model(fnames = sys.argv[2].split(","))
+    elif len(sys.argv) == 4 and '-ptest' == sys.argv[1]:
+        framework.predict_test(lst,sys.argv[2],int(sys.argv[3]))
     else:
         print "Invalid Argument"
+
 if __name__ == '__main__':
-    createDirs()
-    run()
+    main()

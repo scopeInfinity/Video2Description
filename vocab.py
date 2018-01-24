@@ -72,6 +72,8 @@ class Vocab:
             x = {}
             for cap in captions:
                 for w in caption_tokenize(cap):
+                    if w not in self.wordEmbedding.keys():
+                        pass
                     if w not in x.keys():
                         x[w]=1
                     else:
@@ -110,8 +112,12 @@ class Vocab:
         encode = [0] * Vocab.VOCAB_SIZE
         encode[self.word2ind[w]] = 1
         return encode
+    
+    def word_fromonehot(self, onehot):
+        index = np.argmax(onehot)
+        return self.ind2word[index]
         
-    def get_caption_encoded(self,caption,glove):
+    def get_caption_encoded(self,caption,glove, addPrefix, addSuffix):
         tokens = caption_tokenize(caption)
         tokens = self.fit_caption_tokens(tokens, Vocab.CAPTION_LEN, addPrefix, addSuffix)
         tokens = [self.get_filteredword(x) for x in tokens]

@@ -7,10 +7,11 @@ import shutil
 class VideoHandler:
     fname_offset = "VideoDataset"
     fname_train = "videodatainfo_2017.json"
-    SLEEPTIME = 300
+    SLEEPTIME = 120
     STHRES = 10*1024
     
     def __init__(self, maindir, fname):
+        self.splitTrainValidTest = [90,5,5] # Out of 100
         self.fname = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, fname)
         self.vdir = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, "videos")
         self.logfile = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, "log.txt")
@@ -39,15 +40,21 @@ class VideoHandler:
                     vfiles.append(int(f[:-4]))
         return vfiles
 
+    def filterMod100(self, lst, _min, _max):
+        ids = []
+        for i,_id in enumerate(lst):
+            if (i%100)>=_min and (i%100)<_max:
+                ids.append(_id)
+        return ids
+        
     def getTrainingIds(self):
-        pass
+        return self.filterMod100(self.getDownloadedIds(), 0, self.splitTrainValidTest[0])
 
     def getValidationIds(self):
-        pass
+        return self.filterMod100(self.getDownloadedIds(), self.splitTrainValidTest[0], self.splitTrainValidTest[0]+self.splitTrainValidTest[1])
 
     def getTestIds(self):
-        pass
-
+        return self.filterMod100(self.getDownloadedIds(), self.splitTrainValidTest[0]+self.splitTrainValidTest[1], 100)
 
     def getYoutubeId(self,url):
         query = urlparse.parse_qs(urlparse.urlparse(url).query)
@@ -88,9 +95,14 @@ class VideoHandler:
     def takebreak(self):
         time.sleep(VideoHandler.SLEEPTIME)
 
-    def get_frames(self,_id):
-        sfname = self.downloadVideo(_id)
-        if sfname == None:
+    '''
+    Either frames of video from id or vfname
+    '''
+    def get_frames(self,_id = None, sfname = None):
+        assert (_id is None) ^ (sfname is None)
+        if sfname is None:
+            sfname = self.downloadVideo(_id)
+        if sfname is None:
             return None
         edir = "%s/%s" % (self.vdir, 'extract')
         if os.path.exists(edir):
