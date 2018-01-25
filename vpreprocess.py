@@ -35,7 +35,7 @@ class Preprocessor:
     def videoToVec(self, _id = None, fnames = None):
         assert (_id is None) ^ (fnames is None)
         if fnames is None:
-            fnames = self.vHandler.get_frames(_id = _id)
+            fnames = self.vHandler.get_frames(_id = _id, logs = False)
         if fnames is None:
             return None
         content = []
@@ -44,6 +44,7 @@ class Preprocessor:
         return content
 
     def get_video_content(self, vfname):
+        print vfname
         fnames = self.vHandler.get_frames(sfname = vfname)
         return self.videoToVec(fnames = fnames)
 
@@ -58,7 +59,7 @@ class Preprocessor:
         return np.asarray([vid,captionIn,captionOut])
 
     def datas_from_ids(self, idlst):
-        log.debug("Loading Video/Captions for ids\n%s" % str(idlst))
+        logger.debug("\n Loading Video/Captions for ids : %s" % str(idlst))
         vids   = []
         capIn  = []
         capOut = []
@@ -83,8 +84,8 @@ class Preprocessor:
             assert False
         count = (len(ids))/batch_size
         if start == -1:
-            start = random.randint(count)
-        log.debug("Max Batches of type %d : %d " % (typeSet, count))
+            start = random.randint(0,count)
+        logger.debug("Max Batches of type %d : %d " % (typeSet, count))
         assert count > 0
         start = start % count
         while True:

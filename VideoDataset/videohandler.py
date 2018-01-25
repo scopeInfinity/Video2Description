@@ -61,14 +61,15 @@ class VideoHandler:
         print query
         return query['v'][0]
 
-    def downloadVideo(self,_id):
+    def downloadVideo(self, _id, logs = True):
         video = self.data['videos'][_id]
         url = video['url']
         stime = video['start time']
         etime = video['end time']
         sfname = "%s/%d.mp4" % (self.vdir, _id)
         if os.path.exists(sfname):
-            print "Video Id [%d] Already Downloaded" % _id
+            if logs:
+                print "Video Id [%d] Already Downloaded" % _id
             return sfname
         youtubeId = self.getYoutubeId(url)
         turl = "curl 'http://hesetube.com/download.php?id=%s'" % (youtubeId)
@@ -98,19 +99,23 @@ class VideoHandler:
     '''
     Either frames of video from id or vfname
     '''
-    def get_frames(self,_id = None, sfname = None):
+    def get_frames(self,_id = None, sfname = None, logs = True):
         assert (_id is None) ^ (sfname is None)
         if sfname is None:
-            sfname = self.downloadVideo(_id)
+            sfname = self.downloadVideo(_id, logs)
         if sfname is None:
             return None
         edir = "%s/%s" % (self.vdir, 'extract')
         if os.path.exists(edir):
             shutil.rmtree(edir)
         os.mkdir(edir)
-        cmd = "ffmpeg -i %s -vf fps=%d -s 224x224 %s/0_%%03d.jpg" % (sfname, 5, edir)
-        print cmd
-        os.system(cmd)
+        cmd = "ffmpeg -i %s -vf fps=%d -s 224x224 %s/0_%%03d.jpg &> /dev/null" % (sfname, 5, edir)
+        if logs:
+            print cmd
+        returnStatus = os.system(cmd)
+        if returnStatus != 0:
+            print "Extracting Failed : %s" % sfname
+            return None
         files = os.listdir(edir)
         files = [("%s/%s"%(edir,f)) for f in files]
         return files

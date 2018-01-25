@@ -1,5 +1,12 @@
+# Learning Session Files
+*_logs.txt
+model_*.dat
+state_*.txt
+
 # Local Files to ignore
 display
+*.mp4
+*.mp4_
 
 # Backup Files
 *~
