@@ -9,25 +9,25 @@ from logger import logger
 from model import build_model
 
 
-CLABEL = 'res'
-state_uninit = {'epochs':1000, 'start_batch':0, 'batch_size':1, 'saveAtBatch':2}
+CLABEL = 'res_t1'
+state_uninit = {'epochs':1000, 'start_batch':0, 'batch_size':100, 'saveAtBatch':50}
 
 MFNAME = WORKING_DIR+'/model_'+CLABEL+'.dat'
 _MFNAME = WORKING_DIR+'/model_'+CLABEL+'.dat.bak'
-ELOGS = WORKING_DIR+'/'+CLABEL + "_logs.txt"
 STATE = WORKING_DIR+'/state_'+CLABEL+'.txt'
 FRESTART = WORKING_DIR+'/restart'
 
 class TrainingLogs:
-    def __init__(self):
+    def __init__(self, prefix=""):
         self.epochLogHistory = []
+        self.fname = WORKING_DIR+'/'+CLABEL + "_" + prefix + "logs.txt"
 
     def flush(self):
-        if not os.path.exists(ELOGS):
-            with open(ELOGS, "w") as f:
+        if not os.path.exists(self.fname):
+            with open(self.fname, "w") as f:
                 wr = csv.writer(f)
         if len(self.epochLogHistory) > 0:
-            with open(ELOGS, "a") as f:
+            with open(self.fname, "a") as f:
                 wr = csv.writer(f)
                 for h in self.epochLogHistory:
                     wr.writerow(h)
@@ -43,18 +43,24 @@ class TrainingLogs:
 
 class ModelGeneratorCallback(callbacks.Callback):
 
-    def __init__(self, state, tlogs, framework):
+    def __init__(self, state, tlogs, elogs, framework):
         self.state = state
         self.lastloss = str('inf')
         self.tlogs = tlogs
+        self.elogs = elogs
         self.framework = framework
         self.batchTrainedCounter = 0
 
     def on_epoch_end(self, epoch, logs={}):
         logger.debug("Epoch %d End " % epoch)
         self.state['epochs']-=1
-        self.state['batchOffset'] = 0
-        self.framework.save(epoch=("%03d_loss_%s" % (self.state['epochs'],str(self.lastloss))))
+        loss = logs['loss']
+        acc  = logs['acc']
+        valloss = logs['val_loss']
+        valacc  = logs['val_acc']
+        self.elogs.add([loss, acc, valloss, valacc])
+        self.elogs.flush()
+        self.framework.save(epoch=("%03d_loss_%s" % (self.state['epochs'],str(valloss))))
         return
 
     def on_batch_end(self, batch, logs={}):
@@ -64,7 +70,8 @@ class ModelGeneratorCallback(callbacks.Callback):
         loss = logs['loss']
         acc  = logs['acc']
         self.lastloss = loss
-        self.tlogs.add([batch,loss,acc,valloss,valacc])
+        print "Keys Logger %s " % str(logs.keys())
+        self.tlogs.add([batch, loss, acc, valloss, valacc])
         self.state['start_batch'] += 1
         self.batchTrainedCounter += 1
         logger.debug("Batches Trained : %d" % self.batchTrainedCounter)
@@ -78,6 +85,7 @@ class Framework():
     def __init__(self):
         self.state = state_uninit
         self.tlogs = TrainingLogs()
+        self.elogs = TrainingLogs(prefix = "epoch_")
         self.model = None          # Init in self.build_model()
         self.preprocess = Preprocessor()
         self.build_model()
@@ -115,15 +123,16 @@ class Framework():
     def train_generator(self):
         epochs = self.state['epochs']
         bs = self.state['batch_size']
-        steps_per_epoch = 1000
+        steps_per_epoch = 100
+        validation_steps = 5
         logger.debug("Epochs Left : %d " % epochs)
         logger.debug("Batch Size  : %d " % bs)
 
         train_dg = self.preprocess.data_generator(bs, start=self.state['start_batch'], typeSet = 0)
-        val_ds = self.preprocess.data_generator(bs, -1, typeSet = 1).next()
+        val_dg = self.preprocess.data_generator(bs, -1, typeSet = 1)
         logger.debug("Attemping to fit")
-        callbacklist = [ModelGeneratorCallback(self.state, self.tlogs, self)]
-        self.model.fit_generator(train_dg, steps_per_epoch=steps_per_epoch, epochs=epochs, verbose=1,validation_data=val_ds, initial_epoch=0, callbacks=callbacklist)
+        callbacklist = [ModelGeneratorCallback(self.state, self.tlogs, self.elogs, self)]
+        self.model.fit_generator(train_dg, steps_per_epoch=steps_per_epoch, epochs=epochs, verbose=1,validation_data=val_dg, validation_steps=validation_steps, initial_epoch=0, callbacks=callbacklist)
 
     def predict_model_direct(self, fnames):
         videoVecs =np.array([self.preprocess.get_video_content(f) for f  in fnames])
