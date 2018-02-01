@@ -1,6 +1,6 @@
 # Learning Session Files
 *_logs.txt
-model_*.dat
+model_*.dat*
 state_*.txt
 
 # Local Files to ignore

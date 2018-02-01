@@ -3,18 +3,24 @@ import json
 import urlparse
 import time
 import shutil
+import argparse
 
 class VideoHandler:
     fname_offset = "VideoDataset"
     fname_train = "videodatainfo_2017.json"
     SLEEPTIME = 120
     STHRES = 10*1024
+    EXTRACT_COUNTER = 0 # For multiprocessing
     
     def __init__(self, maindir, fname):
         self.splitTrainValidTest = [90,5,5] # Out of 100
         self.fname = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, fname)
         self.vdir = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, "videos")
+        self.tdir = "%s/%s" % (self.vdir, "extract")
         self.logfile = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, "log.txt")
+        if os.path.exists(self.tdir):
+            shutil.rmtree(self.tdir)
+        os.mkdir(self.tdir)
         with open(self.fname) as f:
             self.data = json.load(f)
         self.captions = dict()
@@ -99,13 +105,19 @@ class VideoHandler:
     '''
     Either frames of video from id or vfname
     '''
+    CRAZY = 0
+    #@synchronized
+    def get_crazy_id(self):
+       VideoHandler.EXTRACT_COUNTER += 1
+       return VideoHandler.EXTRACT_COUNTER
+        
     def get_frames(self,_id = None, sfname = None, logs = True):
         assert (_id is None) ^ (sfname is None)
         if sfname is None:
             sfname = self.downloadVideo(_id, logs)
         if sfname is None:
             return None
-        edir = "%s/%s" % (self.vdir, 'extract')
+        edir = "%s/v_%d" % (self.tdir, self.get_crazy_id())
         if os.path.exists(edir):
             shutil.rmtree(edir)
         os.mkdir(edir)
@@ -115,13 +127,22 @@ class VideoHandler:
         returnStatus = os.system(cmd)
         if returnStatus != 0:
             print "Extracting Failed : %s" % sfname
+            if os.path.exists(edir):
+                shutil.rmtree(edir)
             return None
         files = os.listdir(edir)
         files = [("%s/%s"%(edir,f)) for f in files]
-        return files
+        return (edir, files)
+
+    #@synchronized
+    def free_frames(self, edir):
+        if edir is not None and os.path.exists(edir):
+            try:
+                shutil.rmtree(edir)
+            except Exception as e:
+                print(str(e))
 
 def autodownload():
-    vHandler = VideoHandler("/home/gagan.cs14/btp/",VideoHandler.fname_train)
     print "Current Downloaded files"
     print vHandler.getDownloadedIds()
     vHandler.takebreak()
@@ -133,5 +154,22 @@ def autodownload():
         percent = 100.0*(i+1)/tot
         print "%.3f Completed!" % percent
 
+def show_counts():
+    print "Training Videos   : %d " % len(vHandler.getTrainingIds())
+    print "Validation Videos : %d " % len(vHandler.getValidationIds())
+    print "Test Videos       : %d " % len(vHandler.getTestIds())
+
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-sc", "--show-count", help="show count for training/validation/test videos", action='store_true')
+    parser.add_argument("-d", "--download", help="download more videos to extend dataset", action='store_true')
+    return parser.parse_args()
+
 if __name__ == "__main__":
-    autodownload()
+    args = get_args()
+    vHandler = VideoHandler("/home/gagan.cs14/btp/",VideoHandler.fname_train)
+    if args.show_count:
+        show_counts()
+    if args.download:
+        autodownload()
+

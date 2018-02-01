@@ -32,21 +32,40 @@ class Preprocessor:
     '''
     Either convert videos from ids or frame file names
     '''
+    COUNTER = 0
     def videoToVec(self, _id = None, fnames = None):
         assert (_id is None) ^ (fnames is None)
+        edir = None
         if fnames is None:
-            fnames = self.vHandler.get_frames(_id = _id, logs = False)
+            ef = self.vHandler.get_frames(_id = _id, logs = False)
+            if ef is not None:
+                edir, fnames = ef
         if fnames is None:
             return None
         content = []
-        for fname in fnames:
+        LIMIT_FRAMES = 10
+        for i,fname in enumerate(fnames):
+            if i >= LIMIT_FRAMES:
+                break
             content.append(self.imageToVec(fname))
+        self.vHandler.free_frames(edir)
+        if len(content)<LIMIT_FRAMES:
+            return None
+
+        #if len(fnames)>0:
+        #    os.system("cp \"%s\" ~/TESTING/%04d.jpg" % (fnames[0],Preprocessor.COUNTER))
+        #    Preprocessor.COUNTER += 1
         return content
 
     def get_video_content(self, vfname):
         print vfname
-        fnames = self.vHandler.get_frames(sfname = vfname)
-        return self.videoToVec(fnames = fnames)
+        ef = self.vHandler.get_frames(sfname = vfname)
+        if ef is None:
+            return None
+        edir,fnames = ef
+        vContent = self.videoToVec(fnames = fnames)
+        self.vHandler.free_frames(edir)
+        return vContent
 
     def get_video_caption(self, _id):
         data = self.vHandler.getCaptionData()
@@ -65,10 +84,21 @@ class Preprocessor:
         capOut = []
         for _id in idlst:
             _vid, _capIn, _capOut = self.get_video_caption(_id)
+            if _vid is None:
+                continue
             vids.append(_vid)
             capIn.append(_capIn)
             capOut.append(_capOut)
-            return [[np.asarray(capIn),np.asarray(vids)],np.asarray(capOut)]
+        capIn  = np.asarray(capIn)
+        capOut = np.asarray(capOut)
+        vids   = np.asarray(vids)
+
+        logger.debug("Shape vids   %s" % str(np.shape(vids)))
+        logger.debug("Shape CapIn  %s" % str(np.shape(capIn)))
+        logger.debug("Shape CapOut %s" % str(np.shape(capOut)))
+
+
+        return [[capIn,np.asarray(vids)],np.asarray(capOut)]
  
     '''
     typeSet 0:Training dataset, 1: Validation dataset, 2: Test Dataset

@@ -10,7 +10,7 @@ from model import build_model
 
 
 CLABEL = 'res_t1'
-state_uninit = {'epochs':1000, 'start_batch':0, 'batch_size':100, 'saveAtBatch':50}
+state_uninit = {'epochs':1000, 'start_batch':0, 'batch_size':75, 'saveAtBatch':50}
 
 MFNAME = WORKING_DIR+'/model_'+CLABEL+'.dat'
 _MFNAME = WORKING_DIR+'/model_'+CLABEL+'.dat.bak'
@@ -124,7 +124,7 @@ class Framework():
         epochs = self.state['epochs']
         bs = self.state['batch_size']
         steps_per_epoch = 100
-        validation_steps = 5
+        validation_steps = 1
         logger.debug("Epochs Left : %d " % epochs)
         logger.debug("Batch Size  : %d " % bs)
 
