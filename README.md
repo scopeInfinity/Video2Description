@@ -5,6 +5,31 @@ Branch : [VideoCaption](https://github.com/scopeInfinity/Video2Description/tree/
 
 Status : Ongoing
 
+### Setup
+
+* Setup anaconda environment, use `environment.yml`
+  * Install keras with tensorflow backend.
+* Install ffmpeg
+  * Configure, build and install ffmpeg from source with shared libraries 
+```bash
+git clone 'https://github.com/FFmpeg/FFmpeg.git'
+cd FFmpeg
+./configure --prefix=~/V2D_local/ --enable-shared
+make
+make install
+```
+  * Set environment variable
+    * Reference [https://conda.io/docs/user-guide/tasks/manage-environments.html#saving-environment-variables](https://conda.io/docs/user-guide/tasks/manage-environments.html#saving-environment-variables)
+```
+export PATH=/home/gagan.cs14/V2D_local/bin:$PATH
+export LD_LIBRARY_PATH=$/home/gagan.cs14/V2D_local/lib/:$LD_LIBRARY_PATH
+```
+* Install opencv
+```
+conda install opencv -c conda-forge
+```
+
+
 ### Data Directory
 File | Reference
 --- | --- 
