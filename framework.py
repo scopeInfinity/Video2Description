@@ -1,3 +1,4 @@
+import cv2
 import shutil, json
 from keras import callbacks
 import os, sys
@@ -9,8 +10,8 @@ from logger import logger
 from model import build_model
 
 
-CLABEL = 'res_t1'
-state_uninit = {'epochs':1000, 'start_batch':0, 'batch_size':75, 'saveAtBatch':50}
+CLABEL = 'res_t1_nt'
+state_uninit = {'epochs':1000, 'start_batch':0, 'batch_size':75, 'saveAtBatch':50, 'steps_per_epoch':100}
 
 MFNAME = WORKING_DIR+'/model_'+CLABEL+'.dat'
 _MFNAME = WORKING_DIR+'/model_'+CLABEL+'.dat.bak'
@@ -123,7 +124,7 @@ class Framework():
     def train_generator(self):
         epochs = self.state['epochs']
         bs = self.state['batch_size']
-        steps_per_epoch = 100
+        steps_per_epoch = self.state['steps_per_epoch']
         validation_steps = 1
         logger.debug("Epochs Left : %d " % epochs)
         logger.debug("Batch Size  : %d " % bs)
@@ -142,13 +143,17 @@ class Framework():
         logger.debug("Predicting for Videos :- \n\t%s " % fnames)
         l = 0
         vocab = self.preprocess.vocab
-        embeddedCap = np.array([ [vocab.wordEmbedding[vocab.specialWords['START']] ] ] * count)
+        startCapRow = [vocab.wordEmbedding[vocab.specialWords['START']] ]
+        startCapRow.extend([ vocab.wordEmbedding[vocab.specialWords['NONE']] ] * vocab.CAPTION_LEN)
+        
+        embeddedCap = np.array([ startCapRow  ] * count)
         logger.debug("Shape of Caption : %s", str(np.shape(embeddedCap)))
-        stringCaption = [[] * count]
+        stringCaption = [[]]  * count
         while l < vocab.CAPTION_LEN:
             newOneHotCap = self.model.predict([embeddedCap, videoVecs])
+            print "Shape of out Predict Model : %s " % str(np.shape(newOneHotCap))
             for i,newOneHotWord in enumerate(newOneHotCap):
-                nword = vocab.word_fromonehot(newOneHotWord)
+                nword = vocab.word_fromonehot(newOneHotWord[l])
                 stringCaption[i].append( nword )
                 if l + 1 != vocab.CAPTION_LEN:
                     embeddedCap[i][l+1] = vocab.wordEmbedding[nword]

@@ -1,3 +1,4 @@
+import cv2
 import os, urllib
 import json
 import urlparse
@@ -6,6 +7,9 @@ import shutil
 import argparse
 
 class VideoHandler:
+    LIMIT_FRAMES = 40
+    SHAPE = (224, 224)
+        
     fname_offset = "VideoDataset"
     fname_train = "videodatainfo_2017.json"
     SLEEPTIME = 120
@@ -111,6 +115,26 @@ class VideoHandler:
        VideoHandler.EXTRACT_COUNTER += 1
        return VideoHandler.EXTRACT_COUNTER
         
+    def get_iframes(self, _id = None, sfname = None, logs = True):
+        assert (_id is None) ^ (sfname is None)
+        if sfname is None:
+            sfname = self.downloadVideo(_id, logs)
+        if sfname is None:
+            return None
+        vcap = cv2.VideoCapture(sfname)
+        success, frame = vcap.read()
+        allframes = []
+        while True:
+            success, frame = vcap.read()
+            if not success:
+                break
+            allframes.append(cv2.resize(frame, self.SHAPE))
+        if len(allframes) < self.LIMIT_FRAMES:
+            return None
+        period = len(allframes) / self.LIMIT_FRAMES
+        rframes = allframes[:period * self.LIMIT_FRAMES:period]
+        return rframes
+
     def get_frames(self,_id = None, sfname = None, logs = True):
         assert (_id is None) ^ (sfname is None)
         if sfname is None:
@@ -121,17 +145,24 @@ class VideoHandler:
         if os.path.exists(edir):
             shutil.rmtree(edir)
         os.mkdir(edir)
-        cmd = "ffmpeg -i %s -vf fps=%d -s 224x224 %s/0_%%03d.jpg &> /dev/null" % (sfname, 5, edir)
+        cmd = "ffmpeg -i %s -vf fps=%d -s 224x224 %s/0_%%03d.jpg &> /dev/null" % (sfname, 5, edir) #&> /dev/null
         if logs:
             print cmd
         returnStatus = os.system(cmd)
         if returnStatus != 0:
             print "Extracting Failed : %s" % sfname
             if os.path.exists(edir):
-                shutil.rmtree(edir)
+                print cmd
+                print "Dir Exists"
+                #shutil.rmtree(edir)
             return None
         files = os.listdir(edir)
         files = [("%s/%s"%(edir,f)) for f in files]
+        LIMIT_FRAMES = 10
+        if len(files)<LIMIT_FRAMES:
+            return None
+        # TODO : Pick frames uniformly
+        files = files[:LIMIT_FRAMES]
         return (edir, files)
 
     #@synchronized

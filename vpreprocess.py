@@ -33,8 +33,14 @@ class Preprocessor:
     Either convert videos from ids or frame file names
     '''
     COUNTER = 0
-    def videoToVec(self, _id = None, fnames = None):
-        assert (_id is None) ^ (fnames is None)
+    def videoToVec(self, _id = None, vfname = None):
+        assert (_id is None) ^ (vfname is None)
+        if not _id == None:
+            frames = self.vHandler.get_iframes(_id = _id, logs = False)
+        else:
+            frames = self.vHandler.get_iframes(sfname = vfname, logs = False)
+        return frames
+        # deprecated
         edir = None
         if fnames is None:
             ef = self.vHandler.get_frames(_id = _id, logs = False)
@@ -43,14 +49,9 @@ class Preprocessor:
         if fnames is None:
             return None
         content = []
-        LIMIT_FRAMES = 10
         for i,fname in enumerate(fnames):
-            if i >= LIMIT_FRAMES:
-                break
             content.append(self.imageToVec(fname))
         self.vHandler.free_frames(edir)
-        if len(content)<LIMIT_FRAMES:
-            return None
 
         #if len(fnames)>0:
         #    os.system("cp \"%s\" ~/TESTING/%04d.jpg" % (fnames[0],Preprocessor.COUNTER))
@@ -58,6 +59,8 @@ class Preprocessor:
         return content
 
     def get_video_content(self, vfname):
+        return self.videoToVec(vfname = vfname)
+        # @deprecated
         print vfname
         ef = self.vHandler.get_frames(sfname = vfname)
         if ef is None:
@@ -72,7 +75,7 @@ class Preprocessor:
         cur_caption = data[_id]
         captionIn = self.vocab.get_caption_encoded(cur_caption, True, True, False)
         captionOut = self.vocab.get_caption_encoded(cur_caption, False, False, True)
-        vid = self.videoToVec(_id)
+        vid = self.videoToVec(_id = _id)
         if vid is None:
             return None
         return np.asarray([vid,captionIn,captionOut])
@@ -83,7 +86,10 @@ class Preprocessor:
         capIn  = []
         capOut = []
         for _id in idlst:
-            _vid, _capIn, _capOut = self.get_video_caption(_id)
+            vcc = self.get_video_caption(_id)
+            if vcc is None:
+                continue
+            _vid, _capIn, _capOut = vcc
             if _vid is None:
                 continue
             vids.append(_vid)
