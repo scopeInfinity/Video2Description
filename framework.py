@@ -10,7 +10,7 @@ from logger import logger
 from model import build_model
 
 
-CLABEL = 'res_t1_nt'
+CLABEL = 'res_t1_cached'
 state_uninit = {'epochs':1000, 'start_batch':0, 'batch_size':75, 'saveAtBatch':50, 'steps_per_epoch':100}
 
 MFNAME = WORKING_DIR+'/model_'+CLABEL+'.dat'

@@ -5,6 +5,8 @@ import urlparse
 import time
 import shutil
 import argparse
+import pickle
+from keras.preprocessing import image
 
 class VideoHandler:
     LIMIT_FRAMES = 40
@@ -20,11 +22,14 @@ class VideoHandler:
         self.splitTrainValidTest = [90,5,5] # Out of 100
         self.fname = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, fname)
         self.vdir = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, "videos")
+        self.cdir = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, "cache_"+str(self.LIMIT_FRAMES))
         self.tdir = "%s/%s" % (self.vdir, "extract")
         self.logfile = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, "log.txt")
         if os.path.exists(self.tdir):
             shutil.rmtree(self.tdir)
         os.mkdir(self.tdir)
+        if not os.path.exists(self.cdir):
+            os.mkdir(self.cdir)
         with open(self.fname) as f:
             self.data = json.load(f)
         self.captions = dict()
@@ -115,8 +120,29 @@ class VideoHandler:
        VideoHandler.EXTRACT_COUNTER += 1
        return VideoHandler.EXTRACT_COUNTER
         
+    def get_iframes_cached(self, _id):
+        cfname = "%s/%d" % (self.cdir, _id)
+        if os.path.exists(cfname):
+            f = open(cfname, 'r')
+            frames = pickle.load(f)
+            assert len(frames) == self.LIMIT_FRAMES
+            return frames
+        return None
+
+    def cached_iframe(self, _id, frames):
+        cfname = "%s/%d" % (self.cdir, _id)
+        with open(cfname, 'w') as f:
+            pickle.dump(frames, f)
+
     def get_iframes(self, _id = None, sfname = None, logs = True):
         assert (_id is None) ^ (sfname is None)
+        # Load if cached
+        if _id is not None:
+            rframes = self.get_iframes_cached(_id)
+            if rframes is not None:
+                return rframes
+
+        # Load frames from file
         if sfname is None:
             sfname = self.downloadVideo(_id, logs)
         if sfname is None:
@@ -130,9 +156,14 @@ class VideoHandler:
                 break
             allframes.append(cv2.resize(frame, self.SHAPE))
         if len(allframes) < self.LIMIT_FRAMES:
+            print "File [%s] with limited frames (%d)" % (sfname, len(allframes))
             return None
         period = len(allframes) / self.LIMIT_FRAMES
         rframes = allframes[:period * self.LIMIT_FRAMES:period]
+        rframes = [self.preprocess_frame(f) for f in rframes]
+
+        # Cache it
+        self.cached_iframe(_id, rframes)
         return rframes
 
     def get_frames(self,_id = None, sfname = None, logs = True):
@@ -164,6 +195,13 @@ class VideoHandler:
         # TODO : Pick frames uniformly
         files = files[:LIMIT_FRAMES]
         return (edir, files)
+
+    def preprocess_frame(self, img):
+        x = image.img_to_array(img)
+        x /= 255.
+        x -= 0.5
+        x *= 2.
+        return x
 
     #@synchronized
     def free_frames(self, edir):
