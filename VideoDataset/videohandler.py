@@ -5,7 +5,7 @@ import urlparse
 import time
 import shutil
 import argparse
-import pickle
+import cPickle as pickle
 from keras.preprocessing import image
 
 class VideoHandler:
@@ -123,15 +123,16 @@ class VideoHandler:
     def get_iframes_cached(self, _id):
         cfname = "%s/%d" % (self.cdir, _id)
         if os.path.exists(cfname):
-            f = open(cfname, 'r')
+            f = open(cfname, 'rb')
             frames = pickle.load(f)
             assert len(frames) == self.LIMIT_FRAMES
             return frames
         return None
 
     def cached_iframe(self, _id, frames):
+        return
         cfname = "%s/%d" % (self.cdir, _id)
-        with open(cfname, 'w') as f:
+        with open(cfname, 'wb') as f:
             pickle.dump(frames, f)
 
     def get_iframes(self, _id = None, sfname = None, logs = True):
