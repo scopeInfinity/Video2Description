@@ -148,16 +148,21 @@ class Framework():
         
         embeddedCap = np.array([ startCapRow  ] * count)
         logger.debug("Shape of Caption : %s", str(np.shape(embeddedCap)))
-        stringCaption = [[]]  * count
+        stringCaption = []
+        for i in range(count):
+            stringCaption.append([])
         while l < vocab.CAPTION_LEN:
             newOneHotCap = self.model.predict([embeddedCap, videoVecs])
             print "Shape of out Predict Model : %s " % str(np.shape(newOneHotCap))
             for i,newOneHotWord in enumerate(newOneHotCap):
                 nword = vocab.word_fromonehot(newOneHotWord[l])
+                print str(i)+" "+str(l)+" "+nword
                 stringCaption[i].append( nword )
                 if l + 1 != vocab.CAPTION_LEN:
                     embeddedCap[i][l+1] = vocab.wordEmbedding[nword]
+
             print [' '.join(cap) for cap in stringCaption]
+            l += 1
         logger.debug("Prediction Complete")
         return stringCaption
 

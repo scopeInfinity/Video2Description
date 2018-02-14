@@ -204,6 +204,10 @@ class VideoHandler:
         x *= 2.
         return x
 
+    def assign_partial_model(self, partial_model):
+        return
+        assert False
+
     #@synchronized
     def free_frames(self, edir):
         if edir is not None and os.path.exists(edir):
