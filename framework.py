@@ -7,21 +7,21 @@ import csv
 from vpreprocess import WORKING_DIR
 from vpreprocess import  Preprocessor
 from logger import logger
-from model import build_model
+from model import VModel
 
 
-CLABEL = 'res_t1_cached'
+CLABEL = 'res_mcnn'
 state_uninit = {'epochs':1000, 'start_batch':0, 'batch_size':75, 'saveAtBatch':50, 'steps_per_epoch':100}
 
-MFNAME = WORKING_DIR+'/model_'+CLABEL+'.dat'
-_MFNAME = WORKING_DIR+'/model_'+CLABEL+'.dat.bak'
-STATE = WORKING_DIR+'/state_'+CLABEL+'.txt'
+MFNAME = WORKING_DIR+'/'+CLABEL+'_model.dat'
+_MFNAME = WORKING_DIR+'/'+CLABEL+'_model.dat.bak'
+STATE = WORKING_DIR+'/'+CLABEL+'_state.txt'
 FRESTART = WORKING_DIR+'/restart'
 
 class TrainingLogs:
     def __init__(self, prefix=""):
         self.epochLogHistory = []
-        self.fname = WORKING_DIR+'/'+CLABEL + "_" + prefix + "logs.txt"
+        self.fname = WORKING_DIR+'/'+CLABEL + "_logs_" + prefix + ".txt"
 
     def flush(self):
         if not os.path.exists(self.fname):
@@ -94,7 +94,10 @@ class Framework():
 
     def build_model(self):
         vocab = self.preprocess.vocab
-        self.model = build_model(vocab.CAPTION_LEN, vocab.VOCAB_SIZE)
+        self.vmodel = VModel(vocab.CAPTION_LEN, vocab.VOCAB_SIZE)
+        self.model = self.vmodel.get_model()
+        assert self.preprocess is not None
+        self.preprocess.set_vmodel(self.vmodel)
 
     def load(self):
         if os.path.exists(MFNAME):

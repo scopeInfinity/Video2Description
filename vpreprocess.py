@@ -4,7 +4,6 @@ from keras.preprocessing import image
 import numpy as np
 from logger import logger
 from vocab import vocabBuilder
-from model import model_cutoff_frames
 
 DATA_DIR = '/home/gagan.cs14/btp'
 GITBRANCH = os.popen('git branch | grep "*"').read().split(" ")[1][:-1] 
@@ -19,7 +18,9 @@ def badLogs(msg):
 class Preprocessor:
     def __init__(self):
         self.vHandler,self.vocab = vocabBuilder(DATA_DIR, WORKING_DIR)
-        self.vHandler.assign_partial_model(model_cutoff_frames(get_model = True))
+
+    def set_vmodel(self, vmodel):
+        self.vHandler.set_vmodel(vmodel)
 
     def imageToVec(self, fname):
         NEED_W = 224

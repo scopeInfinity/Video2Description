@@ -5,9 +5,9 @@ import urlparse
 import time
 import shutil
 import argparse
-import cPickle as pickle
+import numpy as np
+from keras.applications.resnet50 import preprocess_input
 from keras.preprocessing import image
-
 class VideoHandler:
     LIMIT_FRAMES = 40
     SHAPE = (224, 224)
@@ -35,6 +35,9 @@ class VideoHandler:
         self.captions = dict()
         for sen in self.data['sentences']:
             self.captions[self.stringIdToInt(sen['video_id'])] = sen['caption']
+
+    def set_vmodel(self,vmodel):
+        self.vmodel = vmodel
 
     def getCaptionData(self):
         return self.captions
@@ -121,19 +124,19 @@ class VideoHandler:
        return VideoHandler.EXTRACT_COUNTER
         
     def get_iframes_cached(self, _id):
-        cfname = "%s/%d" % (self.cdir, _id)
+        cfname = "%s/%d.npy" % (self.cdir, _id)
         if os.path.exists(cfname):
             f = open(cfname, 'rb')
-            frames = pickle.load(f)
+            frames = np.load(f)
             assert len(frames) == self.LIMIT_FRAMES
             return frames
         return None
 
     def cached_iframe(self, _id, frames):
-        return
-        cfname = "%s/%d" % (self.cdir, _id)
+        cfname = "%s/%d.npy" % (self.cdir, _id)
+        print "Cached %s" % cfname
         with open(cfname, 'wb') as f:
-            pickle.dump(frames, f)
+            np.save(f,frames)
 
     def get_iframes(self, _id = None, sfname = None, logs = True):
         assert (_id is None) ^ (sfname is None)
@@ -141,6 +144,7 @@ class VideoHandler:
         if _id is not None:
             rframes = self.get_iframes_cached(_id)
             if rframes is not None:
+                print "Load from cached %d" % _id
                 return rframes
 
         # Load frames from file
@@ -159,13 +163,15 @@ class VideoHandler:
         if len(allframes) < self.LIMIT_FRAMES:
             print "File [%s] with limited frames (%d)" % (sfname, len(allframes))
             return None
+
         period = len(allframes) / self.LIMIT_FRAMES
         rframes = allframes[:period * self.LIMIT_FRAMES:period]
-        rframes = [self.preprocess_frame(f) for f in rframes]
+        frames_out = self.vmodel.preprocess_partialmodel(rframes)
 
         # Cache it
-        self.cached_iframe(_id, rframes)
-        return rframes
+        if _id is not None:
+            self.cached_iframe(_id, frames_out)
+        return frames_out
 
     def get_frames(self,_id = None, sfname = None, logs = True):
         assert (_id is None) ^ (sfname is None)
@@ -202,11 +208,10 @@ class VideoHandler:
         x /= 255.
         x -= 0.5
         x *= 2.
-        return x
+        return np.asarray(x)
 
     def assign_partial_model(self, partial_model):
-        return
-        assert False
+        self.partial_model = partial_model
 
     #@synchronized
     def free_frames(self, edir):
