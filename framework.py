@@ -209,19 +209,8 @@ class Framework():
         ids = self.preprocess.vHandler.getTrainingIds()
         shuffle(ids)
         return ids[:count]
-
-class Parser:
-    def __init__():
-        pass
-
-    def init_framework(self):
-        if not hasattr(framework):
-            self.framework = Framework()
-
-    def parse(self):
-        parser = argparse.ArgumentParser()
-        parser.add_command('command', choices=['train','predict'])            
-
+'''
+#deprecated
 def main():
     framework = Framework()                                            
     if len(sys.argv) == 2 and '-train' == sys.argv[1]:
@@ -241,3 +230,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+'''
