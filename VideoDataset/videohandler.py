@@ -30,11 +30,20 @@ class VideoHandler:
         os.mkdir(self.tdir)
         if not os.path.exists(self.cdir):
             os.mkdir(self.cdir)
+        self.build_captions()
+
+    def build_captions(self):
         with open(self.fname) as f:
             self.data = json.load(f)
+        # id => [caption]
         self.captions = dict()
+        idcreated = set()
         for sen in self.data['sentences']:
-            self.captions[self.stringIdToInt(sen['video_id'])] = sen['caption']
+            _id = self.stringIdToInt(sen['video_id'])
+            if _id not in idcreated:
+                idcreated.add(_id)
+                self.captions[_id] = []
+            self.captions[_id].append(sen['caption'])
 
     def set_vmodel(self,vmodel):
         self.vmodel = vmodel
@@ -144,7 +153,6 @@ class VideoHandler:
         if _id is not None:
             rframes = self.get_iframes_cached(_id)
             if rframes is not None:
-                print "Load from cached %d" % _id
                 return rframes
 
         # Load frames from file

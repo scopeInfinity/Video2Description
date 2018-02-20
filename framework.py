@@ -8,10 +8,10 @@ from vpreprocess import WORKING_DIR
 from vpreprocess import  Preprocessor
 from logger import logger
 from model import VModel
-
+from random import shuffle
 
 CLABEL = 'res_mcnn'
-state_uninit = {'epochs':1000, 'start_batch':0, 'batch_size':75, 'saveAtBatch':50, 'steps_per_epoch':100}
+state_uninit = {'epochs':1000, 'start_batch':0, 'batch_size':75, 'saveAtBatch':50, 'steps_per_epoch':34}
 
 MFNAME = WORKING_DIR+'/'+CLABEL+'_model.dat'
 _MFNAME = WORKING_DIR+'/'+CLABEL+'_model.dat.bak'
@@ -59,7 +59,7 @@ class ModelGeneratorCallback(callbacks.Callback):
         acc  = logs['acc']
         valloss = logs['val_loss']
         valacc  = logs['val_acc']
-        self.elogs.add([loss, acc, valloss, valacc])
+        self.elogs.add([epoch,loss, acc, valloss, valacc])
         self.elogs.flush()
         self.framework.save(epoch=("%03d_loss_%s" % (self.state['epochs'],str(valloss))))
         return
@@ -200,12 +200,38 @@ class Framework():
         videos = ["%s/%s" % (dirpath,vid) for vid in os.listdir(dirpath) if self.isVideoExtension(vid)][0:mxc]
         self.predict_model(fnames = videos)
 
+    def get_testids(self, count):
+        ids = self.preprocess.vHandler.getTestIds()
+        shuffle(ids)
+        return ids[:count]
+
+    def get_trainids(self, count):
+        ids = self.preprocess.vHandler.getTrainingIds()
+        shuffle(ids)
+        return ids[:count]
+
+class Parser:
+    def __init__():
+        pass
+
+    def init_framework(self):
+        if not hasattr(framework):
+            self.framework = Framework()
+
+    def parse(self):
+        parser = argparse.ArgumentParser()
+        parser.add_command('command', choices=['train','predict'])            
+
 def main():
     framework = Framework()                                            
     if len(sys.argv) == 2 and '-train' == sys.argv[1]:
         framework.train_generator()
     elif len(sys.argv) == 3 and '-p_ids' == sys.argv[1]:
         framework.predict_model(_ids = [int(x) for x in sys.argv[2].split(",")])
+    elif len(sys.argv) == 3 and '-prand_test' == sys.argv[1]:
+        framework.predict_model(_ids = framework.get_testids(int(sys.argv[2])))
+    elif len(sys.argv) == 3 and '-prand_train' == sys.argv[1]:
+        framework.predict_model(_ids = framework.get_trainids(int(sys.argv[2])))
     elif len(sys.argv) == 3 and '-p_names' == sys.argv[1]:
         framework.predict_model(fnames = sys.argv[2].split(","))
     elif len(sys.argv) == 4 and '-ptest' == sys.argv[1]:
