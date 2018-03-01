@@ -49,7 +49,7 @@ class Parser:
         logger.debug("Server Mode")
         parser = argparse.ArgumentParser(prog = sys.argv[0]+" server", description = 'Server Mode')
         parser.add_argument('-s', '--start', help='Start RPC Server', action='store_true')
-        parser.add_argument('-pids', '--predict_ids', help='Obtain Results for given IDs', nargs='+')
+        parser.add_argument('-pids', '--predict_ids',type=int, help='Obtain Results for given IDs', nargs='+')
         parser.add_argument('-pfs', '--predict_fnames', help='Obtain Results for given files', nargs='+')
         args = parser.parse_args(sys.argv[2:])
         if args.start:
@@ -57,11 +57,11 @@ class Parser:
             register_server(self.framework)
         elif args.predict_ids:
             proxy = get_rpc()
-            result = proxy.predict_ids( [int(x) for x in args.predict_ids])
+            result = proxy.predict_ids( args.predict_ids )
             print result
         elif args.predict_fnames:
             proxy = get_rpc()
-            result = proxy.predict_fnames( args.predict_fnames)
+            result = proxy.predict_fnames( args.predict_fnames )
             print result
         else:
             parser.print_help()

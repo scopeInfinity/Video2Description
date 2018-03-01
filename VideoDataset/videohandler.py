@@ -7,8 +7,7 @@ import shutil
 import argparse
 import numpy as np
 from pprint import pprint
-from keras.applications.resnet50 import preprocess_input
-from keras.preprocessing import image
+
 class VideoHandler:
     LIMIT_FRAMES = 40
     SHAPE = (224, 224)
@@ -211,13 +210,6 @@ class VideoHandler:
         # TODO : Pick frames uniformly
         files = files[:LIMIT_FRAMES]
         return (edir, files)
-
-    def preprocess_frame(self, img):
-        x = image.img_to_array(img)
-        x /= 255.
-        x -= 0.5
-        x *= 2.
-        return np.asarray(x)
 
     def assign_partial_model(self, partial_model):
         self.partial_model = partial_model
