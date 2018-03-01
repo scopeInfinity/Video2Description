@@ -9,9 +9,10 @@ from vpreprocess import  Preprocessor
 from logger import logger
 from model import VModel
 from random import shuffle
+from pprint import pformat
 
-CLABEL = 'res_mcnn'
-state_uninit = {'epochs':1000, 'start_batch':0, 'batch_size':75, 'saveAtBatch':50, 'steps_per_epoch':34}
+CLABEL = 'res_mcnn_20cap_b250_s30'
+state_uninit = {'epochs':5000, 'start_batch':0, 'batch_size':250, 'saveAtBatch':50, 'steps_per_epoch':30}
 
 MFNAME = WORKING_DIR+'/'+CLABEL+'_model.dat'
 _MFNAME = WORKING_DIR+'/'+CLABEL+'_model.dat.bak'
@@ -91,6 +92,7 @@ class Framework():
         self.preprocess = Preprocessor()
         self.build_model()
         self.load()
+        logger.debug("__init__ framework complete")
 
     def build_model(self):
         vocab = self.preprocess.vocab
@@ -141,8 +143,9 @@ class Framework():
     def predict_model_direct(self, fnames):
         videoVecs =np.array([self.preprocess.get_video_content(f) for f  in fnames])
         count = len(fnames)
-        for video in videoVecs:
-            assert video is not None
+        for i,video in enumerate(videoVecs):
+            if video is None:
+                return None,{'error':'Video %d couldn\'t be loaded. %s ' % (i, fnames[i])}
         logger.debug("Predicting for Videos :- \n\t%s " % fnames)
         l = 0
         vocab = self.preprocess.vocab
@@ -159,7 +162,7 @@ class Framework():
             print "Shape of out Predict Model : %s " % str(np.shape(newOneHotCap))
             for i,newOneHotWord in enumerate(newOneHotCap):
                 nword = vocab.word_fromonehot(newOneHotWord[l])
-                print str(i)+" "+str(l)+" "+nword
+                # print str(i)+" "+str(l)+" "+nword
                 stringCaption[i].append( nword )
                 if l + 1 != vocab.CAPTION_LEN:
                     embeddedCap[i][l+1] = vocab.wordEmbedding[nword]
@@ -167,7 +170,18 @@ class Framework():
             print [' '.join(cap) for cap in stringCaption]
             l += 1
         logger.debug("Prediction Complete")
-        return stringCaption
+        captionObject = []
+        for i,cap in enumerate(stringCaption):
+            captionObject.append({'fname':fnames[i], 'caption':cap})
+        return stringCaption, captionObject
+
+    def predict_ids(self, _ids):
+        result = self.predict_model(_ids = _ids)
+        return result
+
+    def predict_fnames(self, fnames):
+        result = self.predict_model(fnames = fnames)
+        return result
 
     def predict_model(self, _ids = None, fnames = None):
         assert (_ids is None) ^ (fnames is None)
@@ -181,14 +195,23 @@ class Framework():
                     logger.info("Ignoring %d video " % _id)
                 else:
                     fnames.append(fname)
-        predictions = self.predict_model_direct(fnames)
+        predictions,output = self.predict_model_direct(fnames)
+        results = []
         for i in range(len(fnames)):
+            print()
             logger.debug("For eog %s" % fnames[i])
             predictedCaption = ' '.join(predictions[i])
             logger.debug("Predicted Caption : %s" % predictedCaption )
+            actualCaption = None
             if _ids is not None:
                 actualCaption = vHandler.getCaptionData()[_ids[i]]
-                logger.debug("Actual Caption : %s" % actualCaption )
+                logger.debug("Actual Captions - \n%s" % pformat(actualCaption) )
+            res = dict()
+            res['fname'] = fnames[i]
+            res['output'] = predictedCaption
+            res['actual'] = actualCaption
+            results.append(res)
+        return json.dumps(results)
                                         
     def isVideoExtension(self, fname):
         for ext in ['mp4','jpeg','png']:
@@ -209,6 +232,7 @@ class Framework():
         ids = self.preprocess.vHandler.getTrainingIds()
         shuffle(ids)
         return ids[:count]
+
 '''
 #deprecated
 def main():

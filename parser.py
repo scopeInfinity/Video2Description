@@ -1,6 +1,7 @@
 import argparse
 import sys
 from logger import logger
+from rpc import register_server, get_rpc, PORT
 
 class Parser:
     def __init__(self):
@@ -13,12 +14,14 @@ class Parser:
 
     def parse(self):
         parser = argparse.ArgumentParser()
-        parser.add_argument('command', choices=['train','predict'])
+        parser.add_argument('command', choices=['train','predict','server'])
         args = parser.parse_args(sys.argv[1:2])
         if args.command == 'train':
             self.train()
         if args.command == 'predict':
             self.predict()
+        if args.command == 'server':
+            self.server()
         print args.command
 
     def train(self):
@@ -41,6 +44,27 @@ class Parser:
         else:
             assert False
         self.framework.predict_model(_ids = _ids)
+
+    def server(self):
+        logger.debug("Server Mode")
+        parser = argparse.ArgumentParser(prog = sys.argv[0]+" server", description = 'Server Mode')
+        parser.add_argument('-s', '--start', help='Start RPC Server', action='store_true')
+        parser.add_argument('-pids', '--predict_ids', help='Obtain Results for given IDs', nargs='+')
+        parser.add_argument('-pfs', '--predict_fnames', help='Obtain Results for given files', nargs='+')
+        args = parser.parse_args(sys.argv[2:])
+        if args.start:
+            self.init_framework()
+            register_server(self.framework)
+        elif args.predict_ids:
+            proxy = get_rpc()
+            result = proxy.predict_ids( [int(x) for x in args.predict_ids])
+            print result
+        elif args.predict_fnames:
+            proxy = get_rpc()
+            result = proxy.predict_fnames( args.predict_fnames)
+            print result
+        else:
+            parser.print_help()
 
 if __name__ == "__main__":
     Parser().parse()

@@ -6,6 +6,7 @@ import time
 import shutil
 import argparse
 import numpy as np
+from pprint import pprint
 from keras.applications.resnet50 import preprocess_input
 from keras.preprocessing import image
 class VideoHandler:
@@ -250,6 +251,10 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-sc", "--show-count", help="show count for training/validation/test videos", action='store_true')
     parser.add_argument("-d", "--download", help="download more videos to extend dataset", action='store_true')
+    parser.add_argument("-strain", "--show-train", help="show ids for training videos", action='store_true')
+    parser.add_argument("-stest", "--show-test", help="show ids for test videos", action='store_true')
+    parser.add_argument("-sval", "--show-val", help="show ids for validation videos", action='store_true')
+
     return parser.parse_args()
 
 if __name__ == "__main__":
@@ -259,4 +264,14 @@ if __name__ == "__main__":
         show_counts()
     if args.download:
         autodownload()
+    if args.show_train:
+        print "Train Ids"
+        pprint(vHandler.getTrainingIds())
+    if args.show_test:
+        print "Test Ids"
+        pprint(vHandler.getTestIds())
+    if args.show_val:
+        print "Validation Ids"
+        pprint(vHandler.getValidationIds())
+
 
