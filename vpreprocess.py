@@ -124,9 +124,13 @@ class Preprocessor:
             start = random.randint(0,count)
         logger.debug("Max Batches of type %d : %d " % (typeSet, count))
         assert count > 0
-        start = start % count
+        #start = start % count
         while True:
-            idlst = ids[start*batch_size:(start+1)*batch_size]
+            bs = batch_size
+            if bs>len(ids):
+                bs=len(ids)
+                logger.debug("FORCE Reducing Batch Size to %d from %d",bs,batch_size)
+            idlst = random.sample(ids,bs)
             data = self.datas_from_ids(idlst)
             ndata = []
             for d in data:
@@ -134,4 +138,4 @@ class Preprocessor:
                     ndata.append(d)
             if len(ndata) > 0:
                 yield ndata
-            start = (start + 1)%count
+            #start = (start + 1)%count

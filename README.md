@@ -47,7 +47,10 @@ File | Content
 * Execute `python videohandler.py` from *VideoDataset* Directory
   
   
-  
+### Training Methods
+
+* Try Iterative Learning
+* Try Random Learning  
 
 
 # Image Captioning
