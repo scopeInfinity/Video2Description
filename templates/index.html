@@ -1,45 +1,41 @@
 {% extends "layout.html" %}
 {% block content %}
-{% if content['ids'] %}
-<div class="panel panel-default">
-<div class="panel-heading"><b>Processed</b><br>{{ content['ids'] }}</div>
-<div class="panel-body">
-{{ content['data_ids'] }}
-</div>
-</div>
-{% endif %}
-{% if content['fnames'] %}
-<div class="panel panel-default">
-<div class="panel-heading"><b>Processed</b><br>{{ content['fnames'] }}</div>
-<div class="panel-body">
-{{ content['data_fnames'] }}
-</div>
-</div>
-{% endif %}
-
-<div class="panel panel-default">
+<div class="panel panel-default col-xs-4" >
 <div class="panel-heading">Predict Using IDs</div>
 <div class="panel-body">
-	 <form action="#">
+	 <form action="predict" target="results">
 	  <div class="form-group">
 	    <label for="ids">Enter ID's (space separated)</label>
-	    <input type="ids" class="form-control" id="ids" name="ids">
+	    <input type="text" class="form-control" id="ids" name="ids">
 	  </div>
 	  <button type="submit" class="btn btn-default">Submit</button>
 	</form> 
 </div>
 </div>
 
-<div class="panel panel-default">
+<div class="panel panel-default col-xs-4">
 <div class="panel-heading">Predict Using File Names</div>
 <div class="panel-body">
-	 <form action="#">
+	 <form action="predict" target="results">
 	  <div class="form-group">
 	    <label for="fnames">Enter Filenames (space separated)</label>
-	    <input type="fnames" class="form-control" id="fnames" name="fnames">
+	    <input type="text" class="form-control" id="fnames" name="fnames">
 	  </div>
 	  <button type="submit" class="btn btn-default">Submit</button>
 	</form> 
 </div>
 </div>
+<div class="panel panel-default col-xs-4">
+<div class="panel-heading">Predict via Uploading Media</div>
+<div class="panel-body">
+	 <form action="upload" target="results" method="post" enctype="multipart/form-data">
+	  <div class="form-group">
+	    <label for="file">Upload File</label>
+	    <input type="file" class="form-control" id="file" name="file">
+	  </div>
+	  <input type="submit" class="btn btn-default"  value="Upload">
+	</form> 
+</div>
+</div>
+<iframe id="results" name="results" class="col-xs-12 col-sm-12 col-md-12" style="min-height: 1024px;"></iframe>
 {% endblock %}

@@ -14,7 +14,7 @@ class Vocab:
     VOCAB_SIZE = 1452
     CAPTION_LEN = 15
 
-    def __init__(self,data,data_dir,working_dir):
+    def __init__(self, data, train_ids, data_dir, working_dir):
         # data = dict(id => captions)
         self.embeddingI = "%s/glove.dat" % (working_dir)
         glove_file = "%s/%s" % (data_dir, Vocab.GLOVE_FILE)
@@ -29,7 +29,7 @@ class Vocab:
         freshWordEmbedding = self.loadWordEmbedding(glove_file)
         for word,enc in self.specialWords.iteritems():
             assert enc in self.wordEmbedding.keys()
-        self.buildVocab(data.values(), freshWordEmbedding)
+        self.buildVocab(data, train_ids, freshWordEmbedding)
         logger.debug("Vocab Build Completed")
 
     def loadWordEmbedding(self, glove_file):
@@ -68,7 +68,7 @@ class Vocab:
                 pickle.dump(self.wordEmbedding,f)
                 logger.info("Embedding Saved!")
 
-    def buildVocab(self, captions, trimEmbedding):
+    def buildVocab(self, data, train_ids, trimEmbedding):
         if os.path.exists(self.vocab_file):
             with open(self.vocab_file,'r') as f:
                 logger.debug("Vocab Loading from File")
@@ -81,14 +81,17 @@ class Vocab:
             for w in self.wordEmbedding.keys():
                 allWords.add(w)
             logger.debug("Cached all Embedded Words")
-            for cap in captions:
-                for w in caption_tokenize(cap):
-                    if w not in allWords:
-                        continue
-                    if w not in x.keys():
-                        x[w]=1
-                    else:
-                        x[w]+=1
+            for _id,captions in data.iteritems():
+                if _id not in train_ids:
+                    continue
+                for cap in captions:
+                    for w in caption_tokenize(cap):
+                        if w not in allWords:
+                            continue
+                        if w not in x.keys():
+                            x[w]=1
+                        else:
+                            x[w]+=1
             assert 'tshirt' not in x.keys()
             assert 'tshirt' not in allWords
             logger.debug("Iterated over all captions")
@@ -156,9 +159,10 @@ class Vocab:
         return s
         
 def vocabBuilder(datadir, workdir):
-    vHandler = VideoHandler(datadir,VideoHandler.fname_train)
+    vHandler = VideoHandler(datadir, VideoHandler.s_fname_train, VideoHandler.s_fname_test)
+    train_ids = vHandler.get_otrain_ids()
     captionData = vHandler.getCaptionData()
-    vocab = Vocab(captionData, datadir, workdir)
+    vocab = Vocab(captionData, train_ids, datadir, workdir)
     return [vHandler, vocab]
     
 if __name__ == "__main__":

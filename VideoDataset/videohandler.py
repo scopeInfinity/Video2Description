@@ -13,14 +13,16 @@ class VideoHandler:
     SHAPE = (224, 224)
         
     fname_offset = "VideoDataset"
-    fname_train = "videodatainfo_2017.json"
-    SLEEPTIME = 120
+    s_fname_train = "videodatainfo_2017.json"
+    s_fname_test = "test_videodatainfo_2017.json"
+    SLEEPTIME = 30
     STHRES = 10*1024
     EXTRACT_COUNTER = 0 # For multiprocessing
     
-    def __init__(self, maindir, fname):
-        self.splitTrainValidTest = [90,5,5] # Out of 100
-        self.fname = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, fname)
+    def __init__(self, maindir, s_fname_train, s_fname_test):
+        self.splitTrainValid = [95,5] # Out of 100
+        self.fname_train = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, s_fname_train)
+        self.fname_test = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, s_fname_test)
         self.vdir = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, "videos")
         self.cdir = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, "cache_"+str(self.LIMIT_FRAMES))
         self.tdir = "%s/%s" % (self.vdir, "extract")
@@ -33,17 +35,37 @@ class VideoHandler:
         self.build_captions()
 
     def build_captions(self):
-        with open(self.fname) as f:
-            self.data = json.load(f)
+        with open(self.fname_train) as f:
+            data_train = json.load(f)
+        with open(self.fname_test) as f:
+            data_test = json.load(f)
+        self.vdata = dict()
+        for item in data_train['videos']:
+            self.vdata[item['id']] = item
+        for item in data_test['videos']:
+            self.vdata[item['id']] = item
+
         # id => [caption]
         self.captions = dict()
         idcreated = set()
-        for sen in self.data['sentences']:
+        # Training Set
+        for sen in data_train['sentences']:
             _id = self.stringIdToInt(sen['video_id'])
             if _id not in idcreated:
                 idcreated.add(_id)
                 self.captions[_id] = []
             self.captions[_id].append(sen['caption'])
+        self.train_ids = list(idcreated)
+
+        idcreated = set()
+        # Test Set
+        for sen in data_test['sentences']:
+            _id = self.stringIdToInt(sen['video_id'])
+            if _id not in idcreated:
+                idcreated.add(_id)
+                self.captions[_id] = []
+            self.captions[_id].append(sen['caption'])
+        self.test_ids = list(idcreated)
 
     def set_vmodel(self,vmodel):
         self.vmodel = vmodel
@@ -67,7 +89,11 @@ class VideoHandler:
                     vfiles.append(int(f[:-4]))
         return vfiles
 
-    def filterMod100(self, lst, _min, _max):
+    def filterMod100(self, parentlst, lst, _min, _max):
+        parentlst = set(parentlst)
+        lst = set(lst)
+        flst = lst.intersection(parentlst)
+        lst = list(flst)
         ids = []
         for i,_id in enumerate(lst):
             if (i%100)>=_min and (i%100)<_max:
@@ -75,13 +101,19 @@ class VideoHandler:
         return ids
         
     def getTrainingIds(self):
-        return self.filterMod100(self.getDownloadedIds(), 0, self.splitTrainValidTest[0])
+        return self.filterMod100(self.get_otrain_ids(), self.getDownloadedIds(), 0, self.splitTrainValid[0])
 
     def getValidationIds(self):
-        return self.filterMod100(self.getDownloadedIds(), self.splitTrainValidTest[0], self.splitTrainValidTest[0]+self.splitTrainValidTest[1])
+        return self.filterMod100(self.get_otrain_ids(), self.getDownloadedIds(), self.splitTrainValid[0],100)
 
     def getTestIds(self):
-        return self.filterMod100(self.getDownloadedIds(), self.splitTrainValidTest[0]+self.splitTrainValidTest[1], 100)
+        return self.filterMod100(self.get_otest_ids(), self.getDownloadedIds(), 0, 100)
+
+    def get_otrain_ids(self):
+        return self.train_ids
+
+    def get_otest_ids(self):
+        return self.test_ids
 
     def getYoutubeId(self,url):
         query = urlparse.parse_qs(urlparse.urlparse(url).query)
@@ -89,7 +121,7 @@ class VideoHandler:
         return query['v'][0]
 
     def downloadVideo(self, _id, logs = True):
-        video = self.data['videos'][_id]
+        video = self.vdata[_id]
         url = video['url']
         stime = video['start time']
         etime = video['end time']
@@ -99,9 +131,10 @@ class VideoHandler:
                 print "Video Id [%d] Already Downloaded" % _id
             return sfname
         youtubeId = self.getYoutubeId(url)
-        turl = "curl 'http://hesetube.com/download.php?id=%s'" % (youtubeId)
-        durl = "http://hesetube.com/video/%s.mp4?start=%f&end=%f" % (youtubeId, stime, etime) 
+        turl = "curl 'https://hesetube.com/download.php?id=%s'" % (youtubeId)
+        durl = "https://hesetube.com/video/%s.mp4?start=%f&end=%f" % (youtubeId, stime, etime) 
         print durl
+        print turl
         os.system(turl)
         cont = urllib.urlopen(durl).read()
         with open(sfname,"wb") as f:
@@ -225,9 +258,9 @@ class VideoHandler:
 def autodownload():
     print "Current Downloaded files"
     print vHandler.getDownloadedIds()
-    vHandler.takebreak()
+    #vHandler.takebreak()
     print "Downloading More!!!"
-    allIds = vHandler.getAllIds()
+    allIds = vHandler.getAllIds()[::-1]
     tot =  len(allIds)
     for i,_id in enumerate(allIds):
         vHandler.downloadVideo(_id)
@@ -251,7 +284,7 @@ def get_args():
 
 if __name__ == "__main__":
     args = get_args()
-    vHandler = VideoHandler("/home/gagan.cs14/btp/",VideoHandler.fname_train)
+    vHandler = VideoHandler("/home/gagan.cs14/btp/",VideoHandler.s_fname_train, VideoHandler.s_fname_test)
     if args.show_count:
         show_counts()
     if args.download:

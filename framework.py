@@ -11,8 +11,8 @@ from model import VModel
 from random import shuffle
 from pprint import pformat
 
-CLABEL = 'res_mcnn_20cap_b250_s30'
-state_uninit = {'epochs':5000, 'start_batch':0, 'batch_size':250, 'saveAtBatch':50, 'steps_per_epoch':30}
+CLABEL = 'res_mcnn_rand_b100_s70'
+state_uninit = {'epochs':5000, 'start_batch':0, 'batch_size':100, 'saveAtBatch':50, 'steps_per_epoch':70}
 
 MFNAME = WORKING_DIR+'/'+CLABEL+'_model.dat'
 _MFNAME = WORKING_DIR+'/'+CLABEL+'_model.dat.bak'
@@ -211,7 +211,7 @@ class Framework():
             res['output'] = predictedCaption
             res['actual'] = actualCaption
             results.append(res)
-        return json.dumps(results)
+        return json.dumps(results, indent=4, sort_keys=True)
                                         
     def isVideoExtension(self, fname):
         for ext in ['mp4','jpeg','png']:
