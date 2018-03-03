@@ -4,7 +4,9 @@
 <div class="panel panel-default">
 <div class="panel-heading"><b>Processed</b><br>{{ content['ids'] }}</div>
 <div class="panel-body">
+<pre>
 {{ content['data_ids'] }}
+</pre>
 </div>
 </div>
 {% endif %}
@@ -12,9 +14,9 @@
 <div class="panel panel-default">
 <div class="panel-heading"><b>Processed</b><br>{{ content['fnames'] }}</div>
 <div class="panel-body">
-<textarea style="font-family:monospace;">
+<pre>
 {{ content['data_fnames'] }}
-</textarea>
+</pre>
 </div>
 </div>
 {% endif %}

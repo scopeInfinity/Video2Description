@@ -260,7 +260,7 @@ def autodownload():
     print vHandler.getDownloadedIds()
     #vHandler.takebreak()
     print "Downloading More!!!"
-    allIds = vHandler.getAllIds()[::-1]
+    allIds = vHandler.getAllIds()
     tot =  len(allIds)
     for i,_id in enumerate(allIds):
         vHandler.downloadVideo(_id)

@@ -1,13 +1,14 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_from_directory
 from copy import deepcopy
-import os, random
+import os, random, re
 app = Flask(__name__)
 prefix = '/home/gagan.cs14/btp_VideoCaption'
 
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
 app.config['UPLOAD_FOLDER'] = prefix + "/Uploads"
+app.config['VIDEOS_FOLDER'] = '/home/gagan.cs14/btp/VideoDataset/videos/'
 
-navigation = [("./","Predict",False),("./get_ids","Get ID's",False)]
+navigation = [("./","Predict",False),("./get_ids","Get ID's",False),("./play","Play Videos",False)]
 
 def getactivenav(index):
 	nav = deepcopy(navigation)
@@ -42,11 +43,15 @@ def predict_fnames(fnames):
 def main():
 	return render_template('index.html', navigation = getactivenav(0))
 
+@app.route("/play")
+def play():
+	return render_template('play.html', navigation = getactivenav(2))
+
 def predict(fnames = None, ids = None):
 	assert (fnames is None) ^ (ids is None)
 	content = dict()
 	if ids is not None:
-		content['ids'] = request.args.get('ids')
+		content['ids'] = ids
 		content['data_ids'] = predict_ids(ids)
 	elif fnames is not None:
 		content['fnames'] = fnames
@@ -56,9 +61,9 @@ def predict(fnames = None, ids = None):
 @app.route("/predict")
 def predict_page(fnames = None):
 	if request.args.get('fnames'):
-		return predict(fnames = request.args.get('fnames'))
+		return predict(fnames = re.sub("[^0-9 ]", "", request.args.get('fnames')))
 	if request.args.get('ids'):
-		return predict(ids = request.args.get('ids'))
+		return predict(ids = re.sub("[^0-9 ]", "", request.args.get('ids')))
 	return "Invalid Request"
 
 @app.route("/get_ids")
@@ -92,5 +97,12 @@ def upload_file():
             return output
     return "File Upload Failed"
 
+@app.route('/download', methods=['GET'])
+def download_file():
+  _id = request.args.get('id')
+  if _id  and unicode(_id).isnumeric():
+    return send_from_directory(app.config['VIDEOS_FOLDER'],str(_id)+".mp4")
+    return "File Not Exists"
+  return "Invalid Request"
 if __name__ == "__main__":
 	app.run(host='0.0.0.0')
