@@ -71,7 +71,7 @@ python /path/to/eval_dir/cocoeval.py <results file>.txt
 
 Commit | CIDEr | Bleu_4 | Bleu_3 | Bleu_2 | Bleu_1 | ROUGE_L | METEOR | Model Filename
 --- | --- | --- | --- | --- | --- | --- | --- | ---
-56e5a31 | 0.0893 | 0.1938 | 0.3130 | 0.4634 | 0.6440 | 0.4327 | 0.1674 | res_mcnn_rand_b100_s70_model.dat_4698_loss_1.2381912469863892 
+56e5a31 | 0.0903 | 0.2190 | 0.3276 | 0.4520 | 0.6043 | 0.4438 | 0.1647 | res_mcnn_rand_b100_s70_model.dat_4698_loss_1.2381912469863892 
 
 
 
