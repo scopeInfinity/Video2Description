@@ -31,7 +31,7 @@ class Parser:
 
     def predict(self):
         parser = argparse.ArgumentParser(prog = sys.argv[0]+" predict", description = 'Prediction Mode')
-        parser.add_argument('dataset', choices=['train','test'], help='Video dataset for prediction')
+        parser.add_argument('dataset', choices=['train','test','save_all_test'], help='Video dataset for prediction')
         parser.add_argument('-c', '--count', type = int, default = 10)
         args = parser.parse_args(sys.argv[2:])
 
@@ -41,6 +41,9 @@ class Parser:
             _ids = self.framework.get_trainids(args.count)
         elif args.dataset == 'test':
             _ids = self.framework.get_testids(args.count)
+        elif args.dataset == 'save_all_test':
+            self.framework.save_all(_ids = self.framework.get_testids()[0:400])
+            return
         else:
             assert False
         self.framework.predict_model(_ids = _ids)

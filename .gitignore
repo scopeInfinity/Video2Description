@@ -1,5 +1,10 @@
 # Learning Session Files
+*_state.txt
+*_model.dat
 *_logs.txt
+*_model.dat_*_loss_*
+*_logs_epoch_.txt
+*_logs_.txt
 model_*.dat*
 state_*.txt
 

@@ -36,12 +36,12 @@ class Preprocessor:
     Either convert videos from ids or frame file names
     '''
     COUNTER = 0
-    def videoToVec(self, _id = None, vfname = None):
+    def videoToVec(self, _id = None, vfname = None, cache_id = None):
         assert (_id is None) ^ (vfname is None)
         if not _id == None:
             frames = self.vHandler.get_iframes(_id = _id, logs = False)
         else:
-            frames = self.vHandler.get_iframes(sfname = vfname, logs = False)
+            frames = self.vHandler.get_iframes(sfname = vfname, logs = False, cache_id = cache_id)
         return frames
         # deprecated
         edir = None
@@ -61,8 +61,8 @@ class Preprocessor:
         #    Preprocessor.COUNTER += 1
         return content
 
-    def get_video_content(self, vfname):
-        return self.videoToVec(vfname = vfname)
+    def get_video_content(self, vfname, cache_id = None):
+        return self.videoToVec(vfname = vfname, cache_id = cache_id)
 
     def get_video_caption(self, _id, just_one_caption = True):
         vid = self.videoToVec(_id = _id)
@@ -74,12 +74,10 @@ class Preprocessor:
             captionIn = self.vocab.get_caption_encoded(cur_caption, True, True, False)
             captionOut = self.vocab.get_caption_encoded(cur_caption, False, False, True)
             out.append([vid,captionIn,captionOut])
-            if just_one_caption:
-                break
         if len(out) == 0:
             return None
         if just_one_caption:
-            return out[0]
+            return [random.choice(out)]
         return out
 
     def datas_from_ids(self, idlst):
@@ -88,7 +86,7 @@ class Preprocessor:
         capIn  = []
         capOut = []
         for _id in idlst:
-            vccs = self.get_video_caption(_id, just_one_caption = False)
+            vccs = self.get_video_caption(_id, just_one_caption = True)
             if vccs is None:
                 continue
             for vcc in vccs:

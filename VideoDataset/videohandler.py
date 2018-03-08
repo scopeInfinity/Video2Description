@@ -180,11 +180,13 @@ class VideoHandler:
         with open(cfname, 'wb') as f:
             np.save(f,frames)
 
-    def get_iframes(self, _id = None, sfname = None, logs = True):
+    def get_iframes(self, _id = None, sfname = None, logs = True, cache_id = None):
         assert (_id is None) ^ (sfname is None)
         # Load if cached
-        if _id is not None:
-            rframes = self.get_iframes_cached(_id)
+        if _id is not None or cache_id is not None:
+            if _id is not None:
+                cache_id = _id
+            rframes = self.get_iframes_cached(cache_id)
             if rframes is not None:
                 return rframes
 
@@ -210,8 +212,10 @@ class VideoHandler:
         frames_out = self.vmodel.preprocess_partialmodel(rframes)
 
         # Cache it
-        if _id is not None:
-            self.cached_iframe(_id, frames_out)
+        if _id is not None or cache_id is not None:
+            if _id is not None:
+                cache_id = _id
+            self.cached_iframe(cache_id, frames_out)
         return frames_out
 
     def get_frames(self,_id = None, sfname = None, logs = True):

@@ -17,6 +17,7 @@ state_uninit = {'epochs':5000, 'start_batch':0, 'batch_size':100, 'saveAtBatch':
 MFNAME = WORKING_DIR+'/'+CLABEL+'_model.dat'
 _MFNAME = WORKING_DIR+'/'+CLABEL+'_model.dat.bak'
 STATE = WORKING_DIR+'/'+CLABEL+'_state.txt'
+RESULTS = WORKING_DIR+'/'+CLABEL+'_results.txt'
 FRESTART = WORKING_DIR+'/restart'
 
 class TrainingLogs:
@@ -140,8 +141,15 @@ class Framework():
         callbacklist = [ModelGeneratorCallback(self.state, self.tlogs, self.elogs, self)]
         self.model.fit_generator(train_dg, steps_per_epoch=steps_per_epoch, epochs=epochs, verbose=1,validation_data=val_dg, validation_steps=validation_steps, initial_epoch=0, callbacks=callbacklist)
 
-    def predict_model_direct(self, fnames):
-        videoVecs =np.array([self.preprocess.get_video_content(f) for f  in fnames])
+    def predict_model_direct(self, fnames, cache_ids = None):
+        videoVecs = []
+        for i in range(len(fnames)):
+            cid = None
+            if cache_ids is not None:
+                cid = cache_ids[i]
+            videoVecs.append(self.preprocess.get_video_content(fnames[i], cache_id = cid))
+        videoVecs =np.array(videoVecs)
+        # videoVecs =np.array([self.preprocess.get_video_content(f) for f  in fnames])
         count = len(fnames)
         for i,video in enumerate(videoVecs):
             if video is None:
@@ -195,7 +203,7 @@ class Framework():
                     logger.info("Ignoring %d video " % _id)
                 else:
                     fnames.append(fname)
-        predictions,output = self.predict_model_direct(fnames)
+        predictions,output = self.predict_model_direct(fnames, cache_ids = _ids)
         results = []
         for i in range(len(fnames)):
             print()
@@ -223,14 +231,49 @@ class Framework():
         videos = ["%s/%s" % (dirpath,vid) for vid in os.listdir(dirpath) if self.isVideoExtension(vid)][0:mxc]
         self.predict_model(fnames = videos)
 
-    def get_testids(self, count):
+    def clean_caption(self, msg):
+        if '<' in msg:
+            return msg.split("<")[0]
+        return msg
+
+    def save_all(self, _ids):
+        _result = json.loads(self.predict_ids(_ids))
+        test_predicted = []
+        test_actual = []
+        for res in _result:
+            tp = dict()
+            _id = int(res['fname'].split('/')[-1].split('.')[0])
+            tp['video_id'] =  _id
+            tp['caption'] =  self.clean_caption(res['output'])
+            test_predicted.append(tp)
+
+            for cap in res['actual']:
+                tp_actual = dict()
+                tp_actual['video_id'] = _id
+                tp_actual['caption'] = cap
+                test_actual.append(tp_actual)
+        result = dict()
+        result['predicted'] = test_predicted
+        result['actual'] = test_actual
+
+        with open(RESULTS, 'w') as f:
+            f.write(json.dumps(result))
+        logger.debug("Result Saved")
+
+    def get_testids(self, count = -1):
         ids = self.preprocess.vHandler.getTestIds()
-        shuffle(ids)
+        if count == -1:
+            count = len(ids)
+        else:
+            shuffle(ids)
         return ids[:count]
 
-    def get_trainids(self, count):
+    def get_trainids(self, count = -1):
         ids = self.preprocess.vHandler.getTrainingIds()
-        shuffle(ids)
+        if count == -1:
+            count = len(ids)
+        else:
+            shuffle(ids)
         return ids[:count]
 
 '''

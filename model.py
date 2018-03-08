@@ -61,6 +61,7 @@ class VModel:
         logger.debug("Creating Model (CNN Cutoff) with Vocab Size :  %d " % VOCAB_SIZE)
         cmodel  = Sequential()
         cmodel.add(LSTM(256, input_shape=(CAPTION_LEN+1,Vocab.OUTDIM_EMB ), return_sequences=True,kernel_initializer='random_normal'))
+        cmodel.add(TimeDistributed(Dropout(0.1)))
         cmodel.add(TimeDistributed(Dense(1024,kernel_initializer='random_normal')))
         cmodel.add(TimeDistributed(Dropout(0.2)))
         cmodel.summary()
@@ -69,7 +70,7 @@ class VModel:
         print input_shape
         imodel = Sequential()
         imodel.add(TimeDistributed(Dense(1024,kernel_initializer='random_normal'), input_shape=input_shape))
-        imodel.add(Dropout(0.2))
+        imodel.add(TimeDistributed(Dropout(0.2)))
         imodel.add(LSTM(512, return_sequences=False, kernel_initializer='random_normal'))
         imodel.add(RepeatVector(CAPTION_LEN + 1))
          
@@ -79,6 +80,7 @@ class VModel:
         model.add(Merge([cmodel,imodel],mode='concat'))
         model.add(TimeDistributed(Dropout(0.2)))
         model.add(LSTM(1024,return_sequences=True, kernel_initializer='random_normal'))
+        model.add(TimeDistributed(Dropout(0.2)))
         model.add(TimeDistributed(Dense(VOCAB_SIZE,kernel_initializer='random_normal')))
         model.add(Activation('softmax'))
         optimizer = RMSprop(lr=0.001, rho=0.9, epsilon=1e-8, decay=0)
