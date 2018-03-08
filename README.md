@@ -52,6 +52,28 @@ File | Content
 * Try Iterative Learning
 * Try Random Learning  
 
+### Evaluation
+
+#### Prerequisite
+```bash
+cd /path/to/eval_dir/
+git clone 'https://github.com/tylin/coco-caption.git' cococaption
+ln /path/to/working_dir/cocoeval.py cococaption/
+```
+#### Evaluate
+```bash
+# One can do changes in parser.py for numbers of test examples to be considered in evaluation
+python parser.py predict save_all_test
+python /path/to/eval_dir/cocoeval.py <results file>.txt
+```
+
+#### Sample Evaluation while training
+
+Commit | CIDEr | Bleu_4 | Bleu_3 | Bleu_2 | Bleu_1 | ROUGE_L | METEOR | Model Filename
+--- | --- | --- | --- | --- | --- | --- | --- | ---
+56e5a31 | 0.0893 | 0.1938 | 0.3130 | 0.4634 | 0.6440 | 0.4327 | 0.1674 | res_mcnn_rand_b100_s70_model.dat_4698_loss_1.2381912469863892 
+
+
 
 # Image Captioning
 Generate caption for the given images
