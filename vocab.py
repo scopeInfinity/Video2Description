@@ -6,12 +6,11 @@ import os
 import numpy as np
 import pickle
 
-# Vocab Size : 1452
 class Vocab:
     GLOVE_FILE = 'glove/glove.6B.100d.txt'
     OUTDIM_EMB = 100
     WORD_MIN_FREQ = 5
-    VOCAB_SIZE = 1452
+    VOCAB_SIZE = 9448
     CAPTION_LEN = 15
 
     def __init__(self, data, train_ids, data_dir, working_dir):
@@ -108,6 +107,7 @@ class Vocab:
             self.word2ind[w]=i
         assert 'tshirt' not in self.wordEmbedding.keys()
         assert 'tshirt' not in self.word2ind.keys()
+        logger.debug("Words to be in vocab %d found %d" % (Vocab.VOCAB_SIZE, len(self.ind2word)))
         assert len(self.ind2word) == Vocab.VOCAB_SIZE
         if trimEmbedding:
             newEmbedding = dict()

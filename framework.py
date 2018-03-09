@@ -11,8 +11,8 @@ from model import VModel
 from random import shuffle
 from pprint import pformat
 
-CLABEL = 'res_mcnn_rand_b100_s70'
-state_uninit = {'epochs':5000, 'start_batch':0, 'batch_size':100, 'saveAtBatch':50, 'steps_per_epoch':70}
+CLABEL = 'res_mcnn_rand_b100_s500'
+state_uninit = {'epochs':5000, 'start_batch':0, 'batch_size':200, 'saveAtBatch':100, 'steps_per_epoch':500}
 
 MFNAME = WORKING_DIR+'/'+CLABEL+'_model.dat'
 _MFNAME = WORKING_DIR+'/'+CLABEL+'_model.dat.bak'

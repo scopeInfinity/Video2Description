@@ -1,4 +1,5 @@
-import os
+import cv2
+import os, sys
 import numpy as np
 from logger import logger
 from keras.models import Sequential
@@ -90,6 +91,16 @@ class VModel:
         self.model = model
         return model
 
+    def plot_model(self, filename):
+        from keras.utils import plot_model
+        plot_model(self.model, to_file=filename, show_shapes = True, show_layer_names = False)
+        print("Model Plotted in %s"%filename)
+
+if __name__ == "__main__":
+    if sys.argv[1] == "plot_model":
+        from vocab import Vocab
+        vmodel = VModel(Vocab.CAPTION_LEN, Vocab.VOCAB_SIZE)
+        vmodel.plot_model(sys.argv[2])
 
 def model_resnet_endonehot(CAPTION_LEN,VOCAB_SIZE):
     logger.debug("Creating Model with Vocab Size :  %d " % VOCAB_SIZE)
