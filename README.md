@@ -69,9 +69,10 @@ python /path/to/eval_dir/cocoeval.py <results file>.txt
 
 #### Sample Evaluation while training
 
-Commit | CIDEr | Bleu_4 | Bleu_3 | Bleu_2 | Bleu_1 | ROUGE_L | METEOR | Model Filename
---- | --- | --- | --- | --- | --- | --- | --- | ---
-56e5a31 | 0.0903 | 0.2190 | 0.3276 | 0.4520 | 0.6043 | 0.4438 | 0.1647 | res_mcnn_rand_b100_s70_model.dat_4698_loss_1.2381912469863892 
+Commit | Training | CIDEr | Bleu_4 | Bleu_3 | Bleu_2 | Bleu_1 | ROUGE_L | METEOR | Model Filename
+--- | --- | --- | --- | --- | --- | --- | --- | --- | ---
+58986b9 | CPU 14 hrs |  0.1274 | 0.2490 | 0.3726 | 0.5216 | 0.6888 | 0.4639 | 0.1913 | res_mcnn_rand_b100_s500_model.dat_4997_loss_2.3710925579071045 
+56e5a31 | CPU | 0.0903 | 0.2190 | 0.3276 | 0.4520 | 0.6043 | 0.4438 | 0.1647 | res_mcnn_rand_b100_s70_model.dat_4698_loss_1.2381912469863892 
 
 
 
