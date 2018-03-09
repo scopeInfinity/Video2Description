@@ -19,7 +19,7 @@ _MFNAME = WORKING_DIR+'/'+CLABEL+'_model.dat.bak'
 STATE = WORKING_DIR+'/'+CLABEL+'_state.txt'
 RESULTS = WORKING_DIR+'/'+CLABEL+'_results.txt'
 FRESTART = WORKING_DIR+'/restart'
-
+PREDICT_BATCHSIZE = 200
 class TrainingLogs:
     def __init__(self, prefix=""):
         self.epochLogHistory = []
@@ -203,7 +203,20 @@ class Framework():
                     logger.info("Ignoring %d video " % _id)
                 else:
                     fnames.append(fname)
-        predictions,output = self.predict_model_direct(fnames, cache_ids = _ids)
+
+        batch_size = PREDICT_BATCHSIZE
+        batch_count = (len(fnames)+batch_size-1)/batch_size
+        predictions,output = ([],[])
+        for i in range(batch_count):
+            cids = None
+            if _ids is not None:
+                cids = _ids[i*batch_size:(i+1)*batch_size]
+            pred,out = self.predict_model_direct(fnames[i*batch_size:(i+1)*batch_size], cache_ids = cids)
+            if pred is None:
+                logger.debug(json.dumps(out))
+                assert False
+            predictions.extend(pred)
+            output.extend(out)
         results = []
         for i in range(len(fnames)):
             print()

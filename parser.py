@@ -42,7 +42,7 @@ class Parser:
         elif args.dataset == 'test':
             _ids = self.framework.get_testids(args.count)
         elif args.dataset == 'save_all_test':
-            self.framework.save_all(_ids = self.framework.get_testids()[0:400])
+            self.framework.save_all(_ids = self.framework.get_testids())
             return
         else:
             assert False
