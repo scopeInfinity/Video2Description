@@ -72,7 +72,8 @@ python /path/to/eval_dir/cocoeval.py <results file>.txt
 
 Commit | Training | CIDEr | Bleu_4 | Bleu_3 | Bleu_2 | Bleu_1 | ROUGE_L | METEOR | Model Filename
 --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
-3ccf5d5 | CPU 15hrs |  0.1121 | 0.2470 | 0.3674 | 0.5055 | 0.6682 | 0.4560 | 0.1864 | res_mcnn_rand_b100_s500_model.dat_model1_3ccf5d5 
+3ccf5d5 | CPU 15hrs |  0.1258 | 0.2535 | 0.3763 | 0.51817 | 0.6792 | 0.4619 | 0.1895 | res_mcnn_rand_b100_s500_model.dat_model1_3ccf5d5 
+
 
 
 # Image Captioning
