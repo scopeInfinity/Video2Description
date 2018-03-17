@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+{% block content %}
+<center class="justify-content-center">
+<div class="panel panel-default col-xs-4" >
+<div class="panel-heading">Play Video</div>
+<div class="panel-body">
+	  <div class="form-group">
+	    <label for="ids">Enter ID</label>
+	    <input type="text" class="form-control" id="fid">
+	  </div>
+	  <button type="submit" class="btn btn-default" onclick="reloadvideo()">Play</button>
+	</form> 
+</div>
+</div>
+<div "panel panel-default col-xs-8">
+  <center>
+    <video class="embed-responsive-item" width="640" height="480" id="video" autoplay>
+        <source id="vsource" src="" type="video/mp4">
+    </video>
+  </center>
+</div>
+<script>
+function reloadvideo() {
+   var video = document.getElementById('video');
+   video.controls = true; 
+   var vsource = document.getElementById('vsource');
+   vsource.setAttribute('src', "./download?id="+document.getElementById('fid').value.trim());
+   video.pause();
+   video.load();
+   video.play();
+   console.log("Play Now")
+}
+</script>
+</center>
+{% endblock %}

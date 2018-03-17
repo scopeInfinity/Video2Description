@@ -1,3 +1,28 @@
+# Learning Session Files
+*_state.txt
+*_model.dat
+*_logs.txt
+*_model.dat_*_loss_*
+*_logs_epoch_.txt
+*_logs_.txt
+model_*.dat*
+state_*.txt
+
+# Local Files to ignore
+display
+*.mp4
+*.mp4_
+
+# Backup Files
+*~
+*#
+.#*
+
+# Dynamically Generated Files
+vocab.dat
+glove.dat
+log.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

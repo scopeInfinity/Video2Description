@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+{% block content %}
+{% if content['ids'] %}
+<div class="panel panel-default">
+<div class="panel-heading"><b>Processed</b><br>{{ content['ids'] }}</div>
+<div class="panel-body">
+<pre>
+{{ content['data_ids'] }}
+</pre>
+</div>
+</div>
+{% endif %}
+{% if content['fnames'] %}
+<div class="panel panel-default">
+<div class="panel-heading"><b>Processed</b><br>{{ content['fnames'] }}</div>
+<div class="panel-body">
+<pre>
+{{ content['data_fnames'] }}
+</pre>
+</div>
+</div>
+{% endif %}
+{% endblock %}

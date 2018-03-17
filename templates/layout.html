@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Video2Description</title>
+	 <!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+	<!-- jQuery library -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+	<!-- Latest compiled JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script> 
+<style>
+.modal {
+    overflow-y: auto;
+}
+pre {
+    display: block;
+    font-family: monospace;
+    white-space: pre;
+    margin: 1em 0;
+} 
+</style></head>
+<body>
+{% if navigation %}
+<nav class="navbar navbar-default">
+	  <div class="container-fluid">
+	    <div class="navbar-header">
+	      <a class="navbar-brand" href="#">Video2Description</a>
+	    </div>
+	    <ul class="nav navbar-nav">
+      {% for (link,title,active) in navigation %} 
+			<li {% if active %} class="active" {% endif %}><a href='{{ link }}'>{{ title }}</a></li>
+      {% endfor %}
+	    </ul>
+	  </div>
+	</nav>
+{% endif %}
+{% block content %}{% endblock %}
+</body>
+</html>
