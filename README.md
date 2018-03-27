@@ -75,6 +75,16 @@ Commit | Training | CIDEr | Bleu_4 | Bleu_3 | Bleu_2 | Bleu_1 | ROUGE_L | METEOR
 3ccf5d5 | CPU 15hrs |  0.1258 | 0.2535 | 0.3763 | 0.51817 | 0.6792 | 0.4619 | 0.1895 | res_mcnn_rand_b100_s500_model.dat_model1_3ccf5d5 
 
 
+### Web Server
+
+- From a high RAM ram server **(S)** execute
+```bash
+python parser.py server -s
+```
+- Edit `rpc.py`
+  - Change **`SERVER_IP`** to IP of server **(S)**
+- Execute `python app.py` from webserver.
+- Open `http://webserver:5000/` to open Web Server for testing (under default configuration)
 
 # Image Captioning
 Generate caption for the given images
