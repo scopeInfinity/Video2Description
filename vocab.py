@@ -7,17 +7,17 @@ import numpy as np
 import pickle
 
 class Vocab:
-    GLOVE_FILE = 'glove/glove.6B.100d.txt'
-    OUTDIM_EMB = 100
+    GLOVE_FILE = 'glove/glove.6B.300d.txt'
+    OUTDIM_EMB = 300
     WORD_MIN_FREQ = 5
     VOCAB_SIZE = 9448
     CAPTION_LEN = 15
 
     def __init__(self, data, train_ids, data_dir, working_dir):
         # data = dict(id => captions)
-        self.embeddingI = "%s/glove.dat" % (working_dir)
+        self.embeddingI = "%s/glove_300.dat" % (working_dir)
         glove_file = "%s/%s" % (data_dir, Vocab.GLOVE_FILE)
-        self.vocab_file = "%s/vocab.dat" % (working_dir)
+        self.vocab_file = "%s/vocab_2.dat" % (working_dir)
         logger.debug("Glove File %s\nEmbedding File %s\nVocab File %s\n" % (glove_file, self.embeddingI, self.vocab_file))
         self.specialWords = dict()
         self.specialWords['START'] = '>'

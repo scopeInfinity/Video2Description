@@ -5,8 +5,10 @@ from logger import logger
 from keras.models import Sequential
 from keras.layers import Dropout, Flatten, RepeatVector, Merge, Activation
 from keras.layers import Embedding, Conv2D, MaxPooling2D, LSTM
-from keras.layers import TimeDistributed, Dense, Input, Flatten
+from keras.layers import TimeDistributed, Dense, Input, Flatten, GlobalAveragePooling2D
 from keras.applications import ResNet50, VGG16
+from keras.applications.inception_v3 import InceptionV3
+from keras.regularizers import l2
 from keras.optimizers import RMSprop
 from keras.layers.merge import Concatenate
 from keras.models import Model
@@ -22,10 +24,11 @@ def sentence_distance(y_true, y_pred):
 
 class VModel:
 
-    def __init__(self, CAPTION_LEN, VOCAB_SIZE):
+    def __init__(self, CAPTION_LEN, VOCAB_SIZE, cutoffonly = False):
         self.CAPTION_LEN = CAPTION_LEN
         self.VOCAB_SIZE  = VOCAB_SIZE
-        self.build_mcnn(self.CAPTION_LEN, self.VOCAB_SIZE)
+        if not cutoffonly:
+            self.build_mcnn(self.CAPTION_LEN, self.VOCAB_SIZE)
         self.build_cutoffmodel()
 
     def  get_model(self):
@@ -37,7 +40,8 @@ class VModel:
     # PC : pretrained CNN will be non-trainable now
     '''
     def build_cutoffmodel(self):
-        base = ResNet50(include_top = False, weights='imagenet')
+        # base = ResNet50(include_top = False, weights='imagenet')
+        base = InceptionV3(include_top = False, weights='imagenet')
         self.co_model = base
         logger.debug("Building Cutoff Model")
         self.co_model.summary()
@@ -47,8 +51,27 @@ class VModel:
         return self.co_model
 
     # co == Cutoff Model
-    def co_getoutshape(self):
-        return (None,2048)
+    def co_getoutshape(self, assert_model = None):
+        ## ResNet
+        # shape = (None,2048)
+        # Inception V3
+        shape = (None, 8*8*2048)
+        logger.debug("Model Cutoff OutShape : %s" % str(shape))
+        '''
+        # Not in use
+        if assert_model is not None:
+            ashape = assert_model.output_shape
+            sz = 1
+            for x in ashape:
+                if x is not None:
+                    sz = sz * x
+            ashape = (None, sz)
+            logger.debug("Assert Model Cutoff OutShape : %s" % str(ashape))
+            assert shape == ashape
+        '''
+        assert len(shape) == 2
+        assert shape[0] is None
+        return shape
 
     def preprocess_partialmodel(self, frames):
         frames_in = np.asarray([image.img_to_array(frame) for frame in frames])
@@ -61,10 +84,9 @@ class VModel:
     def build_mcnn(self, CAPTION_LEN, VOCAB_SIZE):
         logger.debug("Creating Model (CNN Cutoff) with Vocab Size :  %d " % VOCAB_SIZE)
         cmodel  = Sequential()
-        cmodel.add(LSTM(256, input_shape=(CAPTION_LEN+1,Vocab.OUTDIM_EMB ), return_sequences=True,kernel_initializer='random_normal'))
-        cmodel.add(TimeDistributed(Dropout(0.1)))
-        cmodel.add(TimeDistributed(Dense(1024,kernel_initializer='random_normal')))
-        cmodel.add(TimeDistributed(Dropout(0.2)))
+        cmodel.add(TimeDistributed(Dropout(0.2), input_shape=(CAPTION_LEN+1,Vocab.OUTDIM_EMB )))
+        cmodel.add(TimeDistributed(Dense(512,kernel_initializer='random_normal')))
+        cmodel.add(LSTM(512, return_sequences=True,kernel_initializer='random_normal'))
         cmodel.summary()
     
         input_shape = self.co_getoutshape()
@@ -72,7 +94,7 @@ class VModel:
         imodel = Sequential()
         imodel.add(TimeDistributed(Dense(1024,kernel_initializer='random_normal'), input_shape=input_shape))
         imodel.add(TimeDistributed(Dropout(0.2)))
-        imodel.add(LSTM(512, return_sequences=False, kernel_initializer='random_normal'))
+        imodel.add(LSTM(1024, return_sequences=False, kernel_initializer='random_normal'))
         imodel.add(RepeatVector(CAPTION_LEN + 1))
          
         imodel.summary()
@@ -80,14 +102,14 @@ class VModel:
         model = Sequential()
         model.add(Merge([cmodel,imodel],mode='concat'))
         model.add(TimeDistributed(Dropout(0.2)))
+        model.add(LSTM(1024,return_sequences=True, kernel_initializer='random_normal',recurrent_regularizer=l2(0.01)))
         model.add(LSTM(1024,return_sequences=True, kernel_initializer='random_normal'))
-        model.add(TimeDistributed(Dropout(0.2)))
         model.add(TimeDistributed(Dense(VOCAB_SIZE,kernel_initializer='random_normal')))
         model.add(Activation('softmax'))
         optimizer = RMSprop(lr=0.001, rho=0.9, epsilon=1e-8, decay=0)
         model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
         model.summary()
-        logger.debug("Model Created model_mcnn")
+        logger.debug("Model Created model_l1_l2")
         self.model = model
         return model
 
@@ -101,40 +123,4 @@ if __name__ == "__main__":
         from vocab import Vocab
         vmodel = VModel(Vocab.CAPTION_LEN, Vocab.VOCAB_SIZE)
         vmodel.plot_model(sys.argv[2])
-
-def model_resnet_endonehot(CAPTION_LEN,VOCAB_SIZE):
-    logger.debug("Creating Model with Vocab Size :  %d " % VOCAB_SIZE)
-    cmodel  = Sequential()
-    cmodel.add(LSTM(256, input_shape=(CAPTION_LEN+1,Vocab.OUTDIM_EMB ), return_sequences=True,kernel_initializer='random_normal'))
-    cmodel.add(TimeDistributed(Dense(1024,kernel_initializer='random_normal')))
-    cmodel.add(TimeDistributed(Dropout(0.2)))
-    cmodel.summary()
-    
-    input_tensor = Input(shape=(224,224,3))
-    res = ResNet50(include_top=False, weights='imagenet', input_tensor=input_tensor)
-    res.trainable = False
-    imodel = Sequential()
-    imodel.add(TimeDistributed(res, input_shape=(None, 224, 224, 3)))
-    imodel.add(TimeDistributed(Flatten()))
-    imodel.add(Dense(1024,kernel_initializer='random_normal'))
-    imodel.add(Dropout(0.2))
-    imodel.add(Dense(1024,kernel_initializer='random_normal'))
-    imodel.add(Dropout(0.1))
-    imodel.add(LSTM(512, return_sequences=False, kernel_initializer='random_normal'))
-    imodel.add(RepeatVector(CAPTION_LEN + 1))
-    
-    imodel.summary()
-
-    model = Sequential()
-    model.add(Merge([cmodel,imodel],mode='concat'))
-    model.add(TimeDistributed(Dropout(0.2)))
-    model.add(LSTM(1024,return_sequences=True, kernel_initializer='random_normal'))
-    model.add(LSTM(1024,return_sequences=True, kernel_initializer='random_normal'))
-    model.add(TimeDistributed(Dense(VOCAB_SIZE,kernel_initializer='random_normal')))
-    model.add(Activation('softmax'))
-    optimizer = RMSprop(lr=0.001, rho=0.9, epsilon=1e-8, decay=0)
-    model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
-    model.summary()
-    logger.debug("Model Created model_resnet_endonehot")
-    return model
 

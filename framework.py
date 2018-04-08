@@ -11,8 +11,8 @@ from model import VModel
 from random import shuffle
 from pprint import pformat
 
-CLABEL = 'res_mcnn_rand_b100_s500'
-state_uninit = {'epochs':5000, 'start_batch':0, 'batch_size':200, 'saveAtBatch':100, 'steps_per_epoch':500}
+CLABEL = 'inception_D1024_l1_l2_rand_b100_s500'
+state_uninit = {'epochs':5000, 'start_batch':0, 'batch_size':100, 'saveAtBatch':100, 'steps_per_epoch':500}
 
 MFNAME = WORKING_DIR+'/'+CLABEL+'_model.dat'
 _MFNAME = WORKING_DIR+'/'+CLABEL+'_model.dat.bak'
@@ -20,6 +20,7 @@ STATE = WORKING_DIR+'/'+CLABEL+'_state.txt'
 RESULTS = WORKING_DIR+'/'+CLABEL+'_results.txt'
 FRESTART = WORKING_DIR+'/restart'
 PREDICT_BATCHSIZE = 200
+
 class TrainingLogs:
     def __init__(self, prefix=""):
         self.epochLogHistory = []
@@ -48,11 +49,13 @@ class ModelGeneratorCallback(callbacks.Callback):
 
     def __init__(self, state, tlogs, elogs, framework):
         self.state = state
-        self.lastloss = str('inf')
+        self.lastloss = float('inf')
         self.tlogs = tlogs
         self.elogs = elogs
+        self.last_epochmodel = None
         self.framework = framework
         self.batchTrainedCounter = 0
+        self.bestlossepoch = float('inf')
 
     def on_epoch_end(self, epoch, logs={}):
         logger.debug("Epoch %d End " % epoch)
@@ -63,7 +66,12 @@ class ModelGeneratorCallback(callbacks.Callback):
         valacc  = logs['val_acc']
         self.elogs.add([epoch,loss, acc, valloss, valacc])
         self.elogs.flush()
-        self.framework.save(epoch=("%03d_loss_%s" % (self.state['epochs'],str(valloss))))
+        if valloss < self.bestlossepoch:
+            to_rm = self.last_epochmodel
+            self.last_epochmodel = self.framework.save(epoch=("%03d_loss_%s" % (self.state['epochs'],str(valloss))))
+            self.bestlossepoch = valloss
+            if to_rm is not None:
+                os.remove(to_rm)
         return
 
     def on_batch_end(self, batch, logs={}):
@@ -126,6 +134,8 @@ class Framework():
             with open(STATE,'w') as f:
                 json.dump(self.state,f)
                 logger.debug("State Saved")
+            return fname
+        return None
 
     def train_generator(self):
         epochs = self.state['epochs']

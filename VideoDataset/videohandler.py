@@ -10,7 +10,7 @@ from pprint import pprint
 
 class VideoHandler:
     LIMIT_FRAMES = 40
-    SHAPE = (224, 224)
+    SHAPE = (299, 299)
         
     fname_offset = "VideoDataset"
     s_fname_train = "videodatainfo_2017.json"
@@ -24,7 +24,7 @@ class VideoHandler:
         self.fname_train = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, s_fname_train)
         self.fname_test = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, s_fname_test)
         self.vdir = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, "videos")
-        self.cdir = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, "cache_"+str(self.LIMIT_FRAMES))
+        self.cdir = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, "cache_"+str(self.LIMIT_FRAMES)+"_"+("%dx%d" % VideoHandler.SHAPE))
         self.tdir = "%s/%s" % (self.vdir, "extract")
         self.logfile = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, "log.txt")
         if os.path.exists(self.tdir):
@@ -228,7 +228,7 @@ class VideoHandler:
         if os.path.exists(edir):
             shutil.rmtree(edir)
         os.mkdir(edir)
-        cmd = "ffmpeg -i %s -vf fps=%d -s 224x224 %s/0_%%03d.jpg &> /dev/null" % (sfname, 5, edir) #&> /dev/null
+        cmd = "ffmpeg -i %s -vf fps=%d -s %dx%d %s/0_%%03d.jpg &> /dev/null" % (sfname, 5, SHAPE[0], SHAPE[1], edir) #&> /dev/null
         if logs:
             print cmd
         returnStatus = os.system(cmd)
@@ -271,6 +271,31 @@ def autodownload():
         percent = 100.0*(i+1)/tot
         print "%.3f Completed!" % percent
 
+def cache_videoid(_id, percent):
+    print "%.3f caching scheduled!" % percent
+    vHandler.get_iframes(_id = _id)
+
+def autocache():
+    import sys
+    import concurrent.futures
+    sys.path.append("..")
+    
+    from model import VModel
+    vmodel = VModel(-1,-1, cutoffonly = True)
+    vHandler.set_vmodel(vmodel)
+    ids = vHandler.getDownloadedIds()
+    tot = len(ids)
+
+    # from concurrent.futures import ThreadPoolExecutor, wait
+    # pool = ThreadPoolExecutor(10)
+    futures = []
+    for i,_id in enumerate(ids):
+        percent = 100.0*(i+1)/tot
+        #futures.append(pool.submit(cache_videoid, _id, percent))
+        cache_videoid(_id, percent)
+    #print(wait(futures))
+    print("Caching Completed!")
+
 def show_counts():
     print "Training Videos   : %d " % len(vHandler.getTrainingIds())
     print "Validation Videos : %d " % len(vHandler.getValidationIds())
@@ -280,6 +305,7 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-sc", "--show-count", help="show count for training/validation/test videos", action='store_true')
     parser.add_argument("-d", "--download", help="download more videos to extend dataset", action='store_true')
+    parser.add_argument("-ac", "--auto-cache", help="cache all downloaded videos", action='store_true')
     parser.add_argument("-strain", "--show-train", help="show ids for training videos", action='store_true')
     parser.add_argument("-stest", "--show-test", help="show ids for test videos", action='store_true')
     parser.add_argument("-sval", "--show-val", help="show ids for validation videos", action='store_true')
@@ -291,8 +317,13 @@ if __name__ == "__main__":
     vHandler = VideoHandler("/home/gagan.cs14/btp/",VideoHandler.s_fname_train, VideoHandler.s_fname_test)
     if args.show_count:
         show_counts()
+        exit()
     if args.download:
         autodownload()
+        exit()
+    if args.auto_cache:
+        autocache()
+        exit()
     if args.show_train:
         print "Train Ids"
         pprint(vHandler.getTrainingIds())

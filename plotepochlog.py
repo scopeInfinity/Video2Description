@@ -10,7 +10,9 @@ if  len(sys.argv)>=3:
 showval = True
 if  len(sys.argv)>=4:
     showval = (sys.argv[3] == 'yo')
-
+showepoch = True
+if len(sys.argv)>=5:
+    showepoch = (sys.argv[4] == 'yo')
 
 print "Fname %s " % fname
 
@@ -39,7 +41,8 @@ host = fig.add_subplot(111)
 pacc = host.twinx()
 ploss = host.twinx()
 
-_b,=host.plot(x,batch,color= plt.cm.viridis(0.95),label='Batches')
+if showepoch:
+    _b,=host.plot(x,batch,color= plt.cm.viridis(0.95),label='Batches')
 
 if showtrain:
     _a,=pacc.plot(x,acc,'-.',label="Accuracy",color= plt.cm.viridis(0))
