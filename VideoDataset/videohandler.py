@@ -10,8 +10,11 @@ from pprint import pprint
 
 class VideoHandler:
     LIMIT_FRAMES = 40
-    SHAPE = (299, 299)
-        
+    # ResNet
+    SHAPE = (224, 224)
+    ## InceptionV3
+    # SHAPE = (299, 299)
+
     fname_offset = "VideoDataset"
     s_fname_train = "videodatainfo_2017.json"
     s_fname_test = "test_videodatainfo_2017.json"

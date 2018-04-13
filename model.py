@@ -4,20 +4,21 @@ import numpy as np
 from logger import logger
 from keras.models import Sequential
 from keras.layers import Dropout, Flatten, RepeatVector, Merge, Activation
-from keras.layers import Embedding, Conv2D, MaxPooling2D, LSTM
-from keras.layers import TimeDistributed, Dense, Input, Flatten, GlobalAveragePooling2D
+from keras.layers import Embedding, Conv2D, MaxPooling2D, LSTM, GRU, BatchNormalization
+from keras.layers import TimeDistributed, Dense, Input, Flatten, GlobalAveragePooling2D, Bidirectional
 from keras.applications import ResNet50, VGG16
 from keras.applications.inception_v3 import InceptionV3
 from keras.regularizers import l2
 from keras.optimizers import RMSprop
 from keras.layers.merge import Concatenate
 from keras.models import Model
-import keras.backend as K
 from vocab import Vocab
 from keras.preprocessing import image
 from keras.applications.resnet50 import preprocess_input
 import tensorflow as tf
-OutNeuronLang = 128
+
+import keras.backend as K
+K.set_learning_phase(1)
 
 def sentence_distance(y_true, y_pred):
     return K.sqrt(K.sum(K.square(K.abs(y_true-y_pred)),axis=1,keepdims=True))
@@ -40,8 +41,8 @@ class VModel:
     # PC : pretrained CNN will be non-trainable now
     '''
     def build_cutoffmodel(self):
-        # base = ResNet50(include_top = False, weights='imagenet')
-        base = InceptionV3(include_top = False, weights='imagenet')
+        base = ResNet50(include_top = False, weights='imagenet')
+        # base = InceptionV3(include_top = False, weights='imagenet')
         self.co_model = base
         logger.debug("Building Cutoff Model")
         self.co_model.summary()
@@ -52,10 +53,10 @@ class VModel:
 
     # co == Cutoff Model
     def co_getoutshape(self, assert_model = None):
-        ## ResNet
-        # shape = (None,2048)
-        # Inception V3
-        shape = (None, 8*8*2048)
+        # ResNet
+        shape = (None,2048)
+        ## Inception V3
+        # shape = (None, 8*8*2048)
         logger.debug("Model Cutoff OutShape : %s" % str(shape))
         '''
         # Not in use
@@ -81,11 +82,14 @@ class VModel:
             frames_out = np.array([frame.flatten() for frame in frames_out])
         return frames_out
 
+    def train_mode(self):
+        import keras.backend as K
+        K.set_learning_phase(1)
+
     def build_mcnn(self, CAPTION_LEN, VOCAB_SIZE):
         logger.debug("Creating Model (CNN Cutoff) with Vocab Size :  %d " % VOCAB_SIZE)
         cmodel  = Sequential()
-        cmodel.add(TimeDistributed(Dropout(0.2), input_shape=(CAPTION_LEN+1,Vocab.OUTDIM_EMB )))
-        cmodel.add(TimeDistributed(Dense(512,kernel_initializer='random_normal')))
+        cmodel.add(TimeDistributed(Dense(512,kernel_initializer='random_normal'), input_shape=(CAPTION_LEN+1,Vocab.OUTDIM_EMB )))
         cmodel.add(LSTM(512, return_sequences=True,kernel_initializer='random_normal'))
         cmodel.summary()
     
@@ -93,8 +97,11 @@ class VModel:
         print input_shape
         imodel = Sequential()
         imodel.add(TimeDistributed(Dense(1024,kernel_initializer='random_normal'), input_shape=input_shape))
-        imodel.add(TimeDistributed(Dropout(0.2)))
-        imodel.add(LSTM(1024, return_sequences=False, kernel_initializer='random_normal'))
+        imodel.add(TimeDistributed(Dropout(0.25)))
+        imodel.add(TimeDistributed(BatchNormalization(axis=-1)))
+        imodel.add(Activation('tanh'))
+        # TODO: Try Bidirectional
+        imodel.add(GRU(1024, return_sequences=False, kernel_initializer='random_normal'))
         imodel.add(RepeatVector(CAPTION_LEN + 1))
          
         imodel.summary()
@@ -103,13 +110,13 @@ class VModel:
         model.add(Merge([cmodel,imodel],mode='concat'))
         model.add(TimeDistributed(Dropout(0.2)))
         model.add(LSTM(1024,return_sequences=True, kernel_initializer='random_normal',recurrent_regularizer=l2(0.01)))
-        model.add(LSTM(1024,return_sequences=True, kernel_initializer='random_normal'))
+        #model.add(LSTM(1024,return_sequences=True, kernel_initializer='random_normal'))
         model.add(TimeDistributed(Dense(VOCAB_SIZE,kernel_initializer='random_normal')))
         model.add(Activation('softmax'))
         optimizer = RMSprop(lr=0.001, rho=0.9, epsilon=1e-8, decay=0)
         model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
         model.summary()
-        logger.debug("Model Created model_l1_l2")
+        logger.debug("Model Created ResNet_D512L512_D1024D0.25BNGRU1024_D0.2L1024DVS")
         self.model = model
         return model
 

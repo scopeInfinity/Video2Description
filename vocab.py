@@ -17,7 +17,7 @@ class Vocab:
         # data = dict(id => captions)
         self.embeddingI = "%s/glove_300.dat" % (working_dir)
         glove_file = "%s/%s" % (data_dir, Vocab.GLOVE_FILE)
-        self.vocab_file = "%s/vocab_2.dat" % (working_dir)
+        self.vocab_file = "%s/vocab.dat" % (working_dir)
         logger.debug("Glove File %s\nEmbedding File %s\nVocab File %s\n" % (glove_file, self.embeddingI, self.vocab_file))
         self.specialWords = dict()
         self.specialWords['START'] = '>'

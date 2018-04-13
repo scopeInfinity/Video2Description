@@ -11,7 +11,9 @@ from model import VModel
 from random import shuffle
 from pprint import pformat
 
-CLABEL = 'inception_D1024_l1_l2_rand_b100_s500'
+WORKERS = 40
+
+CLABEL = 'ResNet_D512L512_D1024D0.25BNGRU1024_D0.2L1024DVS'
 state_uninit = {'epochs':5000, 'start_batch':0, 'batch_size':100, 'saveAtBatch':100, 'steps_per_epoch':500}
 
 MFNAME = WORKING_DIR+'/'+CLABEL+'_model.dat'
@@ -149,7 +151,11 @@ class Framework():
         val_dg = self.preprocess.data_generator(bs, -1, typeSet = 1)
         logger.debug("Attemping to fit")
         callbacklist = [ModelGeneratorCallback(self.state, self.tlogs, self.elogs, self)]
-        self.model.fit_generator(train_dg, steps_per_epoch=steps_per_epoch, epochs=epochs, verbose=1,validation_data=val_dg, validation_steps=validation_steps, initial_epoch=0, callbacks=callbacklist)
+        self.vmodel.train_mode()
+        self.model.fit_generator(train_dg, steps_per_epoch=steps_per_epoch, epochs=epochs,
+                                 verbose=1,validation_data=val_dg, validation_steps=validation_steps,
+                                 initial_epoch=0, callbacks=callbacklist,
+                                 workers=WORKERS, use_multiprocessing=True)
 
     def predict_model_direct(self, fnames, cache_ids = None):
         videoVecs = []
@@ -298,26 +304,3 @@ class Framework():
         else:
             shuffle(ids)
         return ids[:count]
-
-'''
-#deprecated
-def main():
-    framework = Framework()                                            
-    if len(sys.argv) == 2 and '-train' == sys.argv[1]:
-        framework.train_generator()
-    elif len(sys.argv) == 3 and '-p_ids' == sys.argv[1]:
-        framework.predict_model(_ids = [int(x) for x in sys.argv[2].split(",")])
-    elif len(sys.argv) == 3 and '-prand_test' == sys.argv[1]:
-        framework.predict_model(_ids = framework.get_testids(int(sys.argv[2])))
-    elif len(sys.argv) == 3 and '-prand_train' == sys.argv[1]:
-        framework.predict_model(_ids = framework.get_trainids(int(sys.argv[2])))
-    elif len(sys.argv) == 3 and '-p_names' == sys.argv[1]:
-        framework.predict_model(fnames = sys.argv[2].split(","))
-    elif len(sys.argv) == 4 and '-ptest' == sys.argv[1]:
-        framework.predict_test(sys.argv[2],int(sys.argv[3]))
-    else:
-        print "Invalid Argument"
-
-if __name__ == '__main__':
-    main()
-'''
