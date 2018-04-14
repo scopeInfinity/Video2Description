@@ -105,9 +105,23 @@ class Preprocessor:
 
         return [[capIn,np.asarray(vids)],np.asarray(capOut)]
  
+    def get_nextbatch(self, batch_size, arr_counter, ids):
+        assert len(ids) > 0
+        count = arr_counter[0]
+        start = (count * batch_size) % len(ids)
+        idlst = []
+        for i in xrange(batch_size):
+            idlst.append(ids[start])
+            start = (start + 1) % len(ids)
+
+        count = (count +1 ) % len(ids)
+        arr_counter[0] = count
+        return idlst
+        
     '''
     typeSet 0:Training dataset, 1: Validation dataset, 2: Test Dataset
     '''
+    # Sequential
     def data_generator(self, batch_size, start=0, typeSet = 0):
         if typeSet == 0:
             ids = self.vHandler.getTrainingIds()
@@ -117,11 +131,37 @@ class Preprocessor:
             ids = self.vHandler.getTestIds()
         else:
             assert False
+        random.shuffle(ids)
+        arr_counter = [0]
         count = (len(ids))/batch_size
+        assert count > 0
+        logger.debug("Max Batches of type %d : %d " % (typeSet, count))
+        while True:
+            idlst = self.get_nextbatch(batch_size, arr_counter, ids)
+            data = self.datas_from_ids(idlst)
+            ndata = []
+            for d in data:
+                if d is not None:
+                    ndata.append(d)
+            if len(ndata) > 0:
+                yield ndata
+
+    # Random
+    def data_generator_random(self, batch_size, start=0, typeSet = 0):
+        if typeSet == 0:
+            ids = self.vHandler.getTrainingIds()
+        elif typeSet == 1:
+            ids = self.vHandler.getValidationIds()
+        elif typeSet == 2:
+            ids = self.vHandler.getTestIds()
+        else:
+            assert False
+        random.shuffle(ids)
+        count = (len(ids))/batch_size
+        assert count > 0
         if start == -1:
             start = random.randint(0,count)
         logger.debug("Max Batches of type %d : %d " % (typeSet, count))
-        assert count > 0
         #start = start % count
         while True:
             bs = batch_size
