@@ -14,7 +14,7 @@ class Parser:
 
     def parse(self):
         parser = argparse.ArgumentParser()
-        parser.add_argument('command', choices=['train','predict','server'])
+        parser.add_argument('command', choices=['train','predict','server','predict_all_model'])
         args = parser.parse_args(sys.argv[1:2])
         if args.command == 'train':
             self.train()
@@ -22,12 +22,26 @@ class Parser:
             self.predict()
         if args.command == 'server':
             self.server()
+        if args.command == 'predict_all_model':
+            self.predict_all_model()
         print args.command
 
     def train(self):
         logger.debug("Training Mode")
         self.init_framework()
         self.framework.train_generator()
+
+    def predict_all_model(self):
+        import glob, os
+        from framework import Framework, MFNAME
+ 
+        logger.debug("PredictAllModel Mode")
+        result_dir = 'CombinedResults'
+        os.system('mkdir -p %s' % result_dir)
+        for fname in glob.glob(MFNAME+"_*"):
+            logger.debug("Working on model %s " % fname)
+            self.framework = Framework(model_load = fname)
+            self.framework.save_all(_ids = self.framework.get_testids(), save = result_dir + "/result_"+fname+"_.txt")
 
     def predict(self):
         parser = argparse.ArgumentParser(prog = sys.argv[0]+" predict", description = 'Prediction Mode')

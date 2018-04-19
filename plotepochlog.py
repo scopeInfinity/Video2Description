@@ -33,11 +33,12 @@ print np.shape(ndata)
 step = 1
 if len(ndata[0]) > MXPOINT:
     step = len(ndata[0]) / MXPOINT
-[batch, loss, acc, val_loss, val_acc] = [y[::step] for y in np.matrix.transpose(ndata)][:5]
+[batch, loss, acc, val_loss, val_acc,cider,bleu4,rouge,meteor] = [y[::step] for y in np.matrix.transpose(ndata)][:9]
 
 x = range(len(batch))
 fig = plt.figure()
 host = fig.add_subplot(111)
+pscores = host.twinx()
 pacc = host.twinx()
 ploss = host.twinx()
 
@@ -50,11 +51,18 @@ if showtrain:
 if showval:
     ploss.plot(x,val_loss,'-', label="Val Loss",color= plt.cm.viridis(0.5))
     pacc.plot(x,val_acc,'-.',label="Val Accuracy",color= plt.cm.viridis(0.5))
+if showtrain or showval:
+    ploss.legend(loc='lower right')
+    pacc.legend(loc='lower left')
+    ploss.spines['right'].set_position(('outward', 30))      
 
-ploss.legend(loc='lower right')
-pacc.legend(loc='lower left')
-
-ploss.spines['right'].set_position(('outward', 30))      
+score_total = cider+bleu4+rouge+meteor
+pscores.plot(x,cider,'-', label="Cider",color= plt.cm.viridis(0.0))
+pscores.plot(x,bleu4,'-', label="Bleu4",color= plt.cm.viridis(0.2))
+pscores.plot(x,rouge,'-', label="Rouge",color= plt.cm.viridis(0.4))
+pscores.plot(x,meteor,'-', label="Meteor",color= plt.cm.viridis(0.6))
+pscores.plot(x,score_total,'-', label="Total",color= plt.cm.viridis(0.8))
+pscores.legend(loc='upper left')
 
 
 #host.yaxis.label.set_color(_b.get_color())
@@ -62,5 +70,15 @@ ploss.spines['right'].set_position(('outward', 30))
 #pacc.yaxis.label.set_color(_a.get_color())
 
 #plt.savefig("plot.png", bbox_inches='tight')
+
+best_iter = np.argmax(score_total)
+print("Best Iteration %d " % best_iter)
+print("\tCIDER  %.4f " % cider[best_iter])
+print("\tBLEU4  %.4f " % bleu4[best_iter])
+print("\tROUGE  %.4f " % rouge[best_iter])
+print("\tMETEOR %.4f " % meteor[best_iter])
+print("\tTotalScore %.4f " % score_total[best_iter])
+
+
 
 plt.show()

@@ -1,10 +1,10 @@
 import cv2
-import shutil, json
+import shutil, json, ast
 from keras import callbacks
 import os, sys
 import numpy as np
 import csv
-from vpreprocess import WORKING_DIR
+from vpreprocess import WORKING_DIR, COCOFNAME
 from vpreprocess import  Preprocessor
 from logger import logger
 from model import VModel
@@ -13,8 +13,8 @@ from pprint import pformat
 
 WORKERS = 40
 
-CLABEL = 'ResNet_D512L512_D1024D0.25BNGRU1024_D0.2L1024DVS'
-state_uninit = {'epochs':5000, 'start_batch':0, 'batch_size':100, 'saveAtBatch':100, 'steps_per_epoch':500}
+CLABEL = 'ResNet_D512L512_D1024D0.20BN_BDGRU1024_D0.2L1024DVS'
+state_uninit = {'epochs':5000, 'start_batch':0, 'batch_size':100, 'saveAtBatch':500, 'steps_per_epoch':500}
 
 MFNAME = WORKING_DIR+'/'+CLABEL+'_model.dat'
 _MFNAME = WORKING_DIR+'/'+CLABEL+'_model.dat.bak'
@@ -66,14 +66,23 @@ class ModelGeneratorCallback(callbacks.Callback):
         acc  = logs['acc']
         valloss = logs['val_loss']
         valacc  = logs['val_acc']
-        self.elogs.add([epoch,loss, acc, valloss, valacc])
+        # Sample Content
+        # {'CIDEr': 0.11325126353463148, 'Bleu_4': 0.1706107390467726, 'Bleu_3': 0.27462591349020055, 'Bleu_2': 0.4157995334621001, 'Bleu_1': 0.6064295446876932, 'ROUGE_L': 0.40471970665189977, 'METEOR': 0.17162570735633326}
+        coco_json = self.framework.eval_onvalidation()
+        cider = coco_json['CIDEr']
+        bleu4 = coco_json['Bleu_4']
+        rouge = coco_json['ROUGE_L']
+        meteor = coco_json['METEOR']
+        ename = "%.3f_Cider%.3f_Blue%.3f_Rouge%.3f_Meteor%.3f" % (valloss, cider, bleu4, rouge, meteor)
+        self.elogs.add([epoch,loss, acc, valloss, valacc, cider, bleu4, rouge, meteor])
         self.elogs.flush()
-        if valloss < self.bestlossepoch:
+        if valloss < self.bestlossepoch or True:
             to_rm = self.last_epochmodel
-            self.last_epochmodel = self.framework.save(epoch=("%03d_loss_%s" % (self.state['epochs'],str(valloss))))
+            self.last_epochmodel = self.framework.save(epoch=("%03d_loss_%s" % (self.state['epochs'],ename)))
             self.bestlossepoch = valloss
             if to_rm is not None:
-                os.remove(to_rm)
+                pass
+                # os.remove(to_rm)
         return
 
     def on_batch_end(self, batch, logs={}):
@@ -95,8 +104,9 @@ class ModelGeneratorCallback(callbacks.Callback):
         
 class Framework():
     
-    def __init__(self):
+    def __init__(self, model_load = MFNAME):
         self.state = state_uninit
+        self.file_model = model_load
         self.tlogs = TrainingLogs()
         self.elogs = TrainingLogs(prefix = "epoch_")
         self.model = None          # Init in self.build_model()
@@ -113,8 +123,8 @@ class Framework():
         self.preprocess.set_vmodel(self.vmodel)
 
     def load(self):
-        if os.path.exists(MFNAME):
-            self.model.load_weights(MFNAME)
+        if os.path.exists(self.file_model):
+            self.model.load_weights(self.file_model)
             logger.debug("Weights Loaded")
         if os.path.exists(STATE):
             with open(STATE) as f:
@@ -127,9 +137,9 @@ class Framework():
         finally:
             tname = _MFNAME
             self.model.save_weights(tname)
-            fname = MFNAME
+            fname = self.file_model
             if epoch != 'xx':
-                fname = MFNAME + '_' + epoch
+                fname = self.file_model + '_' + epoch
             shutil.copy2(tname,fname)
             os.remove(tname)
             logger.debug("Weights Saved")
@@ -265,7 +275,7 @@ class Framework():
             return msg.split("<")[0]
         return msg
 
-    def save_all(self, _ids):
+    def save_all(self, _ids, save = RESULTS):
         _result = json.loads(self.predict_ids(_ids))
         test_predicted = []
         test_actual = []
@@ -284,13 +294,31 @@ class Framework():
         result = dict()
         result['predicted'] = test_predicted
         result['actual'] = test_actual
-
-        with open(RESULTS, 'w') as f:
+        with open(save, 'w') as f:
             f.write(json.dumps(result))
         logger.debug("Result Saved")
+    
+    def eval_onvalidation(self):
+        fname = '/tmp/save_model_' + CLABEL
+        logger.debug("Calculating cocoscore")
+        valids = self.preprocess.vHandler.getValidationIds()
+        self.save_all(valids, save = fname)
+        cmd = "python %s %s | tail -n 1" % (COCOFNAME, fname)
+        coco = ast.literal_eval(os.popen(cmd).read().strip())
+        logger.debug("Done")
+        logger.debug("Coco Scores :%s\n" % json.dumps(coco,indent=4, sort_keys=True))
+        return coco
 
     def get_testids(self, count = -1):
         ids = self.preprocess.vHandler.getTestIds()
+        if count == -1:
+            count = len(ids)
+        else:
+            shuffle(ids)
+        return ids[:count]
+
+    def get_valids(self, count = -1):
+        ids = self.preprocess.vHandler.getValidationIds()
         if count == -1:
             count = len(ids)
         else:
