@@ -87,7 +87,9 @@ class VideoHandler:
         allfiles = os.listdir(self.vdir)
         vfiles = []
         for f in allfiles:
-            if f.endswith(".mp4"):
+            # Issue: getDownloadedIds is called before creation of *_ignore file
+            #       Program crases onces for creating these files then works normally
+            if f.endswith(".mp4") and (not os.path.exists(os.path.join(self.vdir,f+"_ignore"))):
                 if os.path.getsize("%s/%s" % (self.vdir,f)) >= VideoHandler.STHRES:
                     vfiles.append(int(f[:-4]))
         return vfiles
@@ -208,6 +210,8 @@ class VideoHandler:
             allframes.append(cv2.resize(frame, self.SHAPE))
         if len(allframes) < self.LIMIT_FRAMES:
             print "File [%s] with limited frames (%d)" % (sfname, len(allframes))
+            # Ignore those videos
+            os.system("touch %s_ignore" % sfname)
             return None
 
         period = len(allframes) / self.LIMIT_FRAMES
