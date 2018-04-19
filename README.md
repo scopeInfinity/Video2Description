@@ -75,10 +75,12 @@ python /path/to/eval_dir/cocoeval.py <results file>.txt
 
 Commit | Training | Total | CIDEr | Bleu_4 | ROUGE_L | METEOR | Model Filename 
 --- | --- | --- | --- | --- | --- | --- | --- 
-bd072ac | x |  x | x | x | x | x | x 
-3ccf5d5 | CPU 15hrs |  1.0307 | 0.1258 | 0.2535 | 0.4619 | 0.1895 | res_mcnn_rand_b100_s500_model.dat_model1_3ccf5d5 
+bd072ac | 11 CPUhrs with Multiprocessing (16 epochs)  |  1.07360 | 0.1528 | 0.2597 | 0.4674 | 0.1936 | ResNet_D512L512_D1024D0.20BN_BDGRU1024_D0.2L1024DVS_model.dat_4986_loss_2.306_Cider0.347_Blue0.328_Rouge0.560_Meteor0.246 
+3ccf5d5 | 15 CPUhrs |  1.0307 | 0.1258 | 0.2535 | 0.4619 | 0.1895 | res_mcnn_rand_b100_s500_model.dat_model1_3ccf5d5 
 
 Major changes for model are described at the end.
+
+Pre-trained Models : https://drive.google.com/open?id=1gexBRQfrjfcs7N5UI5NtlLiIR_xa69tK
 
 ### Web Server
 
