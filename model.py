@@ -94,14 +94,12 @@ class VModel:
         cmodel.summary()
     
         input_shape = self.co_getoutshape()
-        print input_shape
         imodel = Sequential()
         imodel.add(TimeDistributed(Dense(1024,kernel_initializer='random_normal'), input_shape=input_shape))
-        imodel.add(TimeDistributed(Dropout(0.25)))
+        imodel.add(TimeDistributed(Dropout(0.20)))
         imodel.add(TimeDistributed(BatchNormalization(axis=-1)))
         imodel.add(Activation('tanh'))
-        # TODO: Try Bidirectional
-        imodel.add(GRU(1024, return_sequences=False, kernel_initializer='random_normal'))
+        imodel.add(Bidirectional(GRU(1024, return_sequences=False, kernel_initializer='random_normal')))
         imodel.add(RepeatVector(CAPTION_LEN + 1))
          
         imodel.summary()
@@ -110,13 +108,12 @@ class VModel:
         model.add(Merge([cmodel,imodel],mode='concat'))
         model.add(TimeDistributed(Dropout(0.2)))
         model.add(LSTM(1024,return_sequences=True, kernel_initializer='random_normal',recurrent_regularizer=l2(0.01)))
-        #model.add(LSTM(1024,return_sequences=True, kernel_initializer='random_normal'))
         model.add(TimeDistributed(Dense(VOCAB_SIZE,kernel_initializer='random_normal')))
         model.add(Activation('softmax'))
         optimizer = RMSprop(lr=0.001, rho=0.9, epsilon=1e-8, decay=0)
         model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
         model.summary()
-        logger.debug("Model Created ResNet_D512L512_D1024D0.25BNGRU1024_D0.2L1024DVS")
+        logger.debug("Model Created ResNet_D512L512_D1024D0.25BN_BDGRU1024_D0.2L1024DVS")
         self.model = model
         return model
 
