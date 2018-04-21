@@ -13,7 +13,7 @@ from pprint import pformat
 
 WORKERS = 40
 
-CLABEL = 'ResNet_D512L512_D1024D0.20BN_BDGRU1024_D0.2L1024DVS'
+CLABEL = 'ResNet_D512L512_G128G64_D1024D0.20BN_BDGRU1024_D0.2L1024DVS'
 state_uninit = {'epochs':5000, 'start_batch':0, 'batch_size':100, 'saveAtBatch':500, 'steps_per_epoch':500}
 
 MFNAME = WORKING_DIR+'/'+CLABEL+'_model.dat'
@@ -169,17 +169,21 @@ class Framework():
 
     def predict_model_direct(self, fnames, cache_ids = None):
         videoVecs = []
+        audioVecs = []
         for i in range(len(fnames)):
             cid = None
             if cache_ids is not None:
                 cid = cache_ids[i]
-            videoVecs.append(self.preprocess.get_video_content(fnames[i], cache_id = cid))
-        videoVecs =np.array(videoVecs)
+            vid_audio = self.preprocess.get_video_content(fnames[i], cache_id = cid)
+            if vid_audio is None:
+                return None,{'error':'Video %d couldn\'t be loaded. %s ' % (i, fnames[i])}
+            videoVecs.append(vid_audio[0]) # Video Features
+            audioVecs.append(vid_audio[1]) # Audio Features
+        videoVecs = np.array(videoVecs)
+        audioVecs = np.array(audioVecs)
+
         # videoVecs =np.array([self.preprocess.get_video_content(f) for f  in fnames])
         count = len(fnames)
-        for i,video in enumerate(videoVecs):
-            if video is None:
-                return None,{'error':'Video %d couldn\'t be loaded. %s ' % (i, fnames[i])}
         logger.debug("Predicting for Videos :- \n\t%s " % fnames)
         l = 0
         vocab = self.preprocess.vocab
@@ -192,7 +196,7 @@ class Framework():
         for i in range(count):
             stringCaption.append([])
         while l < vocab.CAPTION_LEN:
-            newOneHotCap = self.model.predict([embeddedCap, videoVecs])
+            newOneHotCap = self.model.predict([embeddedCap, audioVecs, videoVecs])
             print "Shape of out Predict Model : %s " % str(np.shape(newOneHotCap))
             for i,newOneHotWord in enumerate(newOneHotCap):
                 nword = vocab.word_fromonehot(newOneHotWord[l])

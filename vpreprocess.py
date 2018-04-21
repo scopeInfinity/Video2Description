@@ -40,10 +40,13 @@ class Preprocessor:
     def videoToVec(self, _id = None, vfname = None, cache_id = None):
         assert (_id is None) ^ (vfname is None)
         if not _id == None:
-            frames = self.vHandler.get_iframes(_id = _id, logs = False)
+            out = self.vHandler.get_iframes_audio(_id = _id, logs = False)
         else:
-            frames = self.vHandler.get_iframes(sfname = vfname, logs = False, cache_id = cache_id)
-        return frames
+            out = self.vHandler.get_iframes_audio(sfname = vfname, logs = False, cache_id = cache_id)
+        if out is None:
+            return None
+        (frames, afeatures) = out
+        return frames, afeatures
         # deprecated
         edir = None
         if fnames is None:
@@ -66,15 +69,16 @@ class Preprocessor:
         return self.videoToVec(vfname = vfname, cache_id = cache_id)
 
     def get_video_caption(self, _id, just_one_caption = True):
-        vid = self.videoToVec(_id = _id)
-        if vid is None:
+        vid_a = self.videoToVec(_id = _id)
+        if vid_a is None:
             return None
+        (vid, afeature) = vid_a
         data = self.vHandler.getCaptionData()
         out = []
         for cur_caption in data[_id]:
             captionIn = self.vocab.get_caption_encoded(cur_caption, True, True, False)
             captionOut = self.vocab.get_caption_encoded(cur_caption, False, False, True)
-            out.append([vid,captionIn,captionOut])
+            out.append([afeature,vid,captionIn,captionOut])
         if len(out) == 0:
             return None
         if just_one_caption:
@@ -83,6 +87,7 @@ class Preprocessor:
 
     def datas_from_ids(self, idlst):
         logger.debug("\n Loading Video/Captions for ids : %s" % str(idlst))
+        afeatures = []
         vids   = []
         capIn  = []
         capOut = []
@@ -91,20 +96,23 @@ class Preprocessor:
             if vccs is None:
                 continue
             for vcc in vccs:
-                _vid, _capIn, _capOut = vcc
+                _afeature, _vid, _capIn, _capOut = vcc
+                afeatures.append(_afeature)
                 vids.append(_vid)
                 capIn.append(_capIn)
                 capOut.append(_capOut)
+        afeatures  = np.asarray(afeatures)
         capIn  = np.asarray(capIn)
         capOut = np.asarray(capOut)
         vids   = np.asarray(vids)
 
         logger.debug("Shape vids   %s [max distinct %d]" % (str(np.shape(vids)),len(idlst)))
+        logger.debug("Shape afeatures  %s" % str(np.shape(afeatures)))
         logger.debug("Shape CapIn  %s" % str(np.shape(capIn)))
         logger.debug("Shape CapOut %s" % str(np.shape(capOut)))
 
 
-        return [[capIn,np.asarray(vids)],np.asarray(capOut)]
+        return [[capIn,afeatures,vids],capOut]
  
     def get_nextbatch(self, batch_size, arr_counter, ids):
         assert len(ids) > 0
