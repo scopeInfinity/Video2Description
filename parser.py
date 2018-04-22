@@ -39,9 +39,13 @@ class Parser:
         result_dir = 'CombinedResults'
         os.system('mkdir -p %s' % result_dir)
         for fname in glob.glob(MFNAME+"_*"):
+            save_file = result_dir + "/result_"+os.path.basename(fname)+"_.txt"
+            if os.path.exists(save_file):
+                continue
             logger.debug("Working on model %s " % fname)
             self.framework = Framework(model_load = fname)
-            self.framework.save_all(_ids = self.framework.get_testids(), save = result_dir + "/result_"+fname+"_.txt")
+            self.framework.save_all(_ids = self.framework.get_testids(), save = save_file)
+        logger.debug("Done")
 
     def predict(self):
         parser = argparse.ArgumentParser(prog = sys.argv[0]+" predict", description = 'Prediction Mode')
