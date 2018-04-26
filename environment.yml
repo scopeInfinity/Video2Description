@@ -109,11 +109,13 @@ dependencies:
     - click==6.7
     - colorama==0.3.9
     - cycler==0.10.0
+    - decorator==4.3.0
     - fake-useragent==0.1.8
     - flask==0.12.2
     - funcsigs==1.0.2
     - graphviz==0.8.2
     - h5py==2.7.1
+    - imageio==2.3.0
     - isort==4.3.4
     - itsdangerous==0.24
     - joblib==0.11
@@ -124,6 +126,7 @@ dependencies:
     - matplotlib==2.1.2
     - mccabe==0.6.1
     - mock==2.0.0
+    - moviepy==0.2.3.3
     - numba==0.37.0
     - pbr==3.1.1
     - pillow==5.0.0
@@ -138,6 +141,6 @@ dependencies:
     - subprocess32==3.2.7
     - testfixtures==5.3.1
     - torch==0.3.0
+    - tqdm==4.23.0
     - werkzeug==0.14.1
-prefix: /home/gagan.cs14/.conda/envs/V2D
 

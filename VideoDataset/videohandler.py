@@ -6,10 +6,13 @@ import time
 import shutil
 import argparse
 import numpy as np
+import librosa
 from pprint import pprint
 
 class VideoHandler:
     LIMIT_FRAMES = 40
+    AUDIO_FEATURE = (80, 40) #TimeSamples, n_mfcc
+
     # ResNet
     SHAPE = (224, 224)
     ## InceptionV3
@@ -28,6 +31,7 @@ class VideoHandler:
         self.fname_test = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, s_fname_test)
         self.vdir = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, "videos")
         self.cdir = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, "cache_"+str(self.LIMIT_FRAMES)+"_"+("%dx%d" % VideoHandler.SHAPE))
+        self.adir = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, "cache_audio_"+("%dx%d" % VideoHandler.AUDIO_FEATURE))
         self.tdir = "%s/%s" % (self.vdir, "extract")
         self.logfile = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, "log.txt")
         if os.path.exists(self.tdir):
@@ -35,6 +39,8 @@ class VideoHandler:
         os.mkdir(self.tdir)
         if not os.path.exists(self.cdir):
             os.mkdir(self.cdir)
+        if not os.path.exists(self.adir):
+            os.mkdir(self.adir)
         self.build_captions()
 
     def build_captions(self):
@@ -179,27 +185,30 @@ class VideoHandler:
             return frames
         return None
 
+    def get_audio_cached(self, _id):
+        afname = "%s/%d.npy" % (self.adir, _id)
+        if os.path.exists(afname):
+            f = open(afname, 'rb')
+            feature = np.load(f)
+            if np.shape(feature) != self.AUDIO_FEATURE:
+                print("Feature Shape error at %d, %s" % (_id, np.shape(feature)))
+            assert np.shape(feature) == self.AUDIO_FEATURE
+            return feature
+        return None
+
     def cached_iframe(self, _id, frames):
         cfname = "%s/%d.npy" % (self.cdir, _id)
         print "Cached %s" % cfname
         with open(cfname, 'wb') as f:
             np.save(f,frames)
 
-    def get_iframes(self, _id = None, sfname = None, logs = True, cache_id = None):
-        assert (_id is None) ^ (sfname is None)
-        # Load if cached
-        if _id is not None or cache_id is not None:
-            if _id is not None:
-                cache_id = _id
-            rframes = self.get_iframes_cached(cache_id)
-            if rframes is not None:
-                return rframes
+    def cached_audio(self, _id, feature):
+        afname = "%s/%d.npy" % (self.adir, _id)
+        print "Cached %s" % afname
+        with open(afname, 'wb') as f:
+            np.save(f,feature)
 
-        # Load frames from file
-        if sfname is None:
-            sfname = self.downloadVideo(_id, logs)
-        if sfname is None:
-            return None
+    def file_to_videofeature(self, sfname):
         vcap = cv2.VideoCapture(sfname)
         success, frame = vcap.read()
         allframes = []
@@ -208,22 +217,78 @@ class VideoHandler:
             if not success:
                 break
             allframes.append(cv2.resize(frame, self.SHAPE))
-        if len(allframes) < self.LIMIT_FRAMES:
-            print "File [%s] with limited frames (%d)" % (sfname, len(allframes))
-            # Ignore those videos
-            os.system("touch %s_ignore" % sfname)
-            return None
+            if len(allframes) < self.LIMIT_FRAMES:
+                print "File [%s] with limited frames (%d)" % (sfname, len(allframes))
+                # Ignore those videos
+                os.system("touch %s_ignore" % sfname)
+                return None
 
         period = len(allframes) / self.LIMIT_FRAMES
         rframes = allframes[:period * self.LIMIT_FRAMES:period]
         frames_out = self.vmodel.preprocess_partialmodel(rframes)
+        return frames_out
+
+    def file_to_audiofeature(self, sfname):
+        audio_y, sr = librosa.load(sfname)
+        afeatures = librosa.feature.mfcc(y=audio_y, sr=sr, n_mfcc=self.AUDIO_FEATURE[1])
+        afeatures = np.transpose(afeatures)
+        ll = len(afeatures)
+        parts = ll/self.AUDIO_FEATURE[0]
+        division = []
+        for i in range(self.AUDIO_FEATURE[0] - 1):
+            division.append((i+1)*parts)
+        for i in range(ll%self.AUDIO_FEATURE[0]):#left over
+            division[i]+=1           
+        afeatures = np.split(np.array(afeatures), division)
+        afeature_out = []
+        for af in afeatures:
+            afeature_out.append(np.mean(np.array(af),axis = 0))
+        afeature_out = np.asarray(afeature_out)
+        if np.shape(afeature_out) != self.AUDIO_FEATURE:
+            print "File [%s] with audio problem (%s)" % (sfname, str(np.shape(afeature_out)))
+            # Ignore videos
+            os.system("touch %s_ignore" % sfname)
+        return afeature_out
+
+    # (Video Feature, Audio Feature)
+    def get_iframes_audio(self, _id = None, sfname = None, logs = True, cache_id = None):
+        assert (_id is None) ^ (sfname is None)
+        # Load if cached
+        frames_out = None
+        afeature_out = None
+        if _id is not None or cache_id is not None:
+            if _id is not None:
+                cache_id = _id
+            frames_out = self.get_iframes_cached(cache_id)
+            afeature_out = self.get_audio_cached(cache_id)
+            if frames_out is not None and afeature_out is not None:
+                return (frames_out, afeature_out)
+        # Load frames from file
+        if sfname is None:
+            sfname = self.downloadVideo(_id, logs)
+        if sfname is None:
+            return None
+
+        to_cache_video = False
+        to_cache_audio = False
+
+        if frames_out is None:
+            frames_out = self.file_to_videofeature(sfname)
+            to_cache_video = True
+
+        if afeature_out is None:
+            afeature_out = self.file_to_audiofeature(sfname)
+            to_cache_audio = True
 
         # Cache it
         if _id is not None or cache_id is not None:
             if _id is not None:
                 cache_id = _id
-            self.cached_iframe(cache_id, frames_out)
-        return frames_out
+            if to_cache_video:
+                self.cached_iframe(cache_id, frames_out)
+            if to_cache_audio:
+                self.cached_audio(cache_id, afeature_out)
+        return (frames_out, afeature_out)
 
     def get_frames(self,_id = None, sfname = None, logs = True):
         assert (_id is None) ^ (sfname is None)
@@ -280,7 +345,7 @@ def autodownload():
 
 def cache_videoid(_id, percent):
     print "%.3f caching scheduled!" % percent
-    vHandler.get_iframes(_id = _id)
+    vHandler.get_iframes_audio(_id = _id)
 
 def autocache():
     import sys
