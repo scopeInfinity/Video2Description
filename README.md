@@ -72,10 +72,10 @@ python /path/to/eval_dir/cocoeval.py <results file>.txt
 
 #### Sample Evaluation while training
 
-
 Commit | Training | Total | CIDEr | Bleu_4 | ROUGE_L | METEOR | Model Filename 
 --- | --- | --- | --- | --- | --- | --- | --- 
-bd072ac | 11 CPUhrs with Multiprocessing (16 epochs)  |  1.07360 | 0.1528 | 0.2597 | 0.4674 | 0.1936 | ResNet_D512L512_D1024D0.20BN_BDGRU1024_D0.2L1024DVS_model.dat_4986_loss_2.306_Cider0.347_Blue0.328_Rouge0.560_Meteor0.246 
+bb70fc1 | 19 epochs | 1.1272 | 0.1575 | 0.2900 | 0.4794 | 0.2003 | ResNet_D512L512_G128G64_D1024D0.20BN_BDGRU1024_D0.2L1024DVS_model.dat_4981_loss_2.471_Cider0.355_Blue0.337_Rouge0.568_Meteor0.249
+bd072ac | 11 CPUhrs with Multiprocessing (16 epochs)  |  1.0736 | 0.1528 | 0.2597 | 0.4674 | 0.1936 | ResNet_D512L512_D1024D0.20BN_BDGRU1024_D0.2L1024DVS_model.dat_4986_loss_2.306_Cider0.347_Blue0.328_Rouge0.560_Meteor0.246 
 3ccf5d5 | 15 CPUhrs |  1.0307 | 0.1258 | 0.2535 | 0.4619 | 0.1895 | res_mcnn_rand_b100_s500_model.dat_model1_3ccf5d5 
 
 Major changes for model are described at the end.
