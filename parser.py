@@ -7,10 +7,13 @@ class Parser:
     def __init__(self):
         pass
 
-    def init_framework(self):
+    def init_framework(self, model_fname = None, train_mode = False):
         if not hasattr(self,'framework'):
             from framework import Framework
-            self.framework = Framework()
+            if model_fname is not None:
+                self.framework = Framework(model_load = model_fname, train_mode = train_mode)
+            else:
+                self.framework = Framework(train_mode = train_mode)
 
     def parse(self):
         parser = argparse.ArgumentParser()
@@ -28,7 +31,7 @@ class Parser:
 
     def train(self):
         logger.debug("Training Mode")
-        self.init_framework()
+        self.init_framework(train_mode = True)
         self.framework.train_generator()
 
     def predict_all_model(self):
@@ -72,9 +75,13 @@ class Parser:
         parser.add_argument('-s', '--start', help='Start RPC Server', action='store_true')
         parser.add_argument('-pids', '--predict_ids',type=int, help='Obtain Results for given IDs', nargs='+')
         parser.add_argument('-pfs', '--predict_fnames', help='Obtain Results for given files', nargs='+')
+        parser.add_argument('-m', '--model', help='Model file')
         args = parser.parse_args(sys.argv[2:])
         if args.start:
-            self.init_framework()
+            model_fname = None
+            if args.model:
+                model_fname = args.model
+            self.init_framework(model_fname)
             register_server(self.framework)
         elif args.predict_ids:
             proxy = get_rpc()

@@ -18,18 +18,17 @@ from keras.applications.resnet50 import preprocess_input
 import tensorflow as tf
 
 import keras.backend as K
-K.set_learning_phase(1)
 
 def sentence_distance(y_true, y_pred):
     return K.sqrt(K.sum(K.square(K.abs(y_true-y_pred)),axis=1,keepdims=True))
 
 class VModel:
 
-    def __init__(self, CAPTION_LEN, VOCAB_SIZE, cutoffonly = False):
+    def __init__(self, CAPTION_LEN, VOCAB_SIZE, cutoffonly = False, learning = True):
         self.CAPTION_LEN = CAPTION_LEN
         self.VOCAB_SIZE  = VOCAB_SIZE
         if not cutoffonly:
-            self.build_mcnn(self.CAPTION_LEN, self.VOCAB_SIZE)
+            self.build_mcnn(self.CAPTION_LEN, self.VOCAB_SIZE, learning = learning)
         self.build_cutoffmodel()
 
     def  get_model(self):
@@ -83,10 +82,11 @@ class VModel:
         return frames_out
 
     def train_mode(self):
-        import keras.backend as K
         K.set_learning_phase(1)
 
-    def build_mcnn(self, CAPTION_LEN, VOCAB_SIZE):
+    def build_mcnn(self, CAPTION_LEN, VOCAB_SIZE, learning = True):
+        if learning:
+            self.train_mode()
         from VideoDataset.videohandler import VideoHandler
         logger.debug("Creating Model (CNN Cutoff) with Vocab Size :  %d " % VOCAB_SIZE)
         cmodel  = Sequential()

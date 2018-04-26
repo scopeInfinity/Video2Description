@@ -104,7 +104,8 @@ class ModelGeneratorCallback(callbacks.Callback):
         
 class Framework():
     
-    def __init__(self, model_load = MFNAME):
+    def __init__(self, model_load = MFNAME, train_mode = False):
+        self.mode_learning = train_mode
         self.state = state_uninit
         self.file_model = model_load
         self.tlogs = TrainingLogs()
@@ -117,7 +118,7 @@ class Framework():
 
     def build_model(self):
         vocab = self.preprocess.vocab
-        self.vmodel = VModel(vocab.CAPTION_LEN, vocab.VOCAB_SIZE)
+        self.vmodel = VModel(vocab.CAPTION_LEN, vocab.VOCAB_SIZE, learning = self.mode_learning)
         self.model = self.vmodel.get_model()
         assert self.preprocess is not None
         self.preprocess.set_vmodel(self.vmodel)
