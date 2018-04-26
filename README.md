@@ -90,6 +90,10 @@ python parser.py server -s
 ```
 - Edit `rpc.py`
   - Change **`SERVER_IP`** to IP of server **(S)**
+- Edit `app.py` and modify following according to need
+  - prefix # Line 5, working directory path
+  - `app.config['VIDEOS_FOLDER']`
+  - `app.config['UPLOAD_FOLDER']`
 - Execute `python app.py` from webserver.
 - Open `http://webserver:5000/` to open Web Server for testing (under default configuration)
 
