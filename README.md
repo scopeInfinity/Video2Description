@@ -84,7 +84,7 @@ Pre-trained Models : https://drive.google.com/open?id=1gexBRQfrjfcs7N5UI5NtlLiIR
 
 ### Web Server
 
-- From a high RAM ram server **(S)** execute
+- From a high RAM ram server **(S)** execute (Within conda environment)
 ```bash
 python parser.py server -s
 ```
@@ -94,7 +94,7 @@ python parser.py server -s
   - prefix # Line 5, working directory path
   - `app.config['VIDEOS_FOLDER']`
   - `app.config['UPLOAD_FOLDER']`
-- Execute `python app.py` from webserver.
+- Execute `python app.py` from webserver (No need for conda environment)
 - Open `http://webserver:5000/` to open Web Server for testing (under default configuration)
 
 ### Specifications
