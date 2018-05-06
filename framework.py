@@ -13,7 +13,7 @@ from pprint import pformat
 
 WORKERS = 40
 
-CLABEL = 'ResNet_D512L512_G128G64_D1024D0.20BN_BDGRU1024_D0.2L1024DVS'
+CLABEL = 'ResNet_D512L512_G128G64_D1024D0.20BN_BDLSTM1024_D0.2L1024DVS'
 state_uninit = {'epochs':5000, 'start_batch':0, 'batch_size':100, 'saveAtBatch':500, 'steps_per_epoch':500}
 
 MFNAME = WORKING_DIR+'/'+CLABEL+'_model.dat'
