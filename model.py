@@ -2,8 +2,9 @@ import cv2
 import os, sys
 import numpy as np
 from logger import logger
+import keras
 from keras.models import Sequential
-from keras.layers import Dropout, Flatten, RepeatVector, Merge, Activation
+from keras.layers import Dropout, Flatten, RepeatVector, Merge, Activation, dot, Permute, Reshape
 from keras.layers import Embedding, Conv2D, MaxPooling2D, LSTM, GRU, BatchNormalization
 from keras.layers import TimeDistributed, Dense, Input, Flatten, GlobalAveragePooling2D, Bidirectional
 from keras.layers import concatenate
@@ -17,7 +18,7 @@ from vocab import Vocab
 from keras.preprocessing import image
 from keras.applications.resnet50 import preprocess_input
 import tensorflow as tf
-
+from Attention import Attention
 import keras.backend as K
 
 def sentence_distance(y_true, y_pred):
@@ -36,7 +37,8 @@ class VModel:
         return self.model
 
     '''
-    Attempt to split pretrained CNN out of model
+    Attempt to split pretrained CNN out of model125
+
     To cache a lower dimension vector per frame to file
     # PC : pretrained CNN will be non-trainable now
     '''
@@ -54,7 +56,7 @@ class VModel:
     # co == Cutoff Model
     def co_getoutshape(self, assert_model = None):
         # ResNet
-        shape = (None,2048)
+        shape = (40,2048)
         ## Inception V3
         # shape = (None, 8*8*2048)
         logger.debug("Model Cutoff OutShape : %s" % str(shape))
@@ -71,7 +73,7 @@ class VModel:
             assert shape == ashape
         '''
         assert len(shape) == 2
-        assert shape[0] is None
+        #assert shape[0] is None
         return shape
 
     def preprocess_partialmodel(self, frames):
@@ -89,10 +91,11 @@ class VModel:
         if learning:
             self.train_mode()
         from VideoDataset.videohandler import VideoHandler
+        CMODEL_NODES = 512
         logger.debug("Creating Model (CNN Cutoff) with Vocab Size :  %d " % VOCAB_SIZE)
         cmodel_inputs  = Input(shape=(CAPTION_LEN+1,Vocab.OUTDIM_EMB),name='words_input')
         intermediate = TimeDistributed(Dense(512,kernel_initializer='random_normal'))(cmodel_inputs)
-        cmodel_outputs = LSTM(512, return_sequences=True,kernel_initializer='random_normal')(intermediate)
+        cmodel_outputs = LSTM(CMODEL_NODES, return_sequences=True,kernel_initializer='random_normal')(intermediate) # (CAPTION_LEN, 512)
         cmodel = Model(inputs = cmodel_inputs, outputs = cmodel_outputs) 
         cmodel.summary()
     
@@ -115,16 +118,44 @@ class VModel:
 
         input_shape_vid = self.co_getoutshape()
         imodel_inputs = Input(shape=input_shape_vid, name='video_input')
-        intermediate = TimeDistributed(Dense(1024,kernel_initializer='random_normal'))(imodel_inputs)
-        intermediate = TimeDistributed(Dropout(0.20))(intermediate)
-        intermediate = TimeDistributed(BatchNormalization(axis=-1))(intermediate)
-        intermediate = TimeDistributed(Activation('tanh'))(intermediate)
-        intermediate = Bidirectional(GRU(1024, return_sequences=False, kernel_initializer='random_normal'))(intermediate)
-        imodel_outputs = RepeatVector(CAPTION_LEN + 1)(intermediate)
-        imodel = Model(inputs = imodel_inputs, outputs = imodel_outputs)          
-        imodel.summary()
+        intermediate1 = TimeDistributed(Dense(1024,kernel_initializer='random_normal'))(imodel_inputs)
+        intermediate2 = TimeDistributed(Dropout(0.20))(intermediate1)
+        intermediate3 = TimeDistributed(BatchNormalization(axis=-1))(intermediate2)
+        intermediate4 = TimeDistributed(Activation('tanh'))(intermediate3)
+        intermediate5_layer = Bidirectional(GRU(1024, return_sequences=True, kernel_initializer='random_normal'))
+        intermediate5 = intermediate5_layer(intermediate4)
+        intermediate6 = Attention()(intermediate5)
+        #intermediate6 = Flatten()(intermediate5)
+        imodel_outputs = RepeatVector(CAPTION_LEN + 1)(intermediate6) # (CAPTION_LEN, VIDEO_LENGTH * FEATURE_LEN)
+        context = imodel_outputs
+        #imodel_outputs = Reshape((CAPTION_LEN+1, intermediate5_layer.output_shape[1] , intermediate5_layer.output_shape[2] ))(imodel_outputs)
+        #print keras.backend.shape(imodel_outputs)
+
+        #imodel = Model(inputs = imodel_inputs, outputs = imodel_outputs)          
+        #imodel.summary()
+
+        #intermediate_trans_cmodel_outputs = Permute((2,1))(cmodel_outputs) # (512, CAPTION_LEN)
+        #intermediate_trans_cmodel_outputs = Flatten()(intermediate_trans_cmodel_outputs)
+        #print keras.backend.shape(intermediate_trans_cmodel_outputs)
+        # For (VIDEO_LENGTH, 512 * CAPTION_LEN) shape
+        #intermediate_trans_cmodel_outputs = RepeatVector(intermediate5_layer.output_shape[1])(intermediate_trans_cmodel_outputs)
+        #print keras.backend.shape(intermediate_trans_cmodel_outputs)
+        # For (VIDEO_LENGTH, 512, CAPTION_LEN) shape
+        #imodel_outputs = Reshape((intermediate5_layer.output_shape[1], CMODEL_NODES, CAPTION_LEN+1 ))(imodel_outputs)
+        # For (CAPTION_LEN, VIDEO_LENGTH, 512) shape
+        #intermediate_trans_cmodel_outputs = Permute((3,1,2))(intermediate_trans_cmodel_outputs)
+        # For (CAPTION_LEN, VIDEO_LENGTH, 512+1024) shape
+        #attention_imodel_cmodel_outputs = Concatenate()([intermediate_trans_cmodel_outputs, cmodel_outputs])
+        # For (CAPTION_LEN, VIDEO_LENGTH, 1) shape
+        #attention_weights = TimeDistributed(TimeDistributed(Dense(1)))(attention_imodel_cmodel_outputs)
+        # For (CAPTION_LEN, VIDEO_LENGTH) shape
+        #attention_weights = TimeDistributed(Flatten())(attention_weights)
+        
+        #attention_weights = dot([cmodel_outputs, intermediate5], axes=[2,2])
+        #attention_weights = TimeDistributed(Activation('softmax'))(attention_weights)
+        #context = TimeDistributed(Dot(axes=[2,2]))([attention_weights, imodel_outputs])
      
-        model_inputs = concatenate([cmodel_outputs, amodel_outputs, imodel_outputs])
+        model_inputs = concatenate([cmodel_outputs, amodel_outputs, context])
         intermediate = TimeDistributed(Dropout(0.2))(model_inputs)
         intermediate = LSTM(1024,return_sequences=True, kernel_initializer='random_normal',recurrent_regularizer=l2(0.01))(intermediate)
         intermediate = TimeDistributed(Dense(VOCAB_SIZE,kernel_initializer='random_normal'))(intermediate)
@@ -132,7 +163,7 @@ class VModel:
         optimizer = RMSprop(lr=0.001, rho=0.9, epsilon=1e-8, decay=0)
         model = Model(inputs = [cmodel_inputs, amodel_inputs, imodel_inputs], outputs = model_outputs, name='model')
         model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
-        logger.debug("Model Created ResNet_D512L512_G128G64_D1024D0.25BN_BDGRU1024_D0.2L1024DVS")
+        logger.debug("Model Created Attention_ResNet_D512L512_G128G64_D1024D0.25BN_BDGRU1024_D0.2L1024DVS")
         self.model = model
         return model
 
