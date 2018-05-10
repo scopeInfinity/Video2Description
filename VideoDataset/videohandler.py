@@ -217,11 +217,11 @@ class VideoHandler:
             if not success:
                 break
             allframes.append(cv2.resize(frame, self.SHAPE))
-            if len(allframes) < self.LIMIT_FRAMES:
-                print "File [%s] with limited frames (%d)" % (sfname, len(allframes))
-                # Ignore those videos
-                os.system("touch %s_ignore" % sfname)
-                return None
+        if len(allframes) < self.LIMIT_FRAMES:
+            print "File [%s] with limited frames (%d)" % (sfname, len(allframes))
+            # Ignore those videos
+            os.system("touch %s_ignore" % sfname)
+            return None
 
         period = len(allframes) / self.LIMIT_FRAMES
         rframes = allframes[:period * self.LIMIT_FRAMES:period]
