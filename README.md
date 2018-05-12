@@ -5,6 +5,8 @@ Branch : [VideoCaption](https://github.com/scopeInfinity/Video2Description/tree/
 
 ### Results - *f5c22f7*
 
+Test videos with good results
+
 |         |            |   |
 | :-------------: |:-------------:| :-----:|
 | ![12727][12727]| ![12501][12501] | ![10802][10802]
@@ -14,6 +16,13 @@ Branch : [VideoCaption](https://github.com/scopeInfinity/Video2Description/tree/
 | ![12683][12683] | ![12901][12901] | ![12994][12994]
 | a man is playing a video game | two men are playing table tennis in a stadium | a man is talking about a computer program
 
+
+Test videos with poor results
+
+|         |            |   |
+| :-------------: |:-------------:| :-----:|
+| ![12589][12589]| ![12966][12966] | ![12908][12908]
+|  a person is playing with a toy | a man is walking on the field | a man is standing in a gym |
 
 [12727]: https://raw.githubusercontent.com/scopeInfinity/Video2Description/VideoCaption/f5c22f7_images/12727.gif
 [12501]: https://raw.githubusercontent.com/scopeInfinity/Video2Description/VideoCaption/f5c22f7_images/12501.gif
@@ -26,6 +35,11 @@ Branch : [VideoCaption](https://github.com/scopeInfinity/Video2Description/tree/
 [12683]: https://raw.githubusercontent.com/scopeInfinity/Video2Description/VideoCaption/f5c22f7_images/12683.gif
 [12901]: https://raw.githubusercontent.com/scopeInfinity/Video2Description/VideoCaption/f5c22f7_images/12901.gif
 [12994]: https://raw.githubusercontent.com/scopeInfinity/Video2Description/VideoCaption/f5c22f7_images/12994.gif
+
+
+[12589]: https://raw.githubusercontent.com/scopeInfinity/Video2Description/VideoCaption/f5c22f7_images/12589.gif
+[12966]: https://raw.githubusercontent.com/scopeInfinity/Video2Description/VideoCaption/f5c22f7_images/12966.gif
+[12908]: https://raw.githubusercontent.com/scopeInfinity/Video2Description/VideoCaption/f5c22f7_images/12908.gif
 
 
 ### Setup
