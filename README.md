@@ -1,9 +1,7 @@
 # Video Captioning
 Generate caption for the given video clip
 
-Branch : [VideoCaption](https://github.com/scopeInfinity/Video2Description/tree/VideoCaption)
-
-Status : Ongoing
+Branch : [VideoCaption](https://github.com/scopeInfinity/Video2Description/tree/VideoCaption), [VideoCaption_catt](https://github.com/scopeInfinity/Video2Description/tree/VideoCaption_catt)
 
 ### Setup
 * Clone repository to directory named `btp_<branch_name>`
@@ -80,7 +78,10 @@ f5c22f7 | 17 epochs | 1.1559 | 0.1680 | 0.3000 | 0.4832 | 0.2047 | ResNet_D512L5
 bd072ac | 11 CPUhrs with Multiprocessing (16 epochs)  |  1.0736 | 0.1528 | 0.2597 | 0.4674 | 0.1936 | ResNet_D512L512_D1024D0.20BN_BDGRU1024_D0.2L1024DVS_model.dat_4986_loss_2.306_Cider0.347_Blue0.328_Rouge0.560_Meteor0.246 
 3ccf5d5 | 15 CPUhrs |  1.0307 | 0.1258 | 0.2535 | 0.4619 | 0.1895 | res_mcnn_rand_b100_s500_model.dat_model1_3ccf5d5 
 
-Major changes for model are described at the end.
+Check `Specifications` section for model comparision.
+
+
+Temporal attention Model for is on `VideoCaption_catt` branch.
 
 Pre-trained Models : https://drive.google.com/open?id=1gexBRQfrjfcs7N5UI5NtlLiIR_xa69tK
 
@@ -114,6 +115,15 @@ python parser.py server -s
 - Batch Normalization + Few more tweaks in Model
 - Bleu, CIDEr, Rouge, Meteor score generation for validation
 - Multiprocessing keras
+
+##### Commit: f5c22f7
+- Audio with BiDirection GRU
+
+##### Commit: 5920de9
+- Audio with BiDirection LSTM
+
+##### Commit: 6a63470
+- Audio with BiDirection GRU using temporal attention for context
 
 # Image Captioning
 Generate caption for the given images
