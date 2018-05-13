@@ -3,6 +3,25 @@ Generate caption for the given video clip
 
 Branch : [VideoCaption](https://github.com/scopeInfinity/Video2Description/tree/VideoCaption), [VideoCaption_catt](https://github.com/scopeInfinity/Video2Description/tree/VideoCaption_catt)
 
+### Model
+
+Model generates natural sentence word by word
+
+![SentenceGenerationImage](https://github.com/scopeInfinity/Video2Description/raw/VideoCaption/images/sentence_model.png)
+
+|    Audio SubModel     |     Video SubModel       |   Sentence Generation SubModel |
+| :-------------: |:-------------:| :-----:|
+| ![audio_model][audio_model]| ![video_model][video_model] | ![sentence_generation][sentence_generation]
+
+[audio_model]: https://github.com/scopeInfinity/Video2Description/raw/VideoCaption/images/model_audio.png
+[video_model]: https://github.com/scopeInfinity/Video2Description/raw/VideoCaption/images/model_video.png
+[sentence_generation]: https://github.com/scopeInfinity/Video2Description/raw/VideoCaption/images/model_word.png
+
+Context extraction for Temporal Attention Model, at i<sup>th</sup> word generation
+
+![AttentionModel](https://github.com/scopeInfinity/Video2Description/raw/VideoCaption/images/attention.png)
+
+
 ### Results - *f5c22f7*
 
 Test videos with good results
