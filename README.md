@@ -3,6 +3,45 @@ Generate caption for the given video clip
 
 Branch : [VideoCaption](https://github.com/scopeInfinity/Video2Description/tree/VideoCaption), [VideoCaption_catt](https://github.com/scopeInfinity/Video2Description/tree/VideoCaption_catt)
 
+### Results - *f5c22f7*
+
+Test videos with good results
+
+|         |            |   |
+| :-------------: |:-------------:| :-----:|
+| ![12727][12727]| ![12501][12501] | ![10802][10802]
+| two men are talking about a cooking show | a  woman is cooking | a dog is running around a field |
+| ![12968][12968] | ![12937][12937] | ![12939][12939]
+| a woman is talking about a makeup face | a man is driving a car down the road | a man is cooking in a kitchen
+| ![12683][12683] | ![12901][12901] | ![12994][12994]
+| a man is playing a video game | two men are playing table tennis in a stadium | a man is talking about a computer program
+
+
+Test videos with poor results
+
+|         |            |   |
+| :-------------: |:-------------:| :-----:|
+| ![12589][12589]| ![12966][12966] | ![12908][12908]
+|  a person is playing with a toy | a man is walking on the field | a man is standing in a gym |
+
+[12727]: https://raw.githubusercontent.com/scopeInfinity/Video2Description/VideoCaption/f5c22f7_images/12727.gif
+[12501]: https://raw.githubusercontent.com/scopeInfinity/Video2Description/VideoCaption/f5c22f7_images/12501.gif
+[10802]: https://raw.githubusercontent.com/scopeInfinity/Video2Description/VideoCaption/f5c22f7_images/10802.gif
+
+[12968]: https://raw.githubusercontent.com/scopeInfinity/Video2Description/VideoCaption/f5c22f7_images/12968.gif
+[12937]: https://raw.githubusercontent.com/scopeInfinity/Video2Description/VideoCaption/f5c22f7_images/12937.gif
+[12939]: https://raw.githubusercontent.com/scopeInfinity/Video2Description/VideoCaption/f5c22f7_images/12939.gif
+
+[12683]: https://raw.githubusercontent.com/scopeInfinity/Video2Description/VideoCaption/f5c22f7_images/12683.gif
+[12901]: https://raw.githubusercontent.com/scopeInfinity/Video2Description/VideoCaption/f5c22f7_images/12901.gif
+[12994]: https://raw.githubusercontent.com/scopeInfinity/Video2Description/VideoCaption/f5c22f7_images/12994.gif
+
+
+[12589]: https://raw.githubusercontent.com/scopeInfinity/Video2Description/VideoCaption/f5c22f7_images/12589.gif
+[12966]: https://raw.githubusercontent.com/scopeInfinity/Video2Description/VideoCaption/f5c22f7_images/12966.gif
+[12908]: https://raw.githubusercontent.com/scopeInfinity/Video2Description/VideoCaption/f5c22f7_images/12908.gif
+
+
 ### Setup
 * Clone repository to directory named `btp_<branch_name>`
   * `git clone https://github.com/scopeInfinity/Video2Description.git btp_VideoCaption`
