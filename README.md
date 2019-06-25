@@ -105,6 +105,11 @@ File | Content
 ### Download Dataset
 * Execute `python videohandler.py` from *VideoDataset* Directory
   
+### Execution
+It currently supports train, predict and server mode. Please use the following command for better explanation.
+```bash
+python parse.py -h
+```
   
 ### Training Methods
 
