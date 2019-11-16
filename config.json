@@ -5,5 +5,10 @@
 		"MAX_CONTENT_LENGTH": 10649600,
 		"UPLOAD_FOLDER": "./Uploads",
  		"VIDEOS_FOLDER": "/home/gagan.cs14/btp/VideoDataset/videos/"
+ 	},
+ 	"rpc": {
+		"RPC_SERVER_RUNAS": "0.0.0.0",
+		"RPC_PORT": 5001,
+		"RPC_ENDPOINT": "127.0.0.1"
  	}
 }

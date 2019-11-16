@@ -14,3 +14,6 @@ def getConfig():
 
 def getAppConfig():
 	return getConfig()["app"]
+
+def getRpcConfig():
+	return getConfig()["rpc"]
