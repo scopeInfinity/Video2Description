@@ -1,0 +1,9 @@
+{
+	"app": {
+		"PREDICT_MODE_ONLY": true,
+		"PREFIX":"/home/gagan.cs14/btp_VideoCaption",
+		"MAX_CONTENT_LENGTH": 10649600,
+		"UPLOAD_FOLDER": "./Uploads",
+ 		"VIDEOS_FOLDER": "/home/gagan.cs14/btp/VideoDataset/videos/"
+ 	}
+}

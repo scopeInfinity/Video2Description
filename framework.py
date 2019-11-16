@@ -1,4 +1,3 @@
-import cv2
 import shutil, json, ast
 from keras import callbacks
 import os, sys

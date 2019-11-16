@@ -2,7 +2,7 @@ import xmlrpclib
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 
 PORT = 8000 # RPC
-SERVER_IP = '30.1.255.253'
+SERVER_IP = '127.0.0.1'
 
 def register_server(framework):
     print 'Preparing for Register Server'
