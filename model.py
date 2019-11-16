@@ -1,4 +1,3 @@
-import cv2
 import os, sys
 import numpy as np
 from logger import logger

@@ -5,7 +5,6 @@ import sys
 from sets import Set
 import json,re 
 import os, shutil
-import cv2
 from keras.preprocessing import image
 from keras.applications import imagenet_utils 
 #from PIL import Image as pil_image
