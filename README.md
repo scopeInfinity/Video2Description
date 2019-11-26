@@ -65,14 +65,17 @@ Test videos with poor results
 * Clone repository to directory named `btp_<branch_name>`
   * `git clone https://github.com/scopeInfinity/Video2Description.git btp_VideoCaption`
   * Path for code repository is hardcoded in first few lines of `vpreprocess.py`
-* Setup anaconda environment, use `environment.yml`
+* Install Conda
+  * https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html
+* Create conda environment using `environment.yml`
+  * `Video2Description$ conda env create -f environment.yml`
   * Install keras with tensorflow backend.
 * Install ffmpeg
   * Configure, build and install ffmpeg from source with shared libraries 
 ```bash
 git clone 'https://github.com/FFmpeg/FFmpeg.git'
 cd FFmpeg
-./configure --prefix=~/V2D_local/ --enable-shared
+./configure --enable-shared  # Use --prefix if need to install in custom directory
 make
 make install
 ```
