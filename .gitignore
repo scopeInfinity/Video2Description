@@ -18,6 +18,10 @@ display
 *#
 .#*
 
+# Files taken from other source
+
+glove/*
+
 # Dynamically Generated Files
 vocab.dat
 glove.dat

@@ -2,7 +2,7 @@ import os, sys
 import numpy as np
 from logger import logger
 from keras.models import Sequential
-from keras.layers import Dropout, Flatten, RepeatVector, Merge, Activation
+from keras.layers import Dropout, Flatten, RepeatVector, Activation
 from keras.layers import Embedding, Conv2D, MaxPooling2D, LSTM, GRU, BatchNormalization
 from keras.layers import TimeDistributed, Dense, Input, Flatten, GlobalAveragePooling2D, Bidirectional
 from keras.applications import ResNet50, VGG16
@@ -122,7 +122,7 @@ class VModel:
         imodel.summary()
      
         model = Sequential()
-        model.add(Merge([cmodel,amodel,imodel],mode='concat'))
+        model.add(Concatenate([cmodel,amodel,imodel]))
         model.add(TimeDistributed(Dropout(0.2)))
         model.add(LSTM(1024,return_sequences=True, kernel_initializer='random_normal',recurrent_regularizer=l2(0.01)))
         model.add(TimeDistributed(Dense(VOCAB_SIZE,kernel_initializer='random_normal')))

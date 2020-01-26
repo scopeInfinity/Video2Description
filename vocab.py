@@ -2,12 +2,18 @@ from scipy.interpolate import interp1d
 from logger import logger
 from utils import caption_tokenize
 from VideoDataset.videohandler import VideoHandler
+from config import getVocabConfig
 import os
 import numpy as np
 import pickle
 
+# Read
+GLOVE_FILE = getVocabConfig()['GLOVE_FILE']
+# Read or Write if not exists
+WORD_EMBEDDED_CACHE = getVocabConfig()['WORD_EMBEDDED_CACHE']
+VOCAB_FILE = getVocabConfig()['VOCAB_FILE']
+
 class Vocab:
-    GLOVE_FILE = 'glove/glove.6B.300d.txt'
     OUTDIM_EMB = 300
     WORD_MIN_FREQ = 5
     VOCAB_SIZE = 9448
@@ -15,27 +21,24 @@ class Vocab:
 
     def __init__(self, data, train_ids, data_dir, working_dir):
         # data = dict(id => captions)
-        self.embeddingI = "%s/glove_300.dat" % (working_dir)
-        glove_file = "%s/%s" % (data_dir, Vocab.GLOVE_FILE)
-        self.vocab_file = "%s/vocab.dat" % (working_dir)
-        logger.debug("Glove File %s\nEmbedding File %s\nVocab File %s\n" % (glove_file, self.embeddingI, self.vocab_file))
+        logger.debug("Glove File %s\nEmbedding File %s\nVocab File %s\n" % (GLOVE_FILE, WORD_EMBEDDED_CACHE, VOCAB_FILE))
         self.specialWords = dict()
         self.specialWords['START'] = '>'
         self.specialWords['END'] = '<'
         self.specialWords['NONE'] = '?!?'
         self.specialWords['EXTRA'] = '___'
 
-        freshWordEmbedding = self.loadWordEmbedding(glove_file)
+        freshWordEmbedding = self.loadWordEmbedding(GLOVE_FILE)
         for word,enc in self.specialWords.iteritems():
             assert enc in self.wordEmbedding.keys()
         self.buildVocab(data, train_ids, freshWordEmbedding)
         logger.debug("Vocab Build Completed")
 
     def loadWordEmbedding(self, glove_file):
-        isEmbeddingPresent = os.path.exists(self.embeddingI)
+        isEmbeddingPresent = os.path.exists(WORD_EMBEDDED_CACHE)
         logger.debug("Embedding Present %s " % isEmbeddingPresent)
         if isEmbeddingPresent:
-            with open(self.embeddingI, 'r') as f:
+            with open(WORD_EMBEDDED_CACHE, 'r') as f:
                 self.wordEmbedding = pickle.load(f)
             logger.debug("Emdedding Loaded")
             return False
@@ -68,8 +71,8 @@ class Vocab:
                 logger.info("Embedding Saved!")
 
     def buildVocab(self, data, train_ids, trimEmbedding):
-        if os.path.exists(self.vocab_file):
-            with open(self.vocab_file,'r') as f:
+        if os.path.exists(VOCAB_FILE):
+            with open(VOCAB_FILE,'r') as f:
                 logger.debug("Vocab Loading from File")
                 self.ind2word = pickle.load(f)
                 logger.debug("Vocab Loaded")
@@ -98,7 +101,7 @@ class Vocab:
             for w,enc in self.specialWords.iteritems():
                 self.ind2word.append(enc)
             self.ind2word.extend([w for w in x.keys() if x[w]>=Vocab.WORD_MIN_FREQ])
-            with open(self.vocab_file,'w') as f:
+            with open(VOCAB_FILE,'w') as f:
                 pickle.dump(self.ind2word,f)
                 logger.debug("Vocab File saved")
         logger.info("Vocab Size : %d"%len(self.ind2word))
@@ -165,5 +168,5 @@ def vocabBuilder(datadir, workdir):
     vocab = Vocab(captionData, train_ids, datadir, workdir)
     return [vHandler, vocab]
     
-if __name__ == "__main__":
-    vocabBuilder("/home/gagan.cs14/btp","/home/gagan.cs14/btp_VideoCaption")
+#if __name__ == "__main__":
+#    vocabBuilder("/home/gagan.cs14/btp","/home/gagan.cs14/btp_VideoCaption")

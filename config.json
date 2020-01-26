@@ -1,16 +1,24 @@
 {
 	"app": {
 		"PREDICT_MODE_ONLY": true,
-		"PREFIX":"/home/gagan.cs14/btp_VideoCaption",
+		"PREFIX":"/home/scopeinfinity/BTP/NewOne/Video2Description",
 		"MAX_CONTENT_LENGTH": 10649600,
 		"UPLOAD_FOLDER": "./Uploads",
- 		"VIDEOS_FOLDER": "/home/gagan.cs14/btp/VideoDataset/videos/"
+ 		"VIDEOS_FOLDER": "/home/scopeinfinity/BTP/NewOne/Video2Description/VideoDataset/videos/"
  	},
  	"rpc": {
 		"RPC_SERVER_RUNAS": "0.0.0.0",
 		"RPC_PORT": 5001,
 		"RPC_ENDPOINT": "127.0.0.1"
  	},
- 	"vpreprocess": {	
- 	}
+    "vpreprocess": {
+        "WORKING_DIR": "/home/scopeinfinity/BTP/NewOne/Video2Description",
+        "DATA_DIR": "/home/scopeinfinity/BTP/NewOne/Video2Description",
+        "COCOFNAME": "/home/scopeinfinity/cococaption/cocoeval.py"
+    },
+    "vocab": {
+        "GLOVE_FILE": "/home/scopeinfinity/BTP/NewOne/Video2Description/glove/glove.6B.300d.txt",
+        "WORD_EMBEDDED_CACHE": "/home/scopeinfinity/BTP/NewOne/Video2Description/glove_300.dat",
+        "VOCAB_FILE": "/home/scopeinfinity/BTP/NewOne/Video2Description/vocab.dat"
+    }
 }
