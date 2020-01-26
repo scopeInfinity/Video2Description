@@ -1,76 +1,97 @@
 from flask import Flask, render_template, request, send_from_directory
 from copy import deepcopy
 import os, random, re
+from rpc import get_rpc
+from config import getAppConfig
+
 app = Flask(__name__)
-prefix = '/home/gagan.cs14/btp_VideoCaption'
+config = getAppConfig()
 
-app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
-app.config['UPLOAD_FOLDER'] = prefix + "/Uploads"
-app.config['VIDEOS_FOLDER'] = '/home/gagan.cs14/btp/VideoDataset/videos/'
+PREDICT_MODE_ONLY = config["PREDICT_MODE_ONLY"]
+PREFIX = config["PREFIX"]
+app.config['MAX_CONTENT_LENGTH'] =  config["MAX_CONTENT_LENGTH"]
+app.config['UPLOAD_FOLDER'] = config["UPLOAD_FOLDER"]
+app.config['VIDEOS_FOLDER'] = config["VIDEOS_FOLDER"]
 
-navigation = [("./","Predict",False),("./get_ids","Get ID's",False),("./play","Play Videos",False)]
+navigation = [("./","Predict",False)]
+
+if not PREDICT_MODE_ONLY:
+	navigation.extend([("./get_ids","Get ID's",False),("./play","Play Videos",False)])
+
+	# Don't even define the methods!
+	def get_train_ids():
+		command = "python %s/VideoDataset/videohandler.py -strain" % PREFIX
+		return os.popen(command).read()
+
+	def get_test_ids():
+		command = "python %s/VideoDataset/videohandler.py -stest" % PREFIX
+		return os.popen(command).read()
+
+	def get_val_ids():
+		command = "python %s/VideoDataset/videohandler.py -sval" % PREFIX
+		return os.popen(command).read()
+
+	def get_all_ids():
+		command = "python %s/VideoDataset/videohandler.py -sval -stest -strain" % PREFIX
+		return os.popen(command).read()
+
+	def predict_ids(ids):
+		proxy = get_rpc()
+		return proxy.predict_ids(ids)
+
+	@app.route("/play")
+	def play():
+		return render_template('play.html', navigation = getactivenav(2))
+
+	@app.route("/get_ids")
+	def get_ids():
+		content = dict()
+		content['ids'] = get_all_ids()
+		return render_template('get_ids.html', navigation=getactivenav(1), content = content).replace("]","]<br/><br/>")
+
+	@app.route("/predict")
+	def predict_page(fnames = None):
+		if request.args.get('fnames'):
+			return computeAndRenderPredictionFnames(re.sub("[^0-9 ]", "", request.args.get('fnames')))
+		if (not PREDICT_MODE_ONLY) and request.args.get('ids'):
+			return computeAndRenderPredictionIDs(ids = re.sub("[^0-9 ]", "", request.args.get('ids')))
+		return "Invalid Request"
+	
+	@app.route('/download', methods=['GET'])
+	def download_file():
+	  _id = request.args.get('id')
+	  if _id  and unicode(_id).isnumeric():
+	    return send_from_directory(app.config['VIDEOS_FOLDER'],str(_id)+".mp4")
+	    return "File Not Exists"
+	  return "Invalid Request"
+
+def predict_fnames(fnames):
+	proxy = get_rpc()
+	return proxy.predict_fnames(fnames)
 
 def getactivenav(index):
 	nav = deepcopy(navigation)
 	nav[index] = (nav[index][0], nav[index][1], True)
 	return nav
 
-def get_train_ids():
-	command = "python %s/VideoDataset/videohandler.py -strain" % prefix
-	return os.popen(command).read()
-
-def get_test_ids():
-	command = "python %s/VideoDataset/videohandler.py -stest" % prefix
-	return os.popen(command).read()
-
-def get_val_ids():
-	command = "python %s/VideoDataset/videohandler.py -sval" % prefix
-	return os.popen(command).read()
-
-def get_all_ids():
-	command = "python %s/VideoDataset/videohandler.py -sval -stest -strain" % prefix
-	return os.popen(command).read()
-
-def predict_ids(ids):
-	command = "python %s/parser.py server -pids %s" % (prefix, ids)
-	return os.popen(command).read()
-
-def predict_fnames(fnames):
-	command = "python %s/parser.py server -pfs %s" % (prefix, fnames)
-	return os.popen(command).read()
-
 @app.route("/")
 def main():
-	return render_template('index.html', navigation = getactivenav(0))
+	if PREDICT_MODE_ONLY:
+		return render_template('publicindex.html', navigation = getactivenav(0))
+	else:		
+		return render_template('index.html', navigation = getactivenav(0))
 
-@app.route("/play")
-def play():
-	return render_template('play.html', navigation = getactivenav(2))
-
-def predict(fnames = None, ids = None):
-	assert (fnames is None) ^ (ids is None)
+def computeAndRenderPredictionIDs(ids):
 	content = dict()
-	if ids is not None:
-		content['ids'] = ids
-		content['data_ids'] = predict_ids(ids)
-	elif fnames is not None:
-		content['fnames'] = fnames
-		content['data_fnames'] = predict_fnames(fnames)
+	content['ids'] = ids
+	content['data_ids'] = predict_ids(ids)
 	return render_template('predict.html', content = content)
 
-@app.route("/predict")
-def predict_page(fnames = None):
-	if request.args.get('fnames'):
-		return predict(fnames = re.sub("[^0-9 ]", "", request.args.get('fnames')))
-	if request.args.get('ids'):
-		return predict(ids = re.sub("[^0-9 ]", "", request.args.get('ids')))
-	return "Invalid Request"
-
-@app.route("/get_ids")
-def get_ids():
+def computeAndRenderPredictionFnames(fnames):
 	content = dict()
-	content['ids'] = get_all_ids()
-	return render_template('get_ids.html', navigation=getactivenav(1), content = content).replace("]","]<br/><br/>")
+	content['fnames'] = fnames
+	content['data_fnames'] = predict_fnames(fnames)
+	return render_template('predict.html', content = content)
 
 # http://flask.pocoo.org/docs/0.12/patterns/fileuploads/
 def allowed_file(filename):
@@ -92,17 +113,10 @@ def upload_file():
             filename = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filename)
             print "Uploaded To %s" %  filename
-            output = predict(fnames = filename)
+            output = computeAndRenderPredictionFnames([filename])
             os.unlink(filename)
             return output
     return "File Upload Failed"
 
-@app.route('/download', methods=['GET'])
-def download_file():
-  _id = request.args.get('id')
-  if _id  and unicode(_id).isnumeric():
-    return send_from_directory(app.config['VIDEOS_FOLDER'],str(_id)+".mp4")
-    return "File Not Exists"
-  return "Invalid Request"
 if __name__ == "__main__":
 	app.run(host='0.0.0.0')

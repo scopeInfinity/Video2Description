@@ -1,8 +1,8 @@
-import cv2
 from data import getVideo,sz_videos, get_videoId, getCaption
 
 def get_model():
-    
+	# -_-
+	pass    
 
 print sz_videos()
 vId = get_videoId(10)

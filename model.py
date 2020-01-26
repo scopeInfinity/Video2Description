@@ -1,4 +1,3 @@
-import cv2
 import os, sys
 import numpy as np
 from logger import logger
@@ -12,7 +11,6 @@ from keras.applications import ResNet50, VGG16
 from keras.applications.inception_v3 import InceptionV3
 from keras.regularizers import l2
 from keras.optimizers import RMSprop
-from keras.layers.merge import Concatenate
 from keras.models import Model
 from vocab import Vocab
 from keras.preprocessing import image
