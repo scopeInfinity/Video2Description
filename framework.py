@@ -12,7 +12,7 @@ from pprint import pformat
 
 WORKERS = 40
 
-CLABEL = 'ResNet_D512L512_G128G64_D1024D0.20BN_BDGRU1024_D0.2L1024DVS'
+CLABEL = 'ResNet_D512L512_G128G64_D1024D0.20BN_BDLSTM1024_D0.2L1024DVS'
 state_uninit = {'epochs':5000, 'start_batch':0, 'batch_size':100, 'saveAtBatch':500, 'steps_per_epoch':500}
 
 MFNAME = WORKING_DIR+'/'+CLABEL+'_model.dat'
@@ -214,10 +214,12 @@ class Framework():
         return stringCaption, captionObject
 
     def predict_ids(self, _ids):
+        logger.debug("Tring to predict for %s" % (_ids,))
         result = self.predict_model(_ids = _ids)
         return result
 
     def predict_fnames(self, fnames):
+        logger.debug("Tring to predict for %s" % (fnames,))
         result = self.predict_model(fnames = fnames)
         return result
 
