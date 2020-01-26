@@ -10,5 +10,7 @@
 		"RPC_SERVER_RUNAS": "0.0.0.0",
 		"RPC_PORT": 5001,
 		"RPC_ENDPOINT": "127.0.0.1"
+ 	},
+ 	"vpreprocess": {	
  	}
 }

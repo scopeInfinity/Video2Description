@@ -17,3 +17,6 @@ def getAppConfig():
 
 def getRpcConfig():
 	return getConfig()["rpc"]
+
+def getVPreprocessConfig():
+	return getConfig()["vpreprocess"]
