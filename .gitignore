@@ -21,6 +21,7 @@ display
 # Files taken from other source
 
 glove/*
+models/*
 
 # Dynamically Generated Files
 vocab.dat

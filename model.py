@@ -2,14 +2,13 @@ import os, sys
 import numpy as np
 from logger import logger
 from keras.models import Sequential
-from keras.layers import Dropout, Flatten, RepeatVector, Activation
+from keras.layers import Dropout, Merge, Flatten, RepeatVector, Activation
 from keras.layers import Embedding, Conv2D, MaxPooling2D, LSTM, GRU, BatchNormalization
 from keras.layers import TimeDistributed, Dense, Input, Flatten, GlobalAveragePooling2D, Bidirectional
 from keras.applications import ResNet50, VGG16
 from keras.applications.inception_v3 import InceptionV3
 from keras.regularizers import l2
 from keras.optimizers import RMSprop
-from keras.layers.merge import Concatenate
 from keras.models import Model
 from vocab import Vocab
 from keras.preprocessing import image
@@ -118,11 +117,10 @@ class VModel:
         imodel.add(Activation('tanh'))
         imodel.add(Bidirectional(GRU(1024, return_sequences=False, kernel_initializer='random_normal')))
         imodel.add(RepeatVector(CAPTION_LEN + 1))
-         
         imodel.summary()
-     
+
         model = Sequential()
-        model.add(Concatenate([cmodel,amodel,imodel]))
+        model.add(Merge([cmodel,amodel,imodel],mode='concat'))
         model.add(TimeDistributed(Dropout(0.2)))
         model.add(LSTM(1024,return_sequences=True, kernel_initializer='random_normal',recurrent_regularizer=l2(0.01)))
         model.add(TimeDistributed(Dense(VOCAB_SIZE,kernel_initializer='random_normal')))

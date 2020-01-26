@@ -66,7 +66,7 @@ class Vocab:
             return True
 
     def saveEmbedding(self):
-            with open(self.embeddingI,'w') as f:
+            with open(WORD_EMBEDDED_CACHE,'w') as f:
                 pickle.dump(self.wordEmbedding,f)
                 logger.info("Embedding Saved!")
 

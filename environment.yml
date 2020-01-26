@@ -91,7 +91,6 @@ dependencies:
   - pytorch=0.3.0=py27cuda8.0cudnn7.0_0
   - pyyaml=3.12=py27h2d70dd7_1
   - readline=7.0=ha6073c6_4
-  - requests=2.14.2=py27_0
   - ruamel_yaml=0.15.35=py27h14c3975_1
   - setuptools=36.5.0=py27h68b189e_0
   - six=1.11.0=py27h5f960f1_1
