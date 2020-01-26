@@ -70,6 +70,8 @@ Test videos with poor results
 * Create conda environment using `environment.yml`
   * `Video2Description$ conda env create -f environment.yml`
   * Install keras with tensorflow backend.
+    * `conda install -c anaconda keras`
+    * Or `conda install -c anaconda tensorflow-gpu`
 * Install ffmpeg
   * Configure, build and install ffmpeg from source with shared libraries 
 ```bash
@@ -89,7 +91,13 @@ export LD_LIBRARY_PATH=$/home/gagan.cs14/V2D_local/lib/:$LD_LIBRARY_PATH
 ```
 conda install opencv -c conda-forge
 ```
+* Activate the environment
+```
+Video2Description$ conda activate .
+```
+### Info
 
+Data Directory and Working Directory can be same as the project root directory.
 
 ### Data Directory
 File | Reference
