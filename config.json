@@ -7,7 +7,7 @@
  		"VIDEOS_FOLDER": "/home/scopeinfinity/BTP/NewOne/Video2Description/VideoDataset/videos/"
  	},
  	"rpc": {
-		"RPC_SERVER_RUNAS": "0.0.0.0",
+		"RPC_SERVER_RUNAS": "127.0.0.1",
 		"RPC_PORT": 5001,
 		"RPC_ENDPOINT": "127.0.0.1"
  	},
