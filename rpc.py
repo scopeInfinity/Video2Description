@@ -1,12 +1,15 @@
 import xmlrpclib
 from SimpleXMLRPCServer import SimpleXMLRPCServer
+from config import getRpcConfig
 
-PORT = 8000 # RPC
-SERVER_IP = '30.1.255.253'
+config = getRpcConfig()
+SERVER_RUNAS = config["RPC_SERVER_RUNAS"]
+PORT = config["RPC_PORT"]
+SERVER_IP = config["RPC_ENDPOINT"]
 
 def register_server(framework):
     print 'Preparing for Register Server'
-    server = SimpleXMLRPCServer(("0.0.0.0", PORT))
+    server = SimpleXMLRPCServer((SERVER_RUNAS, PORT))
     print 'Listening to %d' % PORT
     server.register_function(framework.predict_fnames, 'predict_fnames')
     server.register_function(framework.predict_ids, 'predict_ids')

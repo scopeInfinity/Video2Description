@@ -1,4 +1,3 @@
-import cv2
 import shutil, json, ast
 from keras import callbacks
 import os, sys
@@ -215,10 +214,12 @@ class Framework():
         return stringCaption, captionObject
 
     def predict_ids(self, _ids):
+        logger.debug("Tring to predict for %s" % (_ids,))
         result = self.predict_model(_ids = _ids)
         return result
 
     def predict_fnames(self, fnames):
+        logger.debug("Tring to predict for %s" % (fnames,))
         result = self.predict_model(fnames = fnames)
         return result
 

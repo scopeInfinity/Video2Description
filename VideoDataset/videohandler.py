@@ -217,11 +217,11 @@ class VideoHandler:
             if not success:
                 break
             allframes.append(cv2.resize(frame, self.SHAPE))
-            if len(allframes) < self.LIMIT_FRAMES:
-                print "File [%s] with limited frames (%d)" % (sfname, len(allframes))
-                # Ignore those videos
-                os.system("touch %s_ignore" % sfname)
-                return None
+        if len(allframes) < self.LIMIT_FRAMES:
+            print "File [%s] with limited frames (%d)" % (sfname, len(allframes))
+            # Ignore those videos
+            os.system("touch %s_ignore" % sfname)
+            return None
 
         period = len(allframes) / self.LIMIT_FRAMES
         rframes = allframes[:period * self.LIMIT_FRAMES:period]
@@ -375,6 +375,7 @@ def show_counts():
 
 def get_args():
     parser = argparse.ArgumentParser()
+    parser.add_argument("root_dir", help="path to the project root directory. i.e parent directory of VideoDataset/videohandler.py")
     parser.add_argument("-sc", "--show-count", help="show count for training/validation/test videos", action='store_true')
     parser.add_argument("-d", "--download", help="download more videos to extend dataset", action='store_true')
     parser.add_argument("-ac", "--auto-cache", help="cache all downloaded videos", action='store_true')
@@ -386,7 +387,7 @@ def get_args():
 
 if __name__ == "__main__":
     args = get_args()
-    vHandler = VideoHandler("/home/gagan.cs14/btp/",VideoHandler.s_fname_train, VideoHandler.s_fname_test)
+    vHandler = VideoHandler(args.root_dir,VideoHandler.s_fname_train, VideoHandler.s_fname_test)
     if args.show_count:
         show_counts()
         exit()
