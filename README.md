@@ -162,7 +162,7 @@ Pre-trained Models : https://drive.google.com/open?id=1gexBRQfrjfcs7N5UI5NtlLiIR
 
 - Start the server **(S)** for to compute predictions (Within conda environment)
 ```bash
-python parser.py server -s
+python parser.py server -s -m <path/to/correct/model>
 ```
 - Check `config.json` for configurations.
 - Execute `python app.py` from webserver (No need for conda environment)
