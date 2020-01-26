@@ -3,6 +3,25 @@ Generate caption for the given video clip
 
 Branch : [VideoCaption](https://github.com/scopeInfinity/Video2Description/tree/VideoCaption), [VideoCaption_catt](https://github.com/scopeInfinity/Video2Description/tree/VideoCaption_catt)
 
+### Model
+
+Model generates natural sentence word by word
+
+![SentenceGenerationImage](https://github.com/scopeInfinity/Video2Description/raw/VideoCaption/images/sentence_model.png)
+
+|    Audio SubModel     |     Video SubModel       |   Sentence Generation SubModel |
+| :-------------: |:-------------:| :-----:|
+| ![audio_model][audio_model]| ![video_model][video_model] | ![sentence_generation][sentence_generation]
+
+[audio_model]: https://github.com/scopeInfinity/Video2Description/raw/VideoCaption/images/model_audio.png
+[video_model]: https://github.com/scopeInfinity/Video2Description/raw/VideoCaption/images/model_video.png
+[sentence_generation]: https://github.com/scopeInfinity/Video2Description/raw/VideoCaption/images/model_word.png
+
+Context extraction for Temporal Attention Model, at i<sup>th</sup> word generation
+
+![AttentionModel](https://github.com/scopeInfinity/Video2Description/raw/VideoCaption/images/attention.png)
+
+
 ### Results - *f5c22f7*
 
 Test videos with good results
@@ -46,14 +65,17 @@ Test videos with poor results
 * Clone repository to directory named `btp_<branch_name>`
   * `git clone https://github.com/scopeInfinity/Video2Description.git btp_VideoCaption`
   * Path for code repository is hardcoded in first few lines of `vpreprocess.py`
-* Setup anaconda environment, use `environment.yml`
+* Install Conda
+  * https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html
+* Create conda environment using `environment.yml`
+  * `Video2Description$ conda env create -f environment.yml`
   * Install keras with tensorflow backend.
 * Install ffmpeg
   * Configure, build and install ffmpeg from source with shared libraries 
 ```bash
 git clone 'https://github.com/FFmpeg/FFmpeg.git'
 cd FFmpeg
-./configure --prefix=~/V2D_local/ --enable-shared
+./configure --enable-shared  # Use --prefix if need to install in custom directory
 make
 make install
 ```
@@ -86,6 +108,11 @@ File | Content
 ### Download Dataset
 * Execute `python videohandler.py` from *VideoDataset* Directory
   
+### Execution
+It currently supports train, predict and server mode. Please use the following command for better explanation.
+```bash
+python parse.py -h
+```
   
 ### Training Methods
 
