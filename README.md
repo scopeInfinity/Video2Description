@@ -69,9 +69,9 @@ Test videos with poor results
   * https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html
 * Create conda environment using `environment.yml`
   * `Video2Description$ conda env create -f environment.yml`
-  * Install keras with tensorflow backend.
-    * `conda install -c anaconda keras`
-    * Or `conda install -c anaconda tensorflow-gpu`
+  * Install keras with tensorflow backend (if not already there).  Similar to:
+    * `conda install -c anaconda keras==2.0.8`
+    * `conda install -c conda-forge tensorflow==1.2.1`
 * Install ffmpeg
   * Configure, build and install ffmpeg from source with shared libraries 
 ```bash
