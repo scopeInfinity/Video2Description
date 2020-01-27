@@ -1,7 +1,7 @@
 # Video Captioning
 Generate caption for the given video clip
 
-Branch : [VideoCaption](https://github.com/scopeInfinity/Video2Description/tree/VideoCaption), [VideoCaption_catt](https://github.com/scopeInfinity/Video2Description/tree/VideoCaption_catt)
+Branch : [VideoCaption](https://github.com/scopeInfinity/Video2Description/tree/VideoCaption) (1a2124d), [VideoCaption_catt](https://github.com/scopeInfinity/Video2Description/tree/VideoCaption_catt) (647e73b4)
 
 ### Model
 
@@ -62,9 +62,11 @@ Test videos with poor results
 
 
 ### Setup
-* Clone repository to directory named `btp_<branch_name>`
-  * `git clone https://github.com/scopeInfinity/Video2Description.git btp_VideoCaption`
-  * Path for code repository is hardcoded in first few lines of `vpreprocess.py`
+* Please feel free to raise PR with necessary suggestions.
+* Clone the repository`
+  * `git clone https://github.com/scopeInfinity/Video2Description.git`
+  * Update `config.json` as per your requirement.
+    * To know more about any field, just search for the reference in the codebase.
 * Install Conda
   * https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html
 * Create conda environment using `environment.yml`
@@ -81,12 +83,7 @@ cd FFmpeg
 make
 make install
 ```
-  * Set environment variable
-    * Reference [https://conda.io/docs/user-guide/tasks/manage-environments.html#saving-environment-variables](https://conda.io/docs/user-guide/tasks/manage-environments.html#saving-environment-variables)
-```
-export PATH=/home/gagan.cs14/V2D_local/bin:$PATH
-export LD_LIBRARY_PATH=$/home/gagan.cs14/V2D_local/lib/:$LD_LIBRARY_PATH
-```
+
 * Install opencv
 ```
 conda install opencv -c conda-forge
@@ -95,6 +92,7 @@ conda install opencv -c conda-forge
 ```
 Video2Description$ conda activate .
 ```
+
 ### Info
 
 Data Directory and Working Directory can be same as the project root directory.
@@ -146,8 +144,8 @@ python /path/to/eval_dir/cocoeval.py <results file>.txt
 
 Commit | Training | Total | CIDEr | Bleu_4 | ROUGE_L | METEOR | Model Filename 
 --- | --- | --- | --- | --- | --- | --- | --- 
-6a63470 | 10 epochs | 1.1642 | 0.1580 | 0.3090 | 0.4917 | 0.2055 | CAttention_ResNet_D512L512_G128G64_D1024D0.20BN_BDGRU1024_D0.2L1024DVS_model.dat_4990_loss_2.484_Cider0.360_Blue0.369_Rouge0.580_Meteor0.256
-5920de9 | 17 epochs | 1.1599 | 0.1654 | 0.3022 | 0.4849 | 0.2074 | ResNet_D512L512_G128G64_D1024D0.20BN_BDLSTM1024_D0.2L1024DVS_model.dat_4987_loss_2.203_Cider0.342_Blue0.353_Rouge0.572_Meteor0.256
+647e73b4 | 10 epochs | 1.1642 | 0.1580 | 0.3090 | 0.4917 | 0.2055 | CAttention_ResNet_D512L512_G128G64_D1024D0.20BN_BDGRU1024_D0.2L1024DVS_model.dat_4990_loss_2.484_Cider0.360_Blue0.369_Rouge0.580_Meteor0.256
+1a2124d | 17 epochs | 1.1599 | 0.1654 | 0.3022 | 0.4849 | 0.2074 | ResNet_D512L512_G128G64_D1024D0.20BN_BDLSTM1024_D0.2L1024DVS_model.dat_4987_loss_2.203_Cider0.342_Blue0.353_Rouge0.572_Meteor0.256
 f5c22f7 | 17 epochs | 1.1559 | 0.1680 | 0.3000 | 0.4832 | 0.2047 | ResNet_D512L512_G128G64_D1024D0.20BN_BDGRU1024_D0.2L1024DVS_model.dat_4983_loss_2.350_Cider0.355_Blue0.353_Rouge0.571_Meteor0.247_TOTAL_1.558_BEST
 bd072ac | 11 CPUhrs with Multiprocessing (16 epochs)  |  1.0736 | 0.1528 | 0.2597 | 0.4674 | 0.1936 | ResNet_D512L512_D1024D0.20BN_BDGRU1024_D0.2L1024DVS_model.dat_4986_loss_2.306_Cider0.347_Blue0.328_Rouge0.560_Meteor0.246 
 3ccf5d5 | 15 CPUhrs |  1.0307 | 0.1258 | 0.2535 | 0.4619 | 0.1895 | res_mcnn_rand_b100_s500_model.dat_model1_3ccf5d5 
@@ -161,17 +159,13 @@ Pre-trained Models : https://drive.google.com/open?id=1gexBRQfrjfcs7N5UI5NtlLiIR
 
 ### Web Server
 
-- From a high RAM ram server **(S)** execute (Within conda environment)
+- Start the server **(S)** for to compute predictions (Within conda environment)
 ```bash
-python parser.py server -s
+python parser.py server -s -m <path/to/correct/model>
 ```
-- Edit `rpc.py`
-  - Change **`SERVER_IP`** to IP of server **(S)**
-- Edit `app.py` and modify following according to need
-  - prefix # Line 5, working directory path
-  - `app.config['VIDEOS_FOLDER']`
-  - `app.config['UPLOAD_FOLDER']`
+- Check `config.json` for configurations.
 - Execute `python app.py` from webserver (No need for conda environment)
+  - Make sure, your the process is can new files inside `$UPLOAD_FOLDER`
 - Open `http://webserver:5000/` to open Web Server for testing (under default configuration)
 
 ### Specifications
@@ -193,10 +187,10 @@ python parser.py server -s
 ##### Commit: f5c22f7
 - Audio with BiDirection GRU
 
-##### Commit: 5920de9
+##### Commit: 1a2124d
 - Audio with BiDirection LSTM
 
-##### Commit: 6a63470
+##### Commit: 647e73b
 - Audio with BiDirection GRU using temporal attention for context
 
 # Image Captioning
