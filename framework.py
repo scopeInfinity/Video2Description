@@ -214,12 +214,12 @@ class Framework():
         return stringCaption, captionObject
 
     def predict_ids(self, _ids):
-        logger.debug("Tring to predict for %s" % (_ids,))
+        logger.debug("Trying to predict for %s" % (_ids,))
         result = self.predict_model(_ids = _ids)
         return result
 
     def predict_fnames(self, fnames):
-        logger.debug("Tring to predict for %s" % (fnames,))
+        logger.debug("Trying to predict for %s" % (fnames,))
         result = self.predict_model(fnames = fnames)
         return result
 
