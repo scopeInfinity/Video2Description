@@ -1,20 +1,21 @@
-FROM continuumio/miniconda:4.7.12-alpine
-WORKDIR /code
+FROM continuumio/miniconda:4.7.12-alpine as base1
+COPY --chown=anaconda:anaconda root/ /project/v2d/src/
+WORKDIR /project/v2d/src/
 ENV PATH /opt/conda/bin/:$PATH
-COPY environment.yml environment.yml
-RUN conda install -c anaconda git
-RUN conda create -n env python=2.7
-RUN conda install -c anaconda keras==2.0.8
-RUN conda install -c conda-forge tensorflow==1.2.1
-RUN echo "source activate env" > ~/.bashrc
-RUN conda activate .
-RUN git clone 'https://github.com/FFmpeg/FFmpeg.git'
-# TODO can  we continue from inside the env
-RUN cd FFmpeg
-RUN echo "Building and Installing FFMpeg"
+RUN conda env create -f environment.yml
+
+FROM base1 as base2
+COPY --chown=anaconda:anaconda FFmpeg/ /project/ffmpeg/
+WORKDIR /project/ffmpeg/
 RUN ./configure --enable-shared
-RUN make
+RUN ./make -j4
 RUN make install
-RUN conda install opencv -c conda-forge
-COPY root/ src/
+
+# skipping base2
+FROM base1
+WORKDIR /project/v2d/src/
+SHELL ["conda", "run", "-n", "V2D"]
+RUN echo "Models found:"
+RUN ls -l /project/v2d/models/
+ENTRYPOINT ["python", "parser.py", "server", "-s", "-m" , "/project/v2d/models/CAttention_ResNet_D512L512_G128G64_D1024D0.20BN_BDGRU1024_D0.2L1024DVS_model.dat_4990_loss_2.484_Cider0.360_Blue0.369_Rouge0.580_Meteor0.256.256__good"]
 RUN echo DONE!!!
