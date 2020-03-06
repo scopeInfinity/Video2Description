@@ -1,0 +1,10 @@
+services:
+  - docker
+
+before_install:
+- test -d "FFmpeg" || git clone 'https://github.com/FFmpeg/FFmpeg.git'
+- sudo docker-compose build --parallel
+- sudo docker ps -a
+
+script:
+- sudo docker-compose run v2d
