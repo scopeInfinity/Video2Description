@@ -1,10 +1,10 @@
 {
 	"app": {
 		"PREDICT_MODE_ONLY": true,
-		"PREFIX":"/home/gagan.cs14/btp_VideoCaption",
+		"PREFIX":"/home/scopeinfinity/BTP/Video2Description",
 		"MAX_CONTENT_LENGTH": 10649600,
 		"UPLOAD_FOLDER": "./Uploads",
- 		"VIDEOS_FOLDER": "/home/gagan.cs14/btp/VideoDataset/videos/"
+ 		"VIDEOS_FOLDER": "/home/scopeinfinity/BTP/Video2Description/VideoDataset/videos/"
  	},
  	"rpc": {
 		"RPC_SERVER_RUNAS": "0.0.0.0",

@@ -5,17 +5,19 @@ channels:
   - defaults
 dependencies:
   - c-compiler
+  - make
   - keras==2.0.8
   - tensorflow==1.2.1
   - git
-  - pip=9.0.1=py27ha730c48_4
+  - opencv
+  - pip
   - python=2.7.14
-  - urllib3=1.22=py27ha55213b_0
+  - urllib3=1.22
+  - yasm
   - pip:
     - numpy==1.14.5
     - flask==0.12.2
     - keras==2.0.8
-    - tensorflow==1.2.1
     - librosa==0.6.0
     - matplotlib==2.1.2
     - pylint==1.8.3

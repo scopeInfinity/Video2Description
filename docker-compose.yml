@@ -1,8 +1,18 @@
 version: '3'
 services:
   v2d:
+    container_name: v2d
     build: .
     ports:
       - "5000:5000"
     volumes:
-      - './models:/project/v2d/models/:ro'
+      - .:/code
+      - ./models:/project/v2d/models/
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 20M
