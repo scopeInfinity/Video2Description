@@ -1,7 +1,6 @@
 name: V2D
 channels:
   - conda-forge
-  - menpo
   - defaults
 dependencies:
   - c-compiler
@@ -9,7 +8,6 @@ dependencies:
   - keras==2.0.8
   - tensorflow==1.2.1
   - git
-  - opencv
   - pip
   - python=2.7.14
   - urllib3=1.22

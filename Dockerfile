@@ -3,6 +3,7 @@ COPY --chown=anaconda:anaconda environment.yml /project/v2d/
 WORKDIR /project/v2d/
 ENV PATH /opt/conda/bin/:$PATH
 RUN conda env create -f environment.yml
+RUN ["conda", "install", "-n", "V2D", "-c", "menpo", "opencv"]
 
 FROM base1 as base2
 COPY --chown=anaconda:anaconda FFmpeg/ /project/ffmpeg/
