@@ -5,15 +5,15 @@ ENV PATH /opt/conda/bin/:$PATH
 RUN conda env create -f environment.yml
 RUN ["conda", "install", "-n", "V2D", "-c", "menpo", "opencv"]
 
-FROM base1 as base2
-COPY --chown=anaconda:anaconda FFmpeg/ /project/ffmpeg/
-WORKDIR /project/ffmpeg/
-RUN ["conda", "run", "-n", "V2D", "/bin/sh", "-c", "./configure", "--enable-shared"]
-RUN ["conda", "run", "-n", "V2D", "/bin/sh", "-c", "make", "-j4"]
-RUN ["conda", "run", "-n", "V2D", "/bin/sh", "-c", "make", "install"]
-RUN ["conda", "run", "-n", "V2D", "/bin/sh", "-c", "make", "install"]
+# FROM base1 as base2
+# COPY --chown=anaconda:anaconda FFmpeg/ /project/ffmpeg/
+# WORKDIR /project/ffmpeg/
+# RUN ["conda", "run", "-n", "V2D", "/bin/sh", "-c", "./configure", "--enable-shared"]
+# RUN ["conda", "run", "-n", "V2D", "/bin/sh", "-c", "make", "-j4"]
+# RUN ["conda", "run", "-n", "V2D", "/bin/sh", "-c", "make", "install"]
+# RUN ["conda", "run", "-n", "V2D", "/bin/sh", "-c", "make", "install"]
 
-FROM base2
+FROM base1
 WORKDIR /project/v2d/src/
 COPY --chown=anaconda:anaconda root/ /project/v2d/src/
 COPY --chown=anaconda:anaconda models/ /project/v2d/models/
