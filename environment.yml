@@ -13,6 +13,7 @@ dependencies:
   - urllib3=1.22
   - yasm
   - pip:
+    - opencv-contrib-python
     - numpy==1.14.5
     - flask==0.12.2
     - keras==2.0.8
