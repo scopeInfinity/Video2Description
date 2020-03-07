@@ -3,7 +3,9 @@ services:
 
 before_install:
 - test -d "FFmpeg" || git clone 'https://github.com/FFmpeg/FFmpeg.git'
-- sudo docker-compose build --parallel
+
+install:
+- sudo travis_wait 30 docker-compose build --parallel
 - sudo docker ps -a
 
 script:
