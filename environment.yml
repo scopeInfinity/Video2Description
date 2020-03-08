@@ -3,15 +3,12 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - c-compiler
-  - make
   - keras==2.0.8
   - tensorflow==1.2.1
   - pip
   - gtk2
   - python=2.7.14
   - urllib3
-  - yasm
   - pip:
     - opencv-python-headless
     - numpy

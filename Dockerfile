@@ -1,10 +1,8 @@
 FROM ubuntu:latest as base
 RUN apt-get update
-RUN apt-get install -y libsndfile1 pkg-config wget zip
+RUN apt-get install -y libsndfile1 pkg-config nasm wget zip
 RUN useradd -m -s /bin/bash si
-RUN whoami
 USER si
-RUN whoami
 
 # Installing miniconda
 RUN wget -N https://repo.anaconda.com/miniconda/Miniconda2-latest-Linux-x86_64.sh -O /tmp/Miniconda2-latest-Linux-x86_64.sh
