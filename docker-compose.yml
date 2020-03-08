@@ -3,6 +3,7 @@ services:
   v2d:
     container_name: v2d
     build: .
+    image: scopeinfinity/video2description
     ports:
       - "5000:5000"
     volumes:
