@@ -1,10 +1,10 @@
 {
     "app": {
         "PREDICT_MODE_ONLY": true,
-        "PREFIX":"/project/v2d/src",
+        "PREFIX":"/projecthome/si/v2d/src",
         "MAX_CONTENT_LENGTH": 10649600,
         "UPLOAD_FOLDER": "./Uploads",
-        "VIDEOS_FOLDER": "/project/v2d/src/VideoDataset/videos/"
+        "VIDEOS_FOLDER": "/home/si/v2d/src/VideoDataset/videos/"
     },
     "rpc": {
         "RPC_SERVER_RUNAS": "0.0.0.0",
@@ -12,5 +12,8 @@
         "RPC_ENDPOINT": "127.0.0.1"
     },
     "vpreprocess": {    
+    },
+    "tests": {
+        "dir_videos": "./tests/data/videos"
     }
 }

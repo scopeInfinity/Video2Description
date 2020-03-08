@@ -20,3 +20,6 @@ def getRpcConfig():
 
 def getVPreprocessConfig():
 	return getConfig()["vpreprocess"]
+
+def getTestsConfig():
+	return getConfig()["tests"]
