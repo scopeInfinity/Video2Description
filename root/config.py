@@ -21,10 +21,8 @@ def getRpcConfig():
 def getVPreprocessConfig():
 	return getConfig()["vpreprocess"]
 
-<<<<<<< HEAD:root/config.py
-def getTestsConfig():
-	return getConfig()["tests"]
-=======
 def getVocabConfig():
     return getConfig()["vocab"]
->>>>>>> 4a3f3825571d16516e1b0a5809f178572c68d191:config.py
+
+def getTestsConfig():
+	return getConfig()["tests"]
