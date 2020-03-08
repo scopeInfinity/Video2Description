@@ -1,17 +1,25 @@
 {
     "app": {
         "PREDICT_MODE_ONLY": true,
-        "PREFIX":"/projecthome/si/v2d/src",
+        "PREFIX":"/home/si/v2d/src",
         "MAX_CONTENT_LENGTH": 10649600,
         "UPLOAD_FOLDER": "./Uploads",
         "VIDEOS_FOLDER": "/home/si/v2d/src/VideoDataset/videos/"
     },
     "rpc": {
-        "RPC_SERVER_RUNAS": "0.0.0.0",
+        "RPC_SERVER_RUNAS": "127.0.0.1",
         "RPC_PORT": 5001,
         "RPC_ENDPOINT": "127.0.0.1"
     },
-    "vpreprocess": {    
+    "vpreprocess": {
+        "WORKING_DIR": "/home/si/v2d",
+        "DATA_DIR": "/home/si/v2d",
+        "COCOFNAME": "TODO-FIX-BAD-PATH"
+    },
+    "vocab": {
+        "GLOVE_FILE": "/home/si/v2d/glove/glove.6B.300d.txt",
+        "WORD_EMBEDDED_CACHE": "/home/si/v2d/glove_300.dat",
+        "VOCAB_FILE": "/home/si/v2d/vocab.dat"
     },
     "tests": {
         "dir_videos": "./tests/data/videos"
