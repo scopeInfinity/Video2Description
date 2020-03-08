@@ -23,7 +23,7 @@ USER root
 RUN make install
 USER si
 RUN rm -r /tmp/FFmpeg-master/
-RUN rm -r /tmp/master.zip
+RUN rm -r /tmp/ffmpeg.zip
 
 # Create conda environment
 # Note: ffmpeg with --enable-shared is before installing opencv

@@ -1,11 +1,8 @@
 services:
   - docker
 
-before_install:
-- test -d "FFmpeg" || git clone 'https://github.com/FFmpeg/FFmpeg.git'
-
 install:
-- travis_wait 30 sudo docker-compose build
+- sudo docker-compose build
 - sudo docker ps -a
 
 script:
