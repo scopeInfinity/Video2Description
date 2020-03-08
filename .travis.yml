@@ -10,8 +10,6 @@ script:
 
 deploy:
   provider: script
-  script:
-    - echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin > /dev/null 2>&1
-    - docker push scopeinfinity/video2description
+  script: bash -c 'echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin > /dev/null 2>&1;docker push scopeinfinity/video2description'
   on:
     branch: docker
