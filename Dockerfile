@@ -17,7 +17,7 @@ USER si
 # ffmpeg build and install
 RUN wget https://github.com/FFmpeg/FFmpeg/archive/master.zip -O /tmp/ffmpeg.zip
 WORKDIR /tmp
-RUN unzip master.zip
+RUN unzip ffmpeg.zip
 WORKDIR /tmp/FFmpeg-master/
 RUN ./configure --enable-shared
 RUN make -j16
