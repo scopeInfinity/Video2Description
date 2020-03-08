@@ -7,16 +7,15 @@ dependencies:
   - make
   - keras==2.0.8
   - tensorflow==1.2.1
-  - git
   - pip
+  - gtk2
   - python=2.7.14
-  - urllib3=1.22
+  - urllib3
   - yasm
   - pip:
-    - opencv-contrib-python
-    - numpy==1.14.5
-    - flask==0.12.2
-    - keras==2.0.8
-    - librosa==0.6.0
-    - matplotlib==2.1.2
-    - pylint==1.8.3
+    - opencv-python-headless
+    - numpy
+    - flask
+    - librosa
+    - matplotlib
+    - pylint
