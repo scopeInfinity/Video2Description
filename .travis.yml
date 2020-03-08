@@ -6,4 +6,4 @@ install:
 - sudo docker ps -a
 
 script:
-- sudo docker-compose run v2d
+- sudo docker-compose run v2d conda run -n V2D /bin/bash -c 'cd /home/si/v2d/src/ && ./run_tests.sh'
