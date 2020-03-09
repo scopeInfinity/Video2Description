@@ -4,6 +4,7 @@
         "PREFIX":"/home/si/v2d/src",
         "MAX_CONTENT_LENGTH": 10649600,
         "UPLOAD_FOLDER": "./Uploads",
+        "VIDEOS_DATASET": "/home/si/v2d/src/VideoDataset/",
         "VIDEOS_FOLDER": "/home/si/v2d/src/VideoDataset/videos/"
     },
     "rpc": {
@@ -14,10 +15,10 @@
     "vpreprocess": {
         "WORKING_DIR": "/home/si/v2d",
         "DATA_DIR": "/home/si/v2d",
-        "COCOFNAME": "TODO-FIX-BAD-PATH"
+        "COCOFNAME": "/home/si/coco-caption/pycocoevalcap/eval.py"
     },
     "vocab": {
-        "GLOVE_FILE": "/home/si/v2d/glove/glove.6B.300d.txt",
+        "GLOVE_FILE": "/home/si/glove/glove.6B.300d.txt",
         "WORD_EMBEDDED_CACHE": "/home/si/v2d/glove_300.dat",
         "VOCAB_FILE": "/home/si/v2d/vocab.dat"
     },

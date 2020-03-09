@@ -9,6 +9,11 @@ import numpy as np
 import librosa
 from pprint import pprint
 
+import config
+
+DIR_VIDEO_DATASET = config.getAppConfig()["VIDEOS_DATASET"]
+
+
 class VideoHandler:
     LIMIT_FRAMES = 40
     AUDIO_FEATURE = (80, 40) #TimeSamples, n_mfcc
@@ -18,7 +23,6 @@ class VideoHandler:
     ## InceptionV3
     # SHAPE = (299, 299)
 
-    fname_offset = "VideoDataset"
     s_fname_train = "videodatainfo_2017.json"
     s_fname_test = "test_videodatainfo_2017.json"
     SLEEPTIME = 30
@@ -27,13 +31,13 @@ class VideoHandler:
     
     def __init__(self, maindir, s_fname_train, s_fname_test):
         self.splitTrainValid = [95,5] # Out of 100
-        self.fname_train = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, s_fname_train)
-        self.fname_test = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, s_fname_test)
-        self.vdir = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, "videos")
-        self.cdir = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, "cache_"+str(self.LIMIT_FRAMES)+"_"+("%dx%d" % VideoHandler.SHAPE))
-        self.adir = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, "cache_audio_"+("%dx%d" % VideoHandler.AUDIO_FEATURE))
-        self.tdir = "%s/%s" % (self.vdir, "extract")
-        self.logfile = "%s/%s/%s" % (maindir, VideoHandler.fname_offset, "log.txt")
+        self.fname_train = os.path.join(DIR_VIDEO_DATASET, s_fname_train)
+        self.fname_test = os.path.join(DIR_VIDEO_DATASET, s_fname_test)
+        self.vdir = os.path.join(DIR_VIDEO_DATASET, "videos")
+        self.cdir = os.path.join(DIR_VIDEO_DATASET, "cache_"+str(self.LIMIT_FRAMES)+"_"+("%dx%d" % VideoHandler.SHAPE))
+        self.adir = os.path.join(DIR_VIDEO_DATASET, "cache_audio_"+("%dx%d" % VideoHandler.AUDIO_FEATURE))
+        self.tdir = os.path.join(self.vdir, "extract")
+        self.logfile = os.path.join(DIR_VIDEO_DATASET, "log.txt")
         if os.path.exists(self.tdir):
             shutil.rmtree(self.tdir)
         os.mkdir(self.tdir)
