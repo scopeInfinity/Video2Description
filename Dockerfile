@@ -35,26 +35,27 @@ RUN conda init bash
 
 # coco-caption
 WORKDIR /home/si
-RUN wget 'https://github.com/tylin/coco-caption/archive/master.zip' -O coco.zip
+RUN wget -N 'https://github.com/tylin/coco-caption/archive/master.zip' -O coco.zip
 RUN unzip coco.zip
 RUN mv coco-caption-master coco-caption
 RUN rm coco.zip
 
 # glove
+# https://nlp.stanford.edu/projects/glove/
 RUN mkdir /home/si/glove
 WORKDIR /home/si/glove
-RUN wget http://nlp.stanford.edu/data/glove.6B.zip
-RUN unzip glove.6B.zip glove.6B.300d.txt
-RUN rm glove.6B.zip
+RUN wget -N https://docs.google.com/uc?export=download&id=1NzOLm3mT0gJk0Y3IUnWpQFQFDL3zDYj0 -o glove.6B.300d.txt
+
+# models
+COPY --chown=si:si models/ /home/si/v2d/models/
+RUN wget -N https://docs.google.com/uc?export=download&id=1aNXsT64tsza8vCqtoIZ4maQZ8Wbib6e0 -O ResNet_D512L512_G128G64_D1024D0.20BN_BDLSTM1024_D0.2L1024DVS_model.dat_4987_loss_2.203_Cider0.342_Blue0.353_Rouge0.572_Meteor0.256
+RUN echo "Available Models:"
+RUN ls -1 /home/si/v2d/models
 
 # Push V2D in the container
 FROM base
 COPY --chown=si:si root/ /home/si/v2d/src/
-COPY --chown=si:si models/ /home/si/v2d/models/
 COPY --chown=si:si root/config_docker.json /home/si/v2d/src/config.json
-
-RUN echo "Available Models:"
-RUN ls -1 /home/si/v2d/models
 
 # Turning up
 WORKDIR /home/si/v2d/src

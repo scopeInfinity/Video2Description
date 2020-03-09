@@ -6,14 +6,3 @@ services:
     image: scopeinfinity/video2description
     ports:
       - "5000:5000"
-    volumes:
-      - .:/code
-      - ./models:/project/v2d/models/
-    deploy:
-      resources:
-        limits:
-          cpus: '4'
-          memory: 2G
-        reservations:
-          cpus: '0.25'
-          memory: 20M
