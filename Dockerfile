@@ -44,7 +44,7 @@ RUN rm coco.zip
 # https://nlp.stanford.edu/projects/glove/
 RUN mkdir /home/si/glove
 WORKDIR /home/si/glove
-RUN wget -N https://docs.google.com/uc?export=download&id=1NzOLm3mT0gJk0Y3IUnWpQFQFDL3zDYj0 -o glove.6B.300d.txt
+RUN wget -N https://docs.google.com/uc?export=download&id=1NzOLm3mT0gJk0Y3IUnWpQFQFDL3zDYj0 -O glove.6B.300d.txt
 
 # models
 COPY --chown=si:si models/ /home/si/v2d/models/
