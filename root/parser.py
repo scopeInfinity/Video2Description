@@ -72,13 +72,16 @@ class Parser:
     def server(self):
         logger.debug("Server Mode")
         parser = argparse.ArgumentParser(prog = sys.argv[0]+" server", description = 'Server Mode')
+        parser.add_argument('-i', '--init-only', help='Prepares early caches for faster execution', action='store_true')
         parser.add_argument('-s', '--start', help='Start RPC Server', action='store_true')
         parser.add_argument('-m', '--model', help='Model file')
         parser.add_argument('-pids', '--predict_ids',type=int, help='Obtain Results for given IDs', nargs='+')
         parser.add_argument('-pfs', '--predict_fnames', help='Obtain Results for given files', nargs='+')
         parser.add_argument('-cf', '--close_framework', help='Close Server Framework', action='store_true')
         args = parser.parse_args(sys.argv[2:])
-        if args.start:
+        if args.init_only:
+            self.init_framework()
+        else if args.start:
             model_fname = None
             if args.model:
                 model_fname = args.model
