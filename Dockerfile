@@ -13,17 +13,17 @@ RUN ln -s /home/si/miniconda2/bin/conda /usr/bin/
 USER si
 
 # ffmpeg build and install
-RUN wget https://github.com/FFmpeg/FFmpeg/archive/master.zip -O /tmp/ffmpeg.zip
 WORKDIR /tmp
+RUN wget https://github.com/FFmpeg/FFmpeg/archive/master.zip -O ffmpeg.zip
 RUN unzip ffmpeg.zip
+RUN rm ffmpeg.zip
 WORKDIR /tmp/FFmpeg-master/
 RUN ./configure --enable-shared
-RUN make -j16
+RUN make -j32
 USER root
 RUN make install
 USER si
 RUN rm -r /tmp/FFmpeg-master/
-RUN rm -r /tmp/ffmpeg.zip
 
 # Create conda environment
 # Note: ffmpeg with --enable-shared is before installing opencv
@@ -35,18 +35,18 @@ RUN conda init bash
 
 # coco-caption
 WORKDIR /home/si
-RUN wget -N 'https://github.com/tylin/coco-caption/archive/master.zip' -O coco.zip
-RUN unzip coco.zip
-RUN mv coco-caption-master coco-caption
-RUN rm coco.zip
+RUN wget -N 'https://github.com/tylin/coco-caption/archive/master.zip' -O coco.zip && \
+    unzip coco.zip && \
+    mv coco-caption-master coco-caption && \
+    rm coco.zip
 
 # glove
 # https://nlp.stanford.edu/projects/glove/
 RUN mkdir /home/si/glove
 WORKDIR /home/si/glove
-RUN wget http://nlp.stanford.edu/data/glove.6B.zip
-RUN unzip glove.6B.zip glove.6B.300d.txt
-RUN rm glove.6B.zip
+RUN wget -N 'https://docs.google.com/uc?export=download&id=1jo4di1QwtX_4s6ZCcIySzS6Yidu0VbEI' -O glove.zip && \
+    unzip glove.zip glove.6B.300d.txt  && \
+    rm glove.zip
 
 FROM v2d_env as v2d
 # models
