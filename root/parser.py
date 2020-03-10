@@ -81,7 +81,8 @@ class Parser:
         args = parser.parse_args(sys.argv[2:])
         if args.init_only:
             self.init_framework()
-        else if args.start:
+            print("[RPC][Server][Init][Done]")
+        elif args.start:
             model_fname = None
             if args.model:
                 model_fname = args.model
