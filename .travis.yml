@@ -2,11 +2,10 @@ services:
   - docker
 
 install:
-- sudo docker-compose build
-- sudo docker ps -a
+- sudo docker image build -t scopeinfinity/video2description --build-arg BUILDKIT_INLINE_CACHE=1 --cache-from scopeinfinity/video2description .
+- sudo docker images
 
 script:
-- sudo docker image build -t scopeinfinity/video2description --build-arg BUILDKIT_INLINE_CACHE=1 --cache-from scopeinfinity/video2description .
 - sudo docker container run video2description conda run -n V2D /bin/bash -c 'cd /home/si/v2d/src/ && ./run_tests.sh'
 
 deploy:
