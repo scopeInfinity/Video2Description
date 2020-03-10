@@ -61,8 +61,8 @@ COPY --chown=si:si root/config_docker.json /home/si/v2d/src/config.json
 WORKDIR /home/si/v2d/src
 
 # Prepares cache
-FROM v2d as v2d_ready
-RUN conda run -n V2D python parser.py server -i
+# FROM v2d as v2d_ready
+# RUN conda run -n V2D python parser.py server -i
 
 # Turning up
 ENTRYPOINT conda run -n V2D python parser.py server -s -m /project/v2d/models/ResNet_D512L512_G128G64_D1024D0.20BN_BDLSTM1024_D0.2L1024DVS_model.dat_4987_loss_2.203_Cider0.342_Blue0.353_Rouge0.572_Meteor0.256
