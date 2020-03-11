@@ -1,6 +1,6 @@
 FROM ubuntu:latest as v2d_env
 RUN apt-get update
-RUN apt-get install -y libsndfile1 pkg-config nasm wget zip
+RUN apt-get install -y curl libsndfile1 pkg-config nasm wget zip
 RUN useradd -m -s /bin/bash si
 USER si
 
