@@ -44,9 +44,12 @@ RUN wget -N 'https://github.com/tylin/coco-caption/archive/master.zip' -O coco.z
 # https://nlp.stanford.edu/projects/glove/
 RUN mkdir /home/si/glove
 WORKDIR /home/si/glove
-RUN wget -N 'https://docs.google.com/uc?export=download&id=1jo4di1QwtX_4s6ZCcIySzS6Yidu0VbEI' -O glove.zip && \
-    unzip glove.zip glove.6B.300d.txt  && \
-    rm glove.zip
+RUN curl -L 'https://docs.google.com/uc?export=download&id=1LG1M0e9pboCQdHyT9_n8zTVpjBcGR0Bv' | base64 -d > glove.zip && \
+    wget 'https://docs.google.com/uc?export=download&id=1RABM7Eh33Ixq8oxRRsNleKAl9xlRgXEu' -O glove.z01 && \
+    wget 'https://docs.google.com/uc?export=download&id=19ZkL40AWZTNQGy_XCwZQrOo6eTv-LNXk' -O glove.z02 && \
+    cat glove.z?? > glove_full.zip && \
+    unzip glove_full.zip glove.6B.300d.txt  && \
+    rm glove*.z?? glove_full.zip
 
 FROM v2d_env as v2d
 # models
