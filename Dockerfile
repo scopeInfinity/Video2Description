@@ -16,9 +16,9 @@ USER si
 # https://nlp.stanford.edu/projects/glove/
 RUN mkdir /home/si/glove
 WORKDIR /home/si/glove
-RUN wget http://nlp.stanford.edu/data/glove.6B.zip
-RUN unzip glove.6B.zip glove.6B.300d.txt
-RUN rm glove.6B.zip
+RUN wget http://nlp.stanford.edu/data/glove.6B.zip && \
+    unzip glove.6B.zip glove.6B.300d.txt && \
+    rm glove.6B.zip
 
 # ffmpeg build and install
 WORKDIR /tmp
