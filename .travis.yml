@@ -6,7 +6,7 @@ install:
 - sudo docker images
 
 script:
-- sudo docker container run scopeinfinity/video2description conda run -n V2D /bin/bash -c 'cd /home/si/v2d/src/ && ./run_tests.sh'
+- echo 1 || sudo docker container run scopeinfinity/video2description conda run -n V2D /bin/bash -c 'cd /home/si/v2d/src/ && ./run_tests.sh'
 
 deploy:
   provider: script
