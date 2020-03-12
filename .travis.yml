@@ -2,7 +2,8 @@ services:
   - docker
 
 install:
-- sudo docker image build -t scopeinfinity/video2description --build-arg BUILDKIT_INLINE_CACHE=1 --cache-from scopeinfinity/video2description .
+- docker pull scopeinfinity/video2description:latest
+- sudo docker image build -t scopeinfinity/video2description --build-arg BUILDKIT_INLINE_CACHE=1 --cache-from scopeinfinity/video2description:latest .
 - sudo docker images
 
 script:
@@ -10,6 +11,6 @@ script:
 
 deploy:
   provider: script
-  script: bash -c '{ echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin > /dev/null 2>&1; } && docker push scopeinfinity/video2description'
+  script: bash -c '{ echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin > /dev/null 2>&1; } && docker push scopeinfinity/video2description:latest'
   on:
     branch: docker
