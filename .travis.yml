@@ -2,15 +2,13 @@ services:
   - docker
 
 install:
-- docker pull scopeinfinity/video2description:latest
-- sudo docker image build -t scopeinfinity/video2description --build-arg BUILDKIT_INLINE_CACHE=1 --cache-from scopeinfinity/video2description:latest .
-- sudo docker images
+- sudo bash docker_build.sh
 
 script:
-- echo 1 || sudo docker container run scopeinfinity/video2description conda run -n V2D /bin/bash -c 'cd /home/si/v2d/src/ && ./run_tests.sh'
+- sudo bash docker_test.sh
 
 deploy:
   provider: script
-  script: bash -c '{ echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin > /dev/null 2>&1; } && docker push scopeinfinity/video2description:latest'
+  script: bash -c '{ echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin > /dev/null 2>&1; } && bash docker_deploy.sh
   on:
     branch: docker

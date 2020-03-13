@@ -64,5 +64,3 @@ WORKDIR /home/si/v2d/src
 # FROM v2d as v2d_ready
 # RUN conda run -n V2D python parser.py server -i
 
-# Turning up
-ENTRYPOINT conda run -n V2D /bin/sh -c
