@@ -33,20 +33,20 @@ RUN make install
 USER si
 RUN rm -r /tmp/FFmpeg-master/
 
-# Create conda environment
-# Note: ffmpeg with --enable-shared is before installing opencv
-RUN mkdir /home/si/v2d/
-WORKDIR /home/si/v2d/
-COPY --chown=si:si environment.yml /home/si/v2d/
-RUN conda env create -f environment.yml
-RUN conda init bash
-
 # coco-caption
 WORKDIR /home/si
 RUN wget -N 'https://github.com/tylin/coco-caption/archive/master.zip' -O coco.zip && \
     unzip coco.zip && \
     mv coco-caption-master coco-caption && \
     rm coco.zip
+
+# Create conda environment
+# Note: ffmpeg with --enable-shared should be before installing opencv
+RUN mkdir /home/si/v2d/
+WORKDIR /home/si/v2d/
+COPY --chown=si:si environment.yml /home/si/v2d/
+RUN conda env create -f environment.yml
+RUN conda init bash
 
 FROM v2d_env as v2d
 # models
@@ -61,6 +61,6 @@ COPY --chown=si:si root/config_docker.json /home/si/v2d/src/config.json
 WORKDIR /home/si/v2d/src
 
 # Prepares cache
-# FROM v2d as v2d_ready
-# RUN conda run -n V2D python parser.py server -i
+FROM v2d as v2d_ready
+RUN conda run -n V2D python parser.py server --init-only
 
