@@ -61,5 +61,5 @@ COPY --chown=si:si root/config_docker.json /home/si/v2d/src/config.json
 WORKDIR /home/si/v2d/src
 
 # Prepares cache
-# FROM v2d as v2d_ready
-# RUN conda run -n V2D python parser.py server --init-only
+FROM v2d as v2d_ready
+RUN conda run -n V2D python parser.py server --init-only

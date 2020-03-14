@@ -2,7 +2,7 @@ services:
   - docker
 
 install:
-- sudo bash docker_build.sh
+- sudo travis_wait 120m bash docker_build.sh
 
 script:
 - sudo bash docker_test.sh
