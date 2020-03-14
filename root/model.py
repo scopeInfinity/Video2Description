@@ -128,7 +128,7 @@ class VModel:
         optimizer = RMSprop(lr=0.001, rho=0.9, epsilon=1e-8, decay=0)
         model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
         model.summary()
-        logger.debug("Model Created ResNet_D512L512_G128G64_D1024D0.25BN_BDLSTM1024_D0.2L1024DVS")
+        logger.debug("Model Created ResNet_D512L512_G128G64_D1024D0.20BN_BDLSTM1024_D0.2L1024DVS")
         self.model = model
         return model
 

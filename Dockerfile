@@ -58,7 +58,8 @@ WORKDIR /home/si/v2d/src
 # Prepares cache
 FROM v2d as v2d_deploy
 COPY --chown=si:si models/ /home/si/v2d/models/
-RUN wget -N 'https://docs.google.com/uc?export=download&id=1aNXsT64tsza8vCqtoIZ4maQZ8Wbib6e0' -O ResNet_D512L512_G128G64_D1024D0.20BN_BDLSTM1024_D0.2L1024DVS_model.dat_4987_loss_2.203_Cider0.342_Blue0.353_Rouge0.572_Meteor0.256
+WORKDIR /home/si/v2d/models/
+RUN wget -N 'https://github.com/scopeInfinity/Video2Description/releases/download/models/ResNet_D512L512_G128G64_D1024D0.20BN_BDLSTM1024_D0.2L1024DVS_model.dat_4987_loss_2.203_Cider0.342_Blue0.353_Rouge0.572_Meteor0.256'
 RUN echo "Available Models:"
 RUN ls -1 /home/si/v2d/models
 RUN conda run -n V2D python parser.py server --init-only
