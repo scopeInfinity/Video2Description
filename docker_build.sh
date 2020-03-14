@@ -1,3 +1,4 @@
 #!/bin/bash
 docker pull scopeinfinity/video2description:latest
-docker image build -t scopeinfinity/video2description --cache-from scopeinfinity/video2description:latest .
+docker image build  --target v2d -t scopeinfinity/video2description --cache-from scopeinfinity/video2description:latest .
+docker image build  --target v2d_deploy -t scopeinfinity/video2description:deploy --cache-from scopeinfinity/video2description:latest .
