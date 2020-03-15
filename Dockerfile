@@ -47,6 +47,7 @@ WORKDIR /home/si/v2d/
 COPY --chown=si:si environment.yml /home/si/v2d/
 RUN conda env create -f environment.yml
 RUN conda init bash
+RUN echo "conda activate V2D" >> /home/si/.bashrc
 
 
 # Push V2D in the container
