@@ -2,6 +2,9 @@ FROM ubuntu:latest as v2d_env
 RUN apt-get update
 RUN apt-get install -y libsamplerate0 curl libsndfile1 pkg-config nasm wget zip
 RUN useradd -m -s /bin/bash si
+RUN mkdir /var/log/v2d
+RUN chown si:si /var/log/v2d
+RUN chmod 600 /var/log/v2d
 USER si
 
 # Installing miniconda
