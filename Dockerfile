@@ -1,6 +1,6 @@
 FROM ubuntu:latest as v2d_env
 RUN apt-get update
-RUN apt-get install -y curl libsndfile1 pkg-config nasm wget zip
+RUN apt-get install -y libsamplerate0 curl libsndfile1 pkg-config nasm wget zip
 RUN useradd -m -s /bin/bash si
 USER si
 
@@ -47,7 +47,6 @@ WORKDIR /home/si/v2d/
 COPY --chown=si:si environment.yml /home/si/v2d/
 RUN conda env create -f environment.yml
 RUN conda init bash
-
 
 # Push V2D in the container
 FROM v2d_env as v2d
