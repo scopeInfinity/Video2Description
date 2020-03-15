@@ -115,8 +115,9 @@ class VModel:
         imodel.add(TimeDistributed(Dropout(0.20)))
         imodel.add(TimeDistributed(BatchNormalization(axis=-1)))
         imodel.add(Activation('tanh'))
-        imodel.add(Bidirectional(LSTM(1024, return_sequences=False, kernel_initializer='random_normal')))
+        imodel.add(Bidirectional(GRU(1024, return_sequences=False, kernel_initializer='random_normal')))
         imodel.add(RepeatVector(CAPTION_LEN + 1))
+
         imodel.summary()
 
         model = Sequential()
@@ -128,7 +129,7 @@ class VModel:
         optimizer = RMSprop(lr=0.001, rho=0.9, epsilon=1e-8, decay=0)
         model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
         model.summary()
-        logger.debug("Model Created ResNet_D512L512_G128G64_D1024D0.20BN_BDLSTM1024_D0.2L1024DVS")
+        logger.debug("Model Created ResNet_D512L512_G128G64_D1024D0.25BN_BDGRU1024_D0.2L1024DVS")
         self.model = model
         return model
 
@@ -142,4 +143,3 @@ if __name__ == "__main__":
         from vocab import Vocab
         vmodel = VModel(Vocab.CAPTION_LEN, Vocab.VOCAB_SIZE)
         vmodel.plot_model(sys.argv[2])
-
