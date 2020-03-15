@@ -51,8 +51,8 @@ RUN echo "conda activate V2D" >> /home/si/.bashrc
 
 # Push V2D in the container
 FROM v2d_env as v2d
-COPY --chown=si:si root/ /home/si/v2d/src/
-COPY --chown=si:si root/config_docker.json /home/si/v2d/src/config.json
+COPY --chown=si:si src/ /home/si/v2d/src/
+COPY --chown=si:si src/config_docker.json /home/si/v2d/src/config.json
 WORKDIR /home/si/v2d/src
 
 # Prepares cache
