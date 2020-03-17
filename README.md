@@ -72,7 +72,7 @@ Test videos with poor results
 $ bash docker_pull_images.sh
 $ bash docker_start.sh
 ```
-* Wait for sometime and browse to `http://<docker-container-ip>:5000/`.
+* Wait for sometime and browse to `http://localhost:8080/`.
 
 ##### Execution without Docker
 * We can go always go through `Dockerfile` to understand better.
