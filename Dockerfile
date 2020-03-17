@@ -35,6 +35,7 @@ USER root
 RUN make install
 USER si
 RUN rm -r /tmp/FFmpeg-master/
+RUN echo 'export LD_LIBRARY_PATH=/usr/local/lib' >> /home/si/.bashrc
 
 # coco-caption
 WORKDIR /home/si
