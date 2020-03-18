@@ -63,37 +63,46 @@ Test videos with poor results
 [12908]: https://raw.githubusercontent.com/scopeInfinity/Video2Description/VideoCaption/f5c22f7_images/12908.gif
 
 
-### Setup
+### Try it out!!!
 * Please feel free to raise PR with necessary suggestions.
 * Clone the repository`
   * `git clone https://github.com/scopeInfinity/Video2Description.git`
-  * Update `config.json` as per your requirement.
-    * To know more about any field, just search for the reference in the codebase.
-* Install Conda
+* Install docker
+  * `sudo apt-get install docker.io`
+* Pull the prebuild images and start services
+```bash
+$ bash docker_pull_images.sh
+$ bash docker_start.sh
+```
+* Wait for sometime and browse to `http://localhost:8080/`.
+
+##### Execution without Docker
+* We can go always go through `Dockerfile` to understand better.
+* Update `src/config.json` as per the requirement and use those path during upcoming steps.
+  * To know more about any field, just search for the reference in the codebase.
+* Install miniconda
   * https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html
-* Create conda environment using `environment.yml`
-  * `Video2Description$ conda env create -f environment.yml`
-  * Install keras with tensorflow backend (if not already there).  Similar to:
-    * `conda install -c anaconda keras==2.0.8`
-    * `conda install -c conda-forge tensorflow==1.2.1`
+* Get `glove.6B.300d.txt` from `https://nlp.stanford.edu/projects/glove/`
 * Install ffmpeg
   * Configure, build and install ffmpeg from source with shared libraries 
 ```bash
-git clone 'https://github.com/FFmpeg/FFmpeg.git'
-cd FFmpeg
-./configure --enable-shared  # Use --prefix if need to install in custom directory
-make
-make install
+$ git clone 'https://github.com/FFmpeg/FFmpeg.git'
+$ cd FFmpeg
+$ ./configure --enable-shared  # Use --prefix if need to install in custom directory
+$ make
+# make install
 ```
-
-* Install opencv
+* If required, use `https://github.com/tylin/coco-caption/` for scoring the model.
+* Then create conda environment using `environment.yml`
+  * `$ conda env create -f environment.yml`
+* And activate the environment
 ```
-conda install opencv -c conda-forge
+$ conda activate .
 ```
-* Activate the environment
-```
-Video2Description$ conda activate .
-```
+* Turn up the backend
+  * `src$ python parser.py server --start --model /path/to/model`
+* Turn up the web frontend
+  * `src$ python app.py`
 
 ### Info
 

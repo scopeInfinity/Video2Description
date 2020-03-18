@@ -123,9 +123,12 @@ class Framework():
         self.preprocess.set_vmodel(self.vmodel)
 
     def load(self):
+        logger.debug("Model Path: %s" % self.file_model)
         if os.path.exists(self.file_model):
             self.model.load_weights(self.file_model)
             logger.debug("Weights Loaded")
+        else:
+            logger.warning("Weights files not found.")
         if os.path.exists(STATE):
             with open(STATE) as f:
                 self.state = json.load(f)

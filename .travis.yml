@@ -1,0 +1,14 @@
+services:
+  - docker
+
+install:
+- travis_wait 120 sudo bash docker_build.sh
+
+script:
+- sudo bash docker_test.sh
+
+deploy:
+  provider: script
+  script: bash -c '{ echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin > /dev/null 2>&1; } && bash docker_deploy.sh'
+  on:
+    branch: VideoCaption

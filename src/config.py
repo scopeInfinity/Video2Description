@@ -23,3 +23,6 @@ def getVPreprocessConfig():
 
 def getVocabConfig():
     return getConfig()["vocab"]
+
+def getTestsConfig():
+	return getConfig()["tests"]

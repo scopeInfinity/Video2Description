@@ -1,1 +1,1 @@
-Just a location to dump trained models
+Store trained models here
