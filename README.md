@@ -1,8 +1,6 @@
 # Video Captioning
 Generate caption for the given video clip
 
-**WIP**: Use [docker](https://github.com/scopeInfinity/Video2Description/tree/docker) branch for yet to be tested but simpler setup.
-
 Branch : [VideoCaption](https://github.com/scopeInfinity/Video2Description/tree/VideoCaption) (1a2124d), [VideoCaption_catt](https://github.com/scopeInfinity/Video2Description/tree/VideoCaption_catt) (647e73b4)
 
 ### Model
