@@ -1,16 +1,105 @@
-{% extends "layout.html" %}
-{% block content %}
-<div class="panel panel-default col-xs-4">
-<div class="panel-heading">Video 2 text</div>
-<div class="panel-body">
-	 <form action="upload" target="results" method="post" enctype="multipart/form-data">
-	  <div class="form-group">
-	    <label for="file">Upload File</label>
-	    <input type="file" class="form-control" id="file" name="file">
-	  </div>
-	  <input type="submit" class="btn btn-default"  value="Upload">
-	</form> 
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Video2Description</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script> 
+</head>
+
+<body style="background-color: #e6004c;">
+<div class="container">
+    <div class="row" style="text-align: center;">
+        <div class="col-sm-4" style="display: inline-block; float: none;">
+            <h2 style="color: white;">Describe video using text?</h2>
+            <form id="form_v2d" action="upload" method="post" enctype="multipart/form-data">
+                <input type="file" class="form-control" id="file" name="file"> <br>
+                <input type="submit" class="btn btn-primary" onclick="upload()" value="Upload Video">
+            </form>
+        </div>
+    </div>
+    <dir class="row" id="notifications">
+        <dir id="notification" class="alert alert-info">Keep Smiling <b>:)</b></dir>
+    </dir>
+    <dir class="row">
+       <div class="panel panel-default">
+          <div class="panel-heading">Description of video</div>
+          <div class="panel-body" id="results" style="white-space: pre-line;">Please upload some file.</div>
+        </div>
+    </dir>
+    <script type="text/javascript">
+        "use strict";
+
+        /**
+         * Push message in the notification section.
+         * @param  {string} type Bootstrap alert type. For ex. info, success, warning or danger
+         * @param  {string} msg  Message to push
+         */
+        function add_notification(type, msg) {
+            $(document.createElement('div'))
+                .addClass('alert')
+                .addClass('alert-'+type)
+                .text(msg)
+                .delay(5000).slideUp(300, function() {
+                    $(this).alert('close');
+                })
+                .appendTo($('#notifications'));
+        }
+
+        /**
+         * Updated static notification bar.
+         * @param  {string} type Bootstrap alert type. For ex. info, success, warning or danger
+         * @param  {string} msg  Message for notification
+         */
+        function update_notification(type, msg) {
+            $('#notification').removeClass()
+                              .addClass('alert')
+                              .addClass('alert-'+type)
+                              .text(msg);
+        }
+
+        /**
+         * Form submission with attached video and response handling.
+         */
+        function upload() {
+             $('#form_v2d').submit(function(){
+                event.preventDefault();
+                var form = $(this);
+                var data = new FormData(form[0]);
+                $.ajax({
+                    url : form.attr('action'),
+                    type: form.attr('method'),
+                    data : data,
+                    dataType: 'json',
+                    processData:false,
+                    contentType:false,
+                    beforeSend: function(){
+                        update_notification('info', 'Video is being uploaded and processed, please wait....');
+                    },
+                    success: function( data ) {
+                        if ('success' in data) {
+                            var result = [];
+                            // Assumes we query caption for a video.
+                            for(var i=0;i<data['success'].length;i+=1) {
+                                result.push(data['success'][i]['output']);
+                            }
+                            if (result.length == 0) {
+                                update_notification('danger', 'Something went wrong! No results found within successful request.')
+                            } else {
+                                $('#results').text(result.join('\n'));
+                                update_notification('success', 'Request Completed.')
+                            }
+                        } else {
+                            update_notification('warning', "Request Failed: "+data['error']);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        update_notification('warning', 'Request Failed: '+error);
+                    }
+                });
+            });
+        }
+    </script>
 </div>
-</div>
-<iframe id="results" name="results" class="col-xs-12 col-sm-12 col-md-12" style="min-height: 1024px;"></iframe>
-{% endblock %}
+</body>
+</html>

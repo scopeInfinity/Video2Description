@@ -1,6 +1,11 @@
-from flask import Flask, render_template, request, send_from_directory
+import json
+import os
+import random
+import re
+import traceback
 from copy import deepcopy
-import os, random, re
+from flask import Flask, render_template, request, send_from_directory
+
 from rpc import get_rpc
 from config import getAppConfig
 
@@ -98,25 +103,38 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ['mp4']
 
+def error(msg):
+    return json.dumps({'error':msg})
+
+def success(data):
+    return json.dumps({'success':data})
+
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    if request.method == 'POST':
-        print "POST"
-        # check if the post request has the file part
-        if 'file' not in request.files:
-            return "File not Found"
-        file = request.files['file']
-        if file.filename == '':
-            return 'No selected file'
-        if file and allowed_file(file.filename):
-            filename = str(random.randint(0,1000000)) + ".mp4"
-            filename = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filename)
-            print "Uploaded To %s" %  filename
-            output = computeAndRenderPredictionFnames([filename])
-            os.unlink(filename)
-            return output
-    return "File Upload Failed"
-
+    print(request.files)
+    if request.method != "POST":
+        return error("Only POST requests are expected!")
+    if "file" not in request.files:
+        return error("No filess found!")
+    file = request.files['file']
+    if not file:
+        return error("No file found!")
+    if file.filename == '':
+        return error("No filename found!")
+    if not allowed_file(file.filename):
+        return error("Only *.mp4 video files are supported at this moment!")
+    filename = str(random.randint(0,1000000)) + ".mp4"
+    filename = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+    try:
+        file.save(filename)
+        print("File uploaded: %s" %  filename)
+        output = json.loads(predict_fnames([filename]))
+    except Exception as e:
+        print(traceback.format_exc())
+        return error("Request Failed! Exception caught while generating caption.")
+    finally:
+        os.unlink(filename)
+    return success(output)
+    
 if __name__ == "__main__":
 	app.run(host='0.0.0.0')
