@@ -12,10 +12,10 @@ services:
 
 install:
 - pip install -r requirements.txt
-- ./keep_alive.sh 120 sudo bash docker_build.sh
+- ./keep_alive.sh 120 bash docker_build.sh
 
 script:
-- sudo bash docker_test.sh
+- bash docker_test.sh
 
 deploy:
   provider: script
