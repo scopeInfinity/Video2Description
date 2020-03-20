@@ -12,7 +12,7 @@ services:
 
 install:
 - pip install -r requirements.txt
-- travis_wait 120 sudo bash docker_build.sh
+- ./keep_alive.sh 120 sudo bash docker_build.sh
 
 script:
 - sudo bash docker_test.sh
