@@ -6,3 +6,4 @@ shift 2
 timeout "${TIMEOUT}m" bash -c 'while true;do echo "Time: $(date)"; sleep 1m;done;' &
 TIMER_PID="$!"
 (timeout "${TIMEOUT}m" $EXEC "$@";kill $TIMER_PID)
+echo "Exiting keep alive"
