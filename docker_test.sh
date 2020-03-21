@@ -17,6 +17,9 @@ ifconfig
 echo "OPENING PORT"
 nc -l 1234 &
 netstat -nlp
+echo DockerPS
+docker ps
+docker container ls
 
 
 for x in `seq ${TIMEOUT_WAIT_FOR_BACKEND}`;do
