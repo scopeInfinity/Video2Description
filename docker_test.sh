@@ -6,8 +6,9 @@ docker container run scopeinfinity/video2description:latest conda run -n V2D /bi
 docker container run scopeinfinity/video2description:deploy conda run -n V2D /bin/bash -c 'cd /home/si/v2d/src/ && ./run_tests.sh'
 
 bash docker_start.sh
-sleep 5s
+sleep 15s
 netstat -nlp
+echo "NETSTAT"
 docker port  v2d
 ps aux | grep docker
 
