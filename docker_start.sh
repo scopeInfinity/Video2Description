@@ -4,7 +4,6 @@ echo "Starting container as development environment!!!"
 echo "Stopping and old running containers"
 bash docker_stop.sh
 
-echo "Running V2D in deattached mode"
 
 echo "Starting backend"
 # TODO(scopeinfinity): Change bind type to readonly
@@ -12,3 +11,5 @@ docker container run --name "v2d" -d -p 8080:5000 -e "V2D_CONFIG_FILE=config_doc
 
 echo "Starting web-ui"
 docker container exec -d "v2d" /bin/bash -i -c 'python app.py 2>&1 | tee /var/log/v2d/app.log'
+
+echo "V2D running in deattached mode, if not crashed"
