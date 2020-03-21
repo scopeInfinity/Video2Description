@@ -1,6 +1,7 @@
 import json
+import os
 
-CONFIG_FILE = "config.json"
+CONFIG_FILE = os.environ.get("V2D_CONFIG_FILE", "config.json")
 config = None
 
 def getConfig():

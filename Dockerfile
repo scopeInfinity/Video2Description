@@ -1,4 +1,4 @@
-FROM ubuntu:latest as v2d_env
+FROM ubuntu:xenial as v2d_env
 RUN apt-get update
 RUN apt-get install -y libsamplerate0 curl libsndfile1 pkg-config nasm wget zip
 RUN useradd -m -s /bin/bash si

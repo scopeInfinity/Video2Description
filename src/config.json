@@ -4,7 +4,7 @@
         "PREFIX":"/home/scopeinfinity/BTP/Video2Description",
         "MAX_CONTENT_LENGTH": 10649600,
         "UPLOAD_FOLDER": "./Uploads",
-        "VIDEOS_DATASET": "/home/scopeinfinity/BTP/Video2DescriptionVideoDataset/",
+        "VIDEOS_DATASET": "/home/scopeinfinity/BTP/Video2Description/VideoDataset/",
         "VIDEOS_FOLDER": "/home/scopeinfinity/BTP/Video2Description/VideoDataset/videos/"
     },
     "rpc": {
