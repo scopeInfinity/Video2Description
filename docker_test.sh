@@ -11,6 +11,13 @@ netstat -nlp
 echo "NETSTAT"
 docker port  v2d
 ps aux | grep docker
+echo "Logs"
+docker container exec -d "v2d" /bin/bash -i -c 'cat /var/log/v2d/app.log'
+ifconfig
+echo "OPENING PORT"
+nc -l 1234 &
+netstat -nlp
+
 
 for x in `seq ${TIMEOUT_WAIT_FOR_BACKEND}`;do
     sleep "1m";
