@@ -8,6 +8,9 @@ docker container run scopeinfinity/video2description:deploy conda run -n V2D /bi
 bash docker_start.sh
 sleep 5s
 netstat -nlp
+docker port  v2d
+ps aux | grep docker
+
 for x in `seq ${TIMEOUT_WAIT_FOR_BACKEND}`;do
     sleep "1m";
     curl "http://localhost:8080/model_weights_status" 2>&1 | tee /dev/stderr | grep -q '\[SUCCESS\]' && break;
