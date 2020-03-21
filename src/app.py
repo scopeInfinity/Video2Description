@@ -80,17 +80,21 @@ def model_weights_notify():
     proxy = get_rpc()
     try:
         status = proxy.get_weights_status()
-        if status == ModelWeightsStatus.SUCCESS:
+        if status == str(ModelWeightsStatus.SUCCESS):
             return None
-        return str(status)
+        return status
     except Exception as e:
         print("model_weights_notify failed: %s" % e)
-        return "Failed to communicate with backend."
+        return "Failed to communicate."
 
 def getactivenav(index):
     nav = deepcopy(navigation)
     nav[index] = (nav[index][0], nav[index][1], True)
     return nav
+
+@app.route("/model_weights_status")
+def model_weights_status():
+    return model_weights_notify() or "[SUCCESS]"
 
 @app.route("/")
 def main():

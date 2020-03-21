@@ -146,7 +146,7 @@ class Framework():
                 logger.debug("State Loaded")
 
     def get_weights_status(self):
-        return self.status_model_weights
+        return str(self.status_model_weights)
 
     def save(self, epoch='xx'):
         try:
