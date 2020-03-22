@@ -5,8 +5,6 @@ TIMEOUT_WAIT_FOR_BACKEND=${1:-5}  # in minutes
 docker container run scopeinfinity/video2description:latest conda run -n V2D /bin/bash -c 'cd /home/si/v2d/src/ && ./run_tests.sh'
 docker container run scopeinfinity/video2description:deploy conda run -n V2D /bin/bash -c 'cd /home/si/v2d/src/ && ./run_tests.sh'
 
-exit 0 #  Ignore E2E tests
-
 bash docker_start.sh
 for x in `seq ${TIMEOUT_WAIT_FOR_BACKEND}`;do
     sleep "1m";
