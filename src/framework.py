@@ -1,14 +1,21 @@
-import shutil, json, ast
-from keras import callbacks
-import os, sys
-import numpy as np
+import ast
 import csv
-from vpreprocess import WORKING_DIR, COCOFNAME
-from vpreprocess import  Preprocessor
-from logger import logger
-from model import VModel
+import shutil
+import json
+import sys
+import os
+import numpy as np
+
+from keras import callbacks
 from random import shuffle
 from pprint import pformat
+
+from model import VModel
+from logger import logger
+from status import ModelWeightsStatus
+from vpreprocess import WORKING_DIR, COCOFNAME
+from vpreprocess import  Preprocessor
+
 
 WORKERS = 40
 
@@ -101,12 +108,14 @@ class ModelGeneratorCallback(callbacks.Callback):
             self.framework.save()
             self.tlogs.flush()
         
+
 class Framework():
     
     def __init__(self, model_load = MFNAME, train_mode = False):
         self.mode_learning = train_mode
         self.state = state_uninit
         self.file_model = model_load
+        self.status_model_weights = ModelWeightsStatus.NO_INFO
         self.tlogs = TrainingLogs()
         self.elogs = TrainingLogs(prefix = "epoch_")
         self.model = None          # Init in self.build_model()
@@ -126,13 +135,18 @@ class Framework():
         logger.debug("Model Path: %s" % self.file_model)
         if os.path.exists(self.file_model):
             self.model.load_weights(self.file_model)
+            self.status_model_weights = ModelWeightsStatus.SUCCESS
             logger.debug("Weights Loaded")
         else:
+            self.status_model_weights = ModelWeightsStatus.MODEL_NOT_FOUND
             logger.warning("Weights files not found.")
         if os.path.exists(STATE):
             with open(STATE) as f:
                 self.state = json.load(f)
                 logger.debug("State Loaded")
+
+    def get_weights_status(self):
+        return str(self.status_model_weights)
 
     def save(self, epoch='xx'):
         try:

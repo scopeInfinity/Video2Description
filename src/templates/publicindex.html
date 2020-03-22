@@ -9,6 +9,9 @@
 
 <body style="background-color: #e6004c;">
 <div class="container">
+    {% if weights_notify %}
+    <dir class="alert alert-danger">Backed not ready: {{ weights_notify }}</dir>
+    {% endif %}
     <div class="row" style="text-align: center;">
         <div class="col-sm-4" style="display: inline-block; float: none;">
             <h2 style="color: white;">Describe video using text?</h2>
@@ -63,7 +66,6 @@
          */
         function upload() {
              $('#form_v2d').submit(function(){
-                event.preventDefault();
                 var form = $(this);
                 var data = new FormData(form[0]);
                 $.ajax({
@@ -97,6 +99,7 @@
                         update_notification('warning', 'Request Failed: '+error);
                     }
                 });
+                return false;
             });
         }
     </script>

@@ -3,11 +3,13 @@ import os
 import random
 import re
 import traceback
+
 from copy import deepcopy
 from flask import Flask, render_template, request, send_from_directory
 
-from rpc import get_rpc
 from config import getAppConfig
+from rpc import get_rpc
+from status import ModelWeightsStatus
 
 app = Flask(__name__)
 config = getAppConfig()
@@ -71,20 +73,38 @@ if not PREDICT_MODE_ONLY:
 	  return "Invalid Request"
 
 def predict_fnames(fnames):
-	proxy = get_rpc()
-	return proxy.predict_fnames(fnames)
+    proxy = get_rpc()
+    return proxy.predict_fnames(fnames)
+
+def model_weights_notify():
+    proxy = get_rpc()
+    try:
+        status = proxy.get_weights_status()
+        if status == str(ModelWeightsStatus.SUCCESS):
+            return None
+        return status
+    except Exception as e:
+        print("model_weights_notify failed: %s" % e)
+        return "Failed to communicate."
 
 def getactivenav(index):
-	nav = deepcopy(navigation)
-	nav[index] = (nav[index][0], nav[index][1], True)
-	return nav
+    nav = deepcopy(navigation)
+    nav[index] = (nav[index][0], nav[index][1], True)
+    return nav
+
+@app.route("/model_weights_status")
+def model_weights_status():
+    return model_weights_notify() or "[SUCCESS]"
 
 @app.route("/")
 def main():
-	if PREDICT_MODE_ONLY:
-		return render_template('publicindex.html', navigation = getactivenav(0))
-	else:		
-		return render_template('index.html', navigation = getactivenav(0))
+    weights_notify = model_weights_notify()
+    if PREDICT_MODE_ONLY:
+        return render_template(
+            'publicindex.html',
+            weights_notify = weights_notify)
+    else:
+        return render_template('index.html', navigation = getactivenav(0))
 
 def computeAndRenderPredictionIDs(ids):
 	content = dict()
