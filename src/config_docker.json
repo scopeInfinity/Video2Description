@@ -6,7 +6,7 @@
         "UPLOAD_FOLDER": "./Uploads",
         "VIDEOS_DATASET": "/home/si/v2d/dataset/",
         "VIDEOS_FOLDER": "/home/si/v2d/dataset/videos/",
-        "DATASET_CACHE": "/home/si/v2d/dataset_cache/",
+        "DATASET_CACHE": "/home/si/v2d/dataset_cache/"
     },
     "rpc": {
         "RPC_SERVER_RUNAS": "127.0.0.1",

@@ -1,17 +1,25 @@
 import json
+import threading
 import os
 
-CONFIG_FILE = os.environ.get("V2D_CONFIG_FILE", "config.json")
 config = None
+lock = threading.Lock()
+
+def clear():
+	global config
+	with lock:
+		config = None
 
 def getConfig():
 	global config
-	if config is not None:
-		return config
+	with lock:
+		if config is not None:
+			return config
 
-	with open(CONFIG_FILE, "r") as f:
-		config = json.load(f)
-	return config
+		file = os.environ.get("V2D_CONFIG_FILE", "config.json")
+		with open(file, "r") as f:
+			config = json.load(f)
+		return config
 
 def getAppConfig():
 	return getConfig()["app"]
