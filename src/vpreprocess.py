@@ -1,28 +1,11 @@
 import os
 import random
-from config import getVPreprocessConfig
 from keras.preprocessing import image
 import numpy as np
 from logger import logger
 from vocab import vocabBuilder
 
-# Going ahead with WORKING_DIR/DATA_DIR wasn't a good design, anyways let's continue.
-# Under simple scenario WORKING_DIR can be same as DATA_DIR
-
-# WORKING_DIR is project root directory for the code source
-# DATA_DIR is project is similar to WORKING_DIR but used as data source
-# Framework expet data inside $WORKING_DIR/VideoDataset
-
-# Historial section.
-# GITBRANCH = os.popen('git branch | grep "*"').read().split(" ")[1][:-1] 
-# WORKING_DIR = "/home/gagan.cs14/btp_"+GITBRANCH
-# DATA_DIR = '/home/gagan.cs14/btp'
-
-WORKING_DIR = getVPreprocessConfig()["WORKING_DIR"]
-DATA_DIR = getVPreprocessConfig()["DATA_DIR"]
-
-COCOFNAME = getVPreprocessConfig()["COCOFNAME"]
-BADLOGS = WORKING_DIR+"/badlogs.txt"
+BADLOGS = getVPreprocessConfig()["LOGS_DIR"]
 
 def badLogs(msg):
     logger.debug(msg)
@@ -31,7 +14,7 @@ def badLogs(msg):
 
 class Preprocessor:
     def __init__(self):
-        self.vHandler,self.vocab = vocabBuilder(DATA_DIR, WORKING_DIR)
+        self.vHandler,self.vocab = vocabBuilder()
 
     def set_vmodel(self, vmodel):
         self.vHandler.set_vmodel(vmodel)

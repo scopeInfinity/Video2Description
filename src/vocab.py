@@ -19,7 +19,7 @@ class Vocab:
     VOCAB_SIZE = 9448
     CAPTION_LEN = 15
 
-    def __init__(self, data, train_ids, data_dir, working_dir):
+    def __init__(self, data, train_ids):
         # data = dict(id => captions)
         logger.debug("Glove File %s\nEmbedding File %s\nVocab File %s\n" % (GLOVE_FILE, WORD_EMBEDDED_CACHE, VOCAB_FILE))
         self.specialWords = dict()
@@ -161,12 +161,12 @@ class Vocab:
         s = ' '.join([self.ind2word[x] for x in indx])
         return s
         
-def vocabBuilder(datadir, workdir):
-    vHandler = VideoHandler(datadir, VideoHandler.s_fname_train, VideoHandler.s_fname_test)
+def vocabBuilder():
+    vHandler = VideoHandler(VideoHandler.s_fname_train, VideoHandler.s_fname_test)
     train_ids = vHandler.get_otrain_ids()
     captionData = vHandler.getCaptionData()
-    vocab = Vocab(captionData, train_ids, datadir, workdir)
+    vocab = Vocab(captionData, train_ids)
     return [vHandler, vocab]
     
-#if __name__ == "__main__":
-#    vocabBuilder("/home/gagan.cs14/btp","/home/gagan.cs14/btp_VideoCaption")
+if __name__ == "__main__":
+   vocabBuilder()

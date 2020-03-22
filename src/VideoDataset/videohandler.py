@@ -16,7 +16,7 @@ DIR_VIDEO_DATASET = config.getAppConfig()["VIDEOS_DATASET"]
 
 class VideoHandler:
     LIMIT_FRAMES = 40
-    AUDIO_FEATURE = (80, 40) #TimeSamples, n_mfcc
+    AUDIO_FEATURE = (80, 40) #  TimeSamples, n_mfcc
 
     # ResNet
     SHAPE = (224, 224)
@@ -29,7 +29,7 @@ class VideoHandler:
     STHRES = 10*1024
     EXTRACT_COUNTER = 0 # For multiprocessing
     
-    def __init__(self, maindir, s_fname_train, s_fname_test):
+    def __init__(self, s_fname_train, s_fname_test):
         self.splitTrainValid = [95,5] # Out of 100
         self.fname_train = os.path.join(DIR_VIDEO_DATASET, s_fname_train)
         self.fname_test = os.path.join(DIR_VIDEO_DATASET, s_fname_test)
@@ -379,7 +379,6 @@ def show_counts():
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("root_dir", help="path to the project root directory. i.e parent directory of VideoDataset/videohandler.py")
     parser.add_argument("-sc", "--show-count", help="show count for training/validation/test videos", action='store_true')
     parser.add_argument("-d", "--download", help="download more videos to extend dataset", action='store_true')
     parser.add_argument("-ac", "--auto-cache", help="cache all downloaded videos", action='store_true')
@@ -391,7 +390,7 @@ def get_args():
 
 if __name__ == "__main__":
     args = get_args()
-    vHandler = VideoHandler(args.root_dir,VideoHandler.s_fname_train, VideoHandler.s_fname_test)
+    vHandler = VideoHandler(VideoHandler.s_fname_train, VideoHandler.s_fname_test)
     if args.show_count:
         show_counts()
         exit()

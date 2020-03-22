@@ -10,29 +10,32 @@ from keras import callbacks
 from random import shuffle
 from pprint import pformat
 
+from config import getAppConfig, getVPreprocessConfig
 from model import VModel
 from logger import logger
 from status import ModelWeightsStatus
-from vpreprocess import WORKING_DIR, COCOFNAME
+from vpreprocess import COCOFNAME
 from vpreprocess import  Preprocessor
 
-
 WORKERS = 40
+DATASET_CACHE = getAppConfig()["DATASET_CACHE"]
+COCOFNAME = getVPreprocessConfig()["COCOFNAME"]
 
 CLABEL = 'ResNet_D512L512_G128G64_D1024D0.20BN_BDLSTM1024_D0.2L1024DVS'
+
 state_uninit = {'epochs':5000, 'start_batch':0, 'batch_size':100, 'saveAtBatch':500, 'steps_per_epoch':500}
 
-MFNAME = WORKING_DIR+'/'+CLABEL+'_model.dat'
-_MFNAME = WORKING_DIR+'/'+CLABEL+'_model.dat.bak'
-STATE = WORKING_DIR+'/'+CLABEL+'_state.txt'
-RESULTS = WORKING_DIR+'/'+CLABEL+'_results.txt'
-FRESTART = WORKING_DIR+'/restart'
+MFNAME = DATASET_CACHE+'/'+CLABEL+'_model.dat'
+_MFNAME = DATASET_CACHE+'/'+CLABEL+'_model.dat.bak'
+STATE = DATASET_CACHE+'/'+CLABEL+'_state.txt'
+RESULTS = DATASET_CACHE+'/'+CLABEL+'_results.txt'
+FRESTART = DATASET_CACHE+'/restart'
 PREDICT_BATCHSIZE = 200
 
 class TrainingLogs:
     def __init__(self, prefix=""):
         self.epochLogHistory = []
-        self.fname = WORKING_DIR+'/'+CLABEL + "_logs_" + prefix + ".txt"
+        self.fname = DATASET_CACHE+'/'+CLABEL + "_logs_" + prefix + ".txt"
 
     def flush(self):
         if not os.path.exists(self.fname):

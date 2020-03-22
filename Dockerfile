@@ -17,8 +17,8 @@ USER si
 
 # glove
 # https://nlp.stanford.edu/projects/glove/
-RUN mkdir /home/si/glove
-WORKDIR /home/si/glove
+RUN mkdir /home/si/dataset
+WORKDIR /home/si/dataset
 RUN wget http://nlp.stanford.edu/data/glove.6B.zip && \
     unzip glove.6B.zip glove.6B.300d.txt && \
     rm glove.6B.zip
@@ -52,6 +52,9 @@ COPY --chown=si:si environment.yml /home/si/v2d/
 RUN conda env create -f environment.yml
 RUN conda init bash
 RUN echo "conda activate V2D" >> /home/si/.bashrc
+
+# Create directories
+RUN mkdir /home/si/dataset_cache
 
 # Push V2D in the container
 FROM v2d_env as v2d
