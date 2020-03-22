@@ -38,6 +38,8 @@ class VideoHandler:
         self.adir = os.path.join(DIR_VIDEO_DATASET, "cache_audio_"+("%dx%d" % VideoHandler.AUDIO_FEATURE))
         self.tdir = os.path.join(self.vdir, "extract")
         self.logfile = os.path.join(DIR_VIDEO_DATASET, "log.txt")
+        if not os.path.exists(self.vdir):
+            os.mkdir(self.vdir)
         if os.path.exists(self.tdir):
             shutil.rmtree(self.tdir)
         os.mkdir(self.tdir)
