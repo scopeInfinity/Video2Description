@@ -14,7 +14,6 @@ from config import getAppConfig, getVPreprocessConfig
 from model import VModel
 from logger import logger
 from status import ModelWeightsStatus
-from vpreprocess import COCOFNAME
 from vpreprocess import  Preprocessor
 
 WORKERS = 40

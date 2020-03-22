@@ -1,9 +1,13 @@
-import os
-import random
-from keras.preprocessing import image
 import numpy as np
+import random
+import os
+
+from keras.preprocessing import image
+
+from config import getVPreprocessConfig
 from logger import logger
 from vocab import vocabBuilder
+
 
 BADLOGS = getVPreprocessConfig()["LOGS_DIR"]
 
@@ -44,6 +48,7 @@ class Preprocessor:
         (frames, afeatures) = out
         return frames, afeatures
         # deprecated
+        fnames = None
         edir = None
         if fnames is None:
             ef = self.vHandler.get_frames(_id = _id, logs = False)
