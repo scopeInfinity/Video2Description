@@ -1,0 +1,14 @@
+env:
+  - Dockerfile
+  - environment.yml
+  - requirements.txt
+
+config:
+  - src/config.json
+  - src/config_docker.json
+
+test:
+  - tests/*
+  - tests/**/*
+  - src/tests/*
+  - src/tests/**/*
