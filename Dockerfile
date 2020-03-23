@@ -17,8 +17,8 @@ USER si
 
 # glove
 # https://nlp.stanford.edu/projects/glove/
-RUN mkdir /home/si/dataset
-WORKDIR /home/si/dataset
+RUN mkdir /home/si/v2d && mkdir /home/si/v2d/dataset
+WORKDIR /home/si/v2d/dataset
 RUN wget http://nlp.stanford.edu/data/glove.6B.zip && \
     unzip glove.6B.zip glove.6B.300d.txt && \
     rm glove.6B.zip
@@ -46,7 +46,6 @@ RUN wget -N 'https://github.com/tylin/coco-caption/archive/master.zip' -O coco.z
 
 # Create conda environment
 # Note: ffmpeg with --enable-shared should be before installing opencv
-RUN mkdir /home/si/v2d/
 WORKDIR /home/si/v2d/
 COPY --chown=si:si environment.yml /home/si/v2d/
 RUN conda env create -f environment.yml
