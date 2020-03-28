@@ -18,7 +18,7 @@
         "LOGS_DIR": "/var/log/v2d/vpreprocess.log"
     },
     "vocab": {
-        "GLOVE_FILE": "/home/si/dataset/glove.6B.300d.txt",
+        "GLOVE_FILE": "/home/si/v2d/dataset/glove.6B.300d.txt",
         "WORD_EMBEDDED_CACHE": "/home/si/v2d/dataset_cache/glove_300.dat",
         "VOCAB_FILE": "/home/si/v2d/dataset_cache/vocab.dat"
     },
