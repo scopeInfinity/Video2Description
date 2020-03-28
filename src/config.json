@@ -3,7 +3,7 @@
         "PREDICT_MODE_ONLY": true,
         "PREFIX":"/home/scopeinfinity/BTP/Video2Description",
         "MAX_CONTENT_LENGTH": 10649600,
-        "UPLOAD_FOLDER": "./Uploads",
+        "UPLOAD_FOLDER": "/home/scopeinfinity/BTP/Video2Description/uploads/",
         "VIDEOS_DATASET": "/home/scopeinfinity/BTP/Video2Description/dataset/",
         "VIDEOS_FOLDER": "/home/scopeinfinity/BTP/Video2Description/dataset/videos/",
         "DATASET_CACHE": "/home/scopeinfinity/BTP/Video2Description/dataset_cache/"

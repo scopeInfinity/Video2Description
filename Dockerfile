@@ -57,6 +57,7 @@ ENV V2D_CONFIG_FILE=config_docker.json
 RUN mkdir -p /home/si/v2d/dataset
 RUN mkdir -p /home/si/v2d/dataset_cache
 RUN mkdir -p /home/si/v2d/models
+RUN mkdir -p /tmp/v2d/app/uploads
 COPY --chown=si:si dataset/videodatainfo_2017.json /home/si/v2d/dataset/
 COPY --chown=si:si dataset/test_videodatainfo_2017.json /home/si/v2d/dataset/
 COPY --chown=si:si src/ /home/si/v2d/src/

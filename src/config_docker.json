@@ -3,7 +3,7 @@
         "PREDICT_MODE_ONLY": true,
         "PREFIX":"/home/si/v2d/src",
         "MAX_CONTENT_LENGTH": 10649600,
-        "UPLOAD_FOLDER": "./Uploads",
+        "UPLOAD_FOLDER": "/tmp/v2d/app/uploads",
         "VIDEOS_DATASET": "/home/si/v2d/dataset/",
         "VIDEOS_FOLDER": "/home/si/v2d/dataset/videos/",
         "DATASET_CACHE": "/home/si/v2d/dataset_cache/"
