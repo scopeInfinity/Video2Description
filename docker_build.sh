@@ -1,8 +1,9 @@
 #!/bin/bash
-bash docker_pull_images.sh
+export DOCKER_BUILDKIT=1
 
 docker image build --target v2d \
   -t scopeinfinity/video2description:latest \
+  --build-arg BUILDKIT_INLINE_CACHE=1 \
   --cache-from scopeinfinity/video2description:latest \
   .
 
