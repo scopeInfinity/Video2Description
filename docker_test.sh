@@ -20,6 +20,6 @@ bash docker_logs.sh &
 
 # Run tests external to docker
 echo "[external] Executing tests on [docker][deploy]"
-python -m unittest discover tests/ || echo "[ignored] Test Failed!!!"
+python -m unittest discover tests/
 
 bash docker_stop.sh
