@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 echo "Starting container as development environment!!!"
 
 echo "Stopping any running V2D containers"
