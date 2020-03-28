@@ -53,6 +53,7 @@ RUN conda init bash
 RUN echo "conda activate V2D" >> /home/si/.bashrc
 
 # Prepare basic files
+ENV V2D_CONFIG_FILE=config_docker.json
 RUN mkdir -p /home/si/v2d/dataset
 RUN mkdir -p /home/si/v2d/dataset_cache
 RUN mkdir -p /home/si/v2d/models
