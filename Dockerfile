@@ -61,8 +61,13 @@ COPY --chown=si:si src/ /home/si/v2d/src/
 COPY --chown=si:si src/config_docker.json /home/si/v2d/src/config.json
 WORKDIR /home/si/v2d/src
 
-# Prepares cache
+
 FROM v2d as v2d_deploy
+# Copy videodatainfo into dataset/
+COPY --chown=si:si dataset/videodatainfo_2017.json /home/si/v2d/dataset/
+COPY --chown=si:si dataset/test_videodatainfo_2017.json /home/si/v2d/dataset/
+
+# Prepares cache for pretrained model
 COPY --chown=si:si models/ /home/si/v2d/models/
 WORKDIR /home/si/v2d/models/
 RUN wget -q -N 'https://github.com/scopeInfinity/Video2Description/releases/download/models/ResNet_D512L512_G128G64_D1024D0.20BN_BDGRU1024_D0.2L1024DVS_model.dat_4983_loss_2.350_Cider0.355_Blue0.353_Rouge0.571_Meteor0.247_TOTAL_1.558_BEST'
