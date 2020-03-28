@@ -1,4 +1,4 @@
-FROM ubuntu:xenial as v2d_env
+FROM ubuntu:xenial as v2d
 RUN apt-get update
 RUN apt-get install -y libsamplerate0 curl libsndfile1 pkg-config nasm wget zip
 RUN useradd -m -s /bin/bash si
@@ -17,7 +17,7 @@ USER si
 
 # glove
 # https://nlp.stanford.edu/projects/glove/
-RUN mkdir /home/si/v2d && mkdir /home/si/v2d/dataset
+RUN mkdir -p /home/si/v2d/dataset
 WORKDIR /home/si/v2d/dataset
 RUN wget http://nlp.stanford.edu/data/glove.6B.zip && \
     unzip glove.6B.zip glove.6B.300d.txt && \
@@ -52,20 +52,17 @@ RUN conda env create -f environment.yml
 RUN conda init bash
 RUN echo "conda activate V2D" >> /home/si/.bashrc
 
-# Create directories
-RUN mkdir /home/si/dataset_cache
-
-# Push V2D in the container
-FROM v2d_env as v2d
+# Prepare basic files
+RUN mkdir -p /home/si/v2d/dataset
+RUN mkdir -p /home/si/v2d/dataset_cache
+RUN mkdir -p /home/si/v2d/models
+COPY --chown=si:si dataset/videodatainfo_2017.json /home/si/v2d/dataset/
+COPY --chown=si:si dataset/test_videodatainfo_2017.json /home/si/v2d/dataset/
 COPY --chown=si:si src/ /home/si/v2d/src/
-COPY --chown=si:si src/config_docker.json /home/si/v2d/src/config.json
 WORKDIR /home/si/v2d/src
 
 
 FROM v2d as v2d_deploy
-# Copy videodatainfo into dataset/
-COPY --chown=si:si dataset/videodatainfo_2017.json /home/si/v2d/dataset/
-COPY --chown=si:si dataset/test_videodatainfo_2017.json /home/si/v2d/dataset/
 
 # Prepares cache for pretrained model
 COPY --chown=si:si models/ /home/si/v2d/models/
