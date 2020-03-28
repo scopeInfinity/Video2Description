@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 import random
@@ -6,6 +7,7 @@ import traceback
 
 from copy import deepcopy
 from flask import Flask, render_template, request, send_from_directory
+from waitress import serve
 
 from config import getAppConfig
 from rpc import get_rpc
@@ -155,6 +157,12 @@ def upload_file():
     finally:
         os.unlink(filename)
     return success(output)
-    
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-p', '--port', type = int, default=5000)
+    args = parser.parse_args()
+    serve(app, host='0.0.0.0', port=args.port)
+
 if __name__ == "__main__":
-	app.run(host='0.0.0.0')
+    main()
