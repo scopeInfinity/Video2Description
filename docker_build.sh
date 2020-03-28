@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 bash docker_pull_images.sh
 
 docker image build --target v2d \
