@@ -8,5 +8,4 @@ docker image build --target v2d \
 
 docker image build --target v2d_deploy \
   -t scopeinfinity/video2description:deploy \
-  --cache-from scopeinfinity/video2description:latest \
   .
