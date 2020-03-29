@@ -1,24 +1,25 @@
 import ast
 import csv
-import shutil
 import json
-import sys
-import os
 import numpy as np
+import os
+import shutil
+import sys
 
 from keras import callbacks
-from random import shuffle
 from pprint import pformat
+from random import shuffle
 
-from config import getAppConfig, getVPreprocessConfig
-from model import VModel
-from logger import logger
-from status import ModelWeightsStatus
-from vpreprocess import  Preprocessor
+from backend.model import VModel
+from backend.vpreprocess import  Preprocessor
+from common.config import get_app_config, get_vpreprocess_config
+from common.logger import logger
+from common.status import ModelWeightsStatus
+
 
 WORKERS = 40
-DATASET_CACHE = getAppConfig()["DATASET_CACHE"]
-COCOFNAME = getVPreprocessConfig()["COCOFNAME"]
+DATASET_CACHE = get_app_config()["DATASET_CACHE"]
+COCOFNAME = get_vpreprocess_config()["COCOFNAME"]
 
 CLABEL = 'ResNet_D512L512_G128G64_D1024D0.20BN_BDLSTM1024_D0.2L1024DVS'
 

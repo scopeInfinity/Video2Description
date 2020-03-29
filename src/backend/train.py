@@ -1,4 +1,4 @@
-from data import getVideo,sz_videos, get_videoId, getCaption
+from backend.data import getVideo,sz_videos, get_videoId, getCaption
 
 def get_model():
 	# -_-

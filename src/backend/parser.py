@@ -1,7 +1,8 @@
 import argparse
 import sys
-from logger import logger
-from rpc import register_server, get_rpc, PORT
+
+from common.logger import logger
+from common.rpc import register_server, get_rpc, PORT
 
 class Parser:
     def __init__(self):

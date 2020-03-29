@@ -1,9 +1,10 @@
+import cv2
+import json
+import os
+import re
+
 from pytube import YouTube
 from subprocess import check_output
-import json
-import re
-import cv2
-import os
 
 DIR = 'Videos'
 CATEGORIES = (1<<3)

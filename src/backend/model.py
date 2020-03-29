@@ -1,21 +1,23 @@
-import os, sys
 import numpy as np
-from logger import logger
-from keras.models import Sequential
+import os
+import sys
+
+from keras.applications import ResNet50, VGG16
+from keras.applications.inception_v3 import InceptionV3
+from keras.applications.resnet50 import preprocess_input
 from keras.layers import Dropout, Merge, Flatten, RepeatVector, Activation
 from keras.layers import Embedding, Conv2D, MaxPooling2D, LSTM, GRU, BatchNormalization
 from keras.layers import TimeDistributed, Dense, Input, Flatten, GlobalAveragePooling2D, Bidirectional
-from keras.applications import ResNet50, VGG16
-from keras.applications.inception_v3 import InceptionV3
-from keras.regularizers import l2
-from keras.optimizers import RMSprop
 from keras.models import Model
-from vocab import Vocab
+from keras.models import Sequential
+from keras.optimizers import RMSprop
 from keras.preprocessing import image
-from keras.applications.resnet50 import preprocess_input
+from keras.regularizers import l2
+from vocab import Vocab
+import keras.backend as K
 import tensorflow as tf
 
-import keras.backend as K
+from common.logger import logger
 
 def sentence_distance(y_true, y_pred):
     return K.sqrt(K.sum(K.square(K.abs(y_true-y_pred)),axis=1,keepdims=True))
@@ -85,7 +87,7 @@ class VModel:
     def build_mcnn(self, CAPTION_LEN, VOCAB_SIZE, learning = True):
         if learning:
             self.train_mode()
-        from VideoDataset.videohandler import VideoHandler
+        from backend.videohandler import VideoHandler
         logger.debug("Creating Model (CNN Cutoff) with Vocab Size :  %d " % VOCAB_SIZE)
         cmodel  = Sequential()
         cmodel.add(TimeDistributed(Dense(512,kernel_initializer='random_normal'), input_shape=(CAPTION_LEN+1,Vocab.OUTDIM_EMB )))

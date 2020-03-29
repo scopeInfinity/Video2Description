@@ -1,17 +1,21 @@
 import collections
-import random
-import pickle
-import sys
-from sets import Set
-import json,re 
-import os, shutil
-from keras.preprocessing import image
-from keras.applications import imagenet_utils 
-#from PIL import Image as pil_image
+import json
+import os
 import numpy as np
-from logger import logger
-from keras.preprocessing import sequence
+import pickle
+import random
+import re 
+import shutil
+import sys
+
+from sets import Set
+
 from keras import callbacks
+from keras.applications import imagenet_utils 
+from keras.preprocessing import image
+from keras.preprocessing import sequence
+
+from common.logger import logger
 
 ROOT_DIR = '/home/gagan.cs14/btp'
 GITBRANCH = os.popen('git branch | grep "*"').read().split(" ")[1][:-1] 

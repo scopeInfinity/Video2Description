@@ -9,12 +9,12 @@ from copy import deepcopy
 from flask import Flask, render_template, request, send_from_directory
 from waitress import serve
 
-from config import getAppConfig
-from rpc import get_rpc
-from status import ModelWeightsStatus
+from common.config import get_app_config
+from common.rpc import get_rpc
+from common.status import ModelWeightsStatus
 
 app = Flask(__name__)
-config = getAppConfig()
+config = get_app_config()
 
 PREDICT_MODE_ONLY = config["PREDICT_MODE_ONLY"]
 PREFIX = config["PREFIX"]
@@ -27,21 +27,21 @@ navigation = [("./","Predict",False)]
 if not PREDICT_MODE_ONLY:
 	navigation.extend([("./get_ids","Get ID's",False),("./play","Play Videos",False)])
 
-	# Don't even define the methods!
+	# Don't even define the methods! And definately need to improve this.
 	def get_train_ids():
-		command = "python %s/VideoDataset/videohandler.py -strain" % PREFIX
+		command = "python %s/backend/videohandler.py -strain" % PREFIX
 		return os.popen(command).read()
 
 	def get_test_ids():
-		command = "python %s/VideoDataset/videohandler.py -stest" % PREFIX
+		command = "python %s/backend/videohandler.py -stest" % PREFIX
 		return os.popen(command).read()
 
 	def get_val_ids():
-		command = "python %s/VideoDataset/videohandler.py -sval" % PREFIX
+		command = "python %s/backend/videohandler.py -sval" % PREFIX
 		return os.popen(command).read()
 
 	def get_all_ids():
-		command = "python %s/VideoDataset/videohandler.py -sval -stest -strain" % PREFIX
+		command = "python %s/backend/videohandler.py -sval -stest -strain" % PREFIX
 		return os.popen(command).read()
 
 	def predict_ids(ids):
@@ -99,7 +99,7 @@ def model_weights_status():
     return model_weights_notify() or "[SUCCESS]"
 
 @app.route("/")
-def main():
+def home():
     weights_notify = model_weights_notify()
     if PREDICT_MODE_ONLY:
         return render_template(

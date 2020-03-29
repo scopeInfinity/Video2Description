@@ -1,17 +1,19 @@
-import cv2
-import os, urllib
-import json
-import urlparse
-import time
-import shutil
 import argparse
+import cv2
+import time
+import json
 import numpy as np
+import shutil
+import os
+import urllib
+import urlparse
 import librosa
+
 from pprint import pprint
 
-import config
+from common.config import get_app_config
 
-DIR_VIDEO_DATASET = config.getAppConfig()["VIDEOS_DATASET"]
+DIR_VIDEO_DATASET = get_app_config()["VIDEOS_DATASET"]
 
 
 class VideoHandler:
@@ -222,7 +224,7 @@ class VideoHandler:
             success, frame = vcap.read()
             if not success:
                 break
-            allframes.append(cv2.resize(frame, self.SHAPE))
+            allframes.append(cv2.resize(frame, VideoHandler.SHAPE))
         if len(allframes) < self.LIMIT_FRAMES:
             print "File [%s] with limited frames (%d)" % (sfname, len(allframes))
             # Ignore those videos
@@ -306,7 +308,8 @@ class VideoHandler:
         if os.path.exists(edir):
             shutil.rmtree(edir)
         os.mkdir(edir)
-        cmd = "ffmpeg -i %s -vf fps=%d -s %dx%d %s/0_%%03d.jpg &> /dev/null" % (sfname, 5, SHAPE[0], SHAPE[1], edir) #&> /dev/null
+        cmd = "ffmpeg -i %s -vf fps=%d -s %dx%d %s/0_%%03d.jpg &> /dev/null" % (
+                   sfname, 5, VideoHandler.SHAPE[0], VideoHandler.SHAPE[1], edir) #&> /dev/null
         if logs:
             print cmd
         returnStatus = os.system(cmd)
