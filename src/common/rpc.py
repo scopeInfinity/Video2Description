@@ -2,15 +2,16 @@ import threading
 import xmlrpclib
 
 from SimpleXMLRPCServer import SimpleXMLRPCServer
-from config import getRpcConfig
+
+from common.config import get_rpc_config
 
 
-config = getRpcConfig()
-SERVER_RUNAS = config["RPC_SERVER_RUNAS"]
-PORT = config["RPC_PORT"]
-SERVER_IP = config["RPC_ENDPOINT"]
+CONFIG = get_rpc_config()
+SERVER_RUNAS = CONFIG["RPC_SERVER_RUNAS"]
+PORT = CONFIG["RPC_PORT"]
+SERVER_IP = CONFIG["RPC_ENDPOINT"]
 
-get_rpc_lock = threading.Lock()
+lock = threading.Lock()
 
 def close_framework():
     exit()
@@ -36,7 +37,7 @@ def register_server(framework):
 
 
 def get_rpc():
-    with get_rpc_lock:
+    with lock:
         if hasattr(get_rpc, 'proxy'):
             return get_rpc.proxy
         get_rpc.proxy = xmlrpclib.ServerProxy("http://%s:%d/" % (SERVER_IP, PORT))

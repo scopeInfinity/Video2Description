@@ -1,9 +1,9 @@
 import os
 
-import config
+from common.config import get_tests_config
 
 
-DIR_VIDEOS = config.getTestsConfig()["dir_videos"]
+DIR_VIDEOS = get_tests_config()["dir_videos"]
 
 def get_videopath(fname):
     '''Returns path of given test video file.'''

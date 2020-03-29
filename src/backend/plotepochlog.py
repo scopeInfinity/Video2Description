@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
+
 MXPOINT = 100
 assert len(sys.argv)>=2
 fname=sys.argv[1]

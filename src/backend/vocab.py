@@ -1,17 +1,19 @@
-from scipy.interpolate import interp1d
-from logger import logger
-from utils import caption_tokenize
-from VideoDataset.videohandler import VideoHandler
-from config import getVocabConfig
 import os
 import numpy as np
 import pickle
 
+from scipy.interpolate import interp1d
+
+from common.config import get_vocab_config
+from common.logger import logger
+from backend.utils import caption_tokenize
+from backend.videohandler import VideoHandler
+
 # Read
-GLOVE_FILE = getVocabConfig()['GLOVE_FILE']
+GLOVE_FILE = get_vocab_config()['GLOVE_FILE']
 # Read or Write if not exists
-WORD_EMBEDDED_CACHE = getVocabConfig()['WORD_EMBEDDED_CACHE']
-VOCAB_FILE = getVocabConfig()['VOCAB_FILE']
+WORD_EMBEDDED_CACHE = get_vocab_config()['WORD_EMBEDDED_CACHE']
+VOCAB_FILE = get_vocab_config()['VOCAB_FILE']
 
 class Vocab:
     OUTDIM_EMB = 300

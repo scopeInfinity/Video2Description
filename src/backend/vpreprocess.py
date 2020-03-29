@@ -4,12 +4,12 @@ import os
 
 from keras.preprocessing import image
 
-from config import getVPreprocessConfig
-from logger import logger
-from vocab import vocabBuilder
+from common.config import get_vpreprocess_config
+from common.logger import logger
+from backend.vocab import vocabBuilder
 
 
-BADLOGS = getVPreprocessConfig()["LOGS_DIR"]
+BADLOGS = get_vpreprocess_config()["LOGS_DIR"]
 
 def badLogs(msg):
     logger.debug(msg)
