@@ -2,9 +2,8 @@ FROM python:2 as frontend
 RUN pip install enum34 flask waitress
 
 RUN useradd -m -s /bin/bash si
-RUN mkdir /var/log/v2d
-RUN chown si:si /var/log/v2d
-RUN chmod 700 /var/log/v2d
+RUN mkdir -p /home/si/v2d/uploads
+RUN chown si:si /home/si/v2d/uploads
 USER si
 
 # Prepare basic files
