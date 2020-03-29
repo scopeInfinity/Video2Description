@@ -4,9 +4,9 @@ trap 'kill $(jobs -p) || echo "No background jobs"' EXIT
 
 TIMEOUT_WAIT_FOR_BACKEND=${1:-5}  # in minutes
 
-echo "[docker][latest] ./run_tests.sh"
+echo "[docker][backend][latest] ./run_tests.sh"
 docker container run scopeinfinity/video2description:latest conda run -n V2D /bin/bash -c 'cd /home/si/v2d/src/ && ./run_tests.sh'
-echo "[docker][deploy] ./run_tests.sh"
+echo "[docker][backend][deploy] ./run_tests.sh"
 docker container run scopeinfinity/video2description:deploy conda run -n V2D /bin/bash -c 'cd /home/si/v2d/src/ && ./run_tests.sh'
 
 bash docker_start.sh

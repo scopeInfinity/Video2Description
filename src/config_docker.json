@@ -3,15 +3,15 @@
         "PREDICT_MODE_ONLY": true,
         "PREFIX":"/home/si/v2d/src",
         "MAX_CONTENT_LENGTH": 10649600,
-        "UPLOAD_FOLDER": "/tmp/v2d/app/uploads",
+        "UPLOAD_FOLDER": "/mnt/v2d/uploads/",
         "VIDEOS_DATASET": "/home/si/v2d/dataset/",
         "VIDEOS_FOLDER": "/home/si/v2d/dataset/videos/",
         "DATASET_CACHE": "/home/si/v2d/dataset_cache/"
     },
     "rpc": {
-        "RPC_SERVER_RUNAS": "127.0.0.1",
+        "RPC_SERVER_RUNAS": "172.17.0.2",
         "RPC_PORT": 5001,
-        "RPC_ENDPOINT": "127.0.0.1"
+        "RPC_ENDPOINT": "172.17.0.2"
     },
     "vpreprocess": {
         "COCOFNAME": "/home/si/coco-caption/pycocoevalcap/eval.py",
