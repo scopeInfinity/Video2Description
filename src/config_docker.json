@@ -9,9 +9,9 @@
         "DATASET_CACHE": "/home/si/v2d/dataset_cache/"
     },
     "rpc": {
-        "RPC_SERVER_RUNAS": "172.17.0.2",
+        "RPC_SERVER_RUNAS": "172.14.0.2",
         "RPC_PORT": 5001,
-        "RPC_ENDPOINT": "172.17.0.2"
+        "RPC_ENDPOINT": "172.14.0.2"
     },
     "vpreprocess": {
         "COCOFNAME": "/home/si/coco-caption/pycocoevalcap/eval.py",

@@ -5,8 +5,11 @@ echo "Starting container as development environment!!!"
 echo "Stopping any running V2D containers"
 bash docker_stop.sh
 
+docker network create --subnet=172.14.0.0/24 v2d_net
+
 echo "Starting backend"
 docker container run --name "v2d_backend" -d -e "V2D_CONFIG_FILE=config_docker.json" \
+  --net v2d_net --ip 172.14.0.2 \
   --mount type=bind,source="$(pwd)"/src,target=/home/si/v2d/src,readonly \
   --mount type=bind,source="$(pwd)"/uploads,target=/mnt/v2d/uploads/ \
   scopeinfinity/video2description:deploy \
@@ -14,6 +17,7 @@ docker container run --name "v2d_backend" -d -e "V2D_CONFIG_FILE=config_docker.j
 
 echo "Starting web-ui"
 docker container run --name "v2d_frontend" -d -p 8080:5000 -e "V2D_CONFIG_FILE=config_docker.json" \
+  --net v2d_net --ip 172.14.0.3 \
   --mount type=bind,source="$(pwd)"/src,target=/home/si/v2d/src,readonly \
   --mount type=bind,source="$(pwd)"/uploads,target=/mnt/v2d/uploads/ \
   scopeinfinity/video2description:frontend \
