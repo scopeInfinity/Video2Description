@@ -12,18 +12,18 @@ services:
 
 install:
 - pip install -r requirements.txt
-- bash early_tests.sh
+- ./scripts/early_tests.sh
 - wget 'https://github.com/mozilla/geckodriver/releases/download/v0.26.0/geckodriver-v0.26.0-linux64.tar.gz'
 - tar -xvzf geckodriver-v0.26.0-linux64.tar.gz
 - sudo mv geckodriver /usr/local/bin
-- ./keep_alive.sh 120 bash docker_build.sh
+- ./scripts/keep_alive.sh 120 bash ./scripts/docker_build.sh
 
 script:
-- bash docker_test.sh
+- ./scripts/docker_test.sh
 
 deploy:
   provider: script
-  script: bash -c '{ echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin > /dev/null 2>&1; } && bash docker_deploy.sh'
+  script: bash -c '{ echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin > /dev/null 2>&1; } && ./scripts/docker_deploy.sh'
   on:
     branch:
       - VideoCaption

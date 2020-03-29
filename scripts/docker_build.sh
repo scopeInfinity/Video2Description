@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
-bash docker_pull_images.sh
+bash scripts/docker_pull_images.sh latest
+bash scripts/docker_pull_images.sh deploy
 
 docker image build --target v2d \
   -t scopeinfinity/video2description:latest \

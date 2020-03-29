@@ -3,7 +3,7 @@ set -e
 echo "Starting container as development environment!!!"
 
 echo "Stopping any running V2D containers"
-bash docker_stop.sh
+bash scripts/docker_stop.sh
 
 echo "Starting backend"
 docker container run --name "v2d" -d -p 8080:5000 -e "V2D_CONFIG_FILE=config_docker.json" \
