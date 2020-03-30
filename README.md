@@ -65,17 +65,26 @@ Test videos with poor results
 * Please feel free to raise PR with necessary suggestions.
 * Clone the repository`
   * `git clone https://github.com/scopeInfinity/Video2Description.git`
-* Install docker
-  * `sudo apt-get install docker.io`
-* Pull the prebuild images and start services
+* Install docker and docker-componse
+  * ```bash
+    sudo apt-get install docker.io`
+    sudo curl -L "https://github.com/docker/compose/releases/download/1.25.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose
+    ```
+  * Docs
+    * https://docs.docker.com/install/linux/docker-ce/ubuntu/
+    * https://docs.docker.com/compose/install/
+
+* Pull the prebuild images and run the container
 ```bash
-$ bash docker_pull_images.sh
-$ bash docker_start.sh
+$ docker-compose pull
+$ docker-compose up
 ```
-* Wait for sometime and browse to `http://localhost:8080/`.
+* Browse to `http://localhost:8080/`
+  * backend might take few minutes to reach a stable stage.
 
 ##### Execution without Docker
-* We can go always go through `Dockerfile` to understand better.
+* We can go always go through `backend.Dockerfile` and `frontend.Dockerfile` to understand better.
 * Update `src/config.json` as per the requirement and use those path during upcoming steps.
   * To know more about any field, just search for the reference in the codebase.
 * Install miniconda
@@ -98,9 +107,9 @@ $ make
 $ conda activate .
 ```
 * Turn up the backend
-  * `src$ python parser.py server --start --model /path/to/model`
+  * `src$ python -m backend.parser server --start --model /path/to/model`
 * Turn up the web frontend
-  * `src$ python app.py`
+  * `src$ python -m frontend.app`
 
 ### Info
 
@@ -126,7 +135,7 @@ File | Content
 ### Execution
 It currently supports train, predict and server mode. Please use the following command for better explanation.
 ```bash
-python parse.py -h
+src$ python -m backend.parse -h
 ```
   
 ### Training Methods
