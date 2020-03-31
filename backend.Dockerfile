@@ -1,4 +1,4 @@
-FROM ubuntu:xenial as v2d
+FROM ubuntu:xenial
 RUN apt-get update
 RUN apt-get install -y libsamplerate0 curl libsndfile1 pkg-config nasm wget zip
 RUN useradd -m -s /bin/bash si
@@ -62,9 +62,6 @@ COPY --chown=si:si dataset/videodatainfo_2017.json /home/si/v2d/dataset/
 COPY --chown=si:si dataset/test_videodatainfo_2017.json /home/si/v2d/dataset/
 COPY --chown=si:si src/ /home/si/v2d/src/
 WORKDIR /home/si/v2d/src
-
-
-FROM v2d as v2d_deploy
 
 # Prepares cache for pretrained model
 COPY --chown=si:si models/ /home/si/v2d/models/
