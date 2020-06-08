@@ -66,6 +66,8 @@ Test videos with poor results
 * Clone the repository`
   * `git clone https://github.com/scopeInfinity/Video2Description.git`
 * Install docker and docker-compose
+  * Current config has docker-compose file format '3.2'.
+    * https://github.com/docker/compose/releases
   * ```bash
     sudo apt-get install docker.io`
     sudo curl -L "https://github.com/docker/compose/releases/download/1.25.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
