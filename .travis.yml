@@ -1,3 +1,5 @@
+arch: arm64
+
 os: linux
 
 addons:
@@ -16,7 +18,7 @@ install:
 - wget 'https://github.com/mozilla/geckodriver/releases/download/v0.26.0/geckodriver-v0.26.0-linux64.tar.gz'
 - tar -xvzf geckodriver-v0.26.0-linux64.tar.gz
 - sudo mv geckodriver /usr/local/bin
-- docker-compose pull backend
+- # docker-compose pull backend
 - ./keep_alive.sh 120 docker-compose build
 
 script:

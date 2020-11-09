@@ -1,4 +1,4 @@
-FROM ubuntu:xenial
+FROM arm32v7/ubuntu:xenial
 RUN apt-get update
 RUN apt-get install -y libsamplerate0 curl libsndfile1 pkg-config nasm wget zip
 RUN useradd -m -s /bin/bash si
@@ -8,11 +8,11 @@ RUN chmod 700 /var/log/v2d
 USER si
 
 # Installing miniconda
-RUN wget -N https://repo.anaconda.com/miniconda/Miniconda2-latest-Linux-x86_64.sh -O /tmp/Miniconda2-latest-Linux-x86_64.sh
-RUN bash /tmp/Miniconda2-latest-Linux-x86_64.sh -b
-RUN rm /tmp/Miniconda2-latest-Linux-x86_64.sh
+RUN wget -N wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-armv7l.sh  -O /tmp/miniconda.sh
+RUN bash /tmp/miniconda.sh -b
+RUN rm /tmp/miniconda.sh
 USER root
-RUN ln -s /home/si/miniconda2/bin/conda /usr/bin/
+RUN ln -s /home/si/miniconda3/bin/conda /usr/bin/
 USER si
 
 # glove
