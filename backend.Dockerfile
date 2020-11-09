@@ -8,7 +8,7 @@ RUN chmod 700 /var/log/v2d
 USER si
 
 # Installing miniconda
-RUN wget -N wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-armv7l.sh  -O /tmp/miniconda.sh
+RUN wget -N http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-armv7l.sh  -O /tmp/miniconda.sh
 RUN bash /tmp/miniconda.sh -b
 RUN rm /tmp/miniconda.sh
 USER root
