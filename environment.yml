@@ -3,11 +3,9 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - keras==2.0.8
-  - tensorflow==1.2.1
   - pip
   - gtk2
-  - python=2.7.14
+  - python=2.7
   - urllib3
   - waitress
   - pip:
@@ -17,3 +15,5 @@ dependencies:
     - librosa
     - matplotlib
     - pylint
+  - keras==2.0.8
+  - tensorflow==1.2.1
