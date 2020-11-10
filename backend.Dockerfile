@@ -29,7 +29,7 @@ RUN wget https://github.com/FFmpeg/FFmpeg/archive/master.zip -O ffmpeg.zip
 RUN unzip ffmpeg.zip
 RUN rm ffmpeg.zip
 WORKDIR /tmp/FFmpeg-master/
-RUN ./configure --enable-shared
+RUN ./configure --enable-shared --arch=armel 
 RUN make -j32
 USER root
 RUN make install
