@@ -9,7 +9,7 @@ USER si
 
 # Installing miniconda
 RUN wget -N http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-armv7l.sh  -O /tmp/miniconda.sh
-RUN bash /tmp/miniconda.sh -b
+RUN echo "yes" | bash /tmp/miniconda.sh -b
 RUN rm /tmp/miniconda.sh
 USER root
 RUN ln -s /home/si/miniconda3/bin/conda /usr/bin/
