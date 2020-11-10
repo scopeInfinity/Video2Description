@@ -1,4 +1,4 @@
-arch: arm64
+arch: arm32
 
 os: linux
 
