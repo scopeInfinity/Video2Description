@@ -1,5 +1,6 @@
 #!/bin/bash
 # Keep streaming something every minute upto X or job get completed whichever first.
+set -e
 TIMEOUT="${1:?}"
 EXEC="${2:?}"
 shift 2
