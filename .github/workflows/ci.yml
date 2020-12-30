@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ VideoCaption ]
+    branches: [ VideoCaption actions ]
   pull_request:
     branches: [ VideoCaption ]
 
@@ -16,6 +16,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - uses: docker://scopeinfinity/video2description:frontend
+      - uses: docker://scopeinfinity/video2description:deploy
+      
       - name: Install dependencies, build and execute test
         run: |
           pip install -r requirements.txt
@@ -28,7 +31,9 @@ jobs:
           ./keep_alive.sh 120 docker-compose build
           bash docker_test.sh
 
+      # Push image to docker on 'push' event only.
       - name: Deploy to Docker Hub
+        if: ${{ github.event_name == 'push' }}
         env:
           DOCKER_USERNAME: "scopeinfinity"
           DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
