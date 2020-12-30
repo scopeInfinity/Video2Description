@@ -2,9 +2,15 @@ name: CI
 
 on:
   push:
-    branches: [ VideoCaption actions ]
+    branches:
+    - VideoCaption
+    - actions
+ 
   pull_request:
-    branches: [ VideoCaption ]
+    branches:
+    - VideoCaption 
+  
+  workflow_dispatch:
 
 jobs:
   build:
