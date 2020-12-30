@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ VideoCaption ]
+    branches: [ VideoCaption actions ]
   pull_request:
     branches: [ VideoCaption ]
 
