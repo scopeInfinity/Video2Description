@@ -32,6 +32,7 @@ jobs:
 
       - name: Deploy to Docker Hub
         env:
+          DOCKER_USERNAME: "scopeinfinity"
           DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
         run: |
-          bash -c '{ echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin > /dev/null 2>&1; } && bash docker_push.sh'
+          bash -c '{ echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin } && bash docker_push.sh'
