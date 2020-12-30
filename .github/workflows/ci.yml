@@ -19,7 +19,7 @@ jobs:
       - uses: docker://scopeinfinity/video2description:frontend
       - uses: docker://scopeinfinity/video2description:deploy
       
-      - name: Install dependencies, build and execute test
+      - name: Install dependencies
         run: |
           pip install -r requirements.txt
           bash early_tests.sh
@@ -27,8 +27,13 @@ jobs:
           wget 'https://github.com/mozilla/geckodriver/releases/download/v0.26.0/geckodriver-v0.26.0-linux64.tar.gz'
           tar -xvzf geckodriver-v0.26.0-linux64.tar.gz
           sudo mv geckodriver /usr/local/bin
-          docker-compose pull backend
-          ./keep_alive.sh 120 docker-compose build
+
+      - name: Build
+        run: |
+          docker-compose build
+          
+      - name: Test
+        run: |
           bash docker_test.sh
 
       # Push image to docker on 'push' event only.
