@@ -35,4 +35,4 @@ jobs:
           DOCKER_USERNAME: "scopeinfinity"
           DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
         run: |
-          bash -c '{ echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin } && bash docker_push.sh'
+          { echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin } && bash docker_push.sh
