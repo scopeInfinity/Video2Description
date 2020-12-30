@@ -18,6 +18,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Deploy to Docker Hub
+        env:
+          DOCKER_USERNAME: "scopeinfinity"
+          DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+        run: |
+          { echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin } && bash docker_push.sh
+          
       - name: Install dependencies, build and execute test
         run: |
           pip install -r requirements.txt
@@ -30,9 +37,4 @@ jobs:
           ./keep_alive.sh 120 docker-compose build
           bash docker_test.sh
 
-      - name: Deploy to Docker Hub
-        env:
-          DOCKER_USERNAME: "scopeinfinity"
-          DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
-        run: |
-          { echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin } && bash docker_push.sh
+
