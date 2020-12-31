@@ -5,6 +5,7 @@ on:
     branches:
     - VideoCaption
     - actions
+    - speedo
  
   pull_request:
     branches:
