@@ -61,28 +61,28 @@ RUN wget -N 'https://github.com/tylin/coco-caption/archive/master.zip' -O coco.z
 # Create conda environment
 # Note: ffmpeg with --enable-shared should be before installing opencv
 WORKDIR /home/si/v2d/
-# COPY --chown=si:si environment.yml /home/si/v2d/
-# RUN conda env create -f environment.yml
-# RUN conda init bash
-# RUN echo "conda activate V2D" >> /home/si/.bashrc
+COPY --chown=si:si environment.yml /home/si/v2d/
+RUN conda env create -f environment.yml
+RUN conda init bash
+RUN echo "conda activate V2D" >> /home/si/.bashrc
 
 # Prepare basic files
-# ENV V2D_CONFIG_FILE=config_docker.json
-# RUN mkdir -p /home/si/v2d/dataset
-# RUN mkdir -p /home/si/v2d/dataset_cache
-# RUN mkdir -p /home/si/v2d/models
-# RUN mkdir -p /tmp/v2d/app/uploads
-# COPY --chown=si:si dataset/videodatainfo_2017.json /home/si/v2d/dataset/
-# COPY --chown=si:si dataset/test_videodatainfo_2017.json /home/si/v2d/dataset/
-# COPY --chown=si:si src/ /home/si/v2d/src/
-# WORKDIR /home/si/v2d/src
+ENV V2D_CONFIG_FILE=config_docker.json
+RUN mkdir -p /home/si/v2d/dataset
+RUN mkdir -p /home/si/v2d/dataset_cache
+RUN mkdir -p /home/si/v2d/models
+RUN mkdir -p /tmp/v2d/app/uploads
+COPY --chown=si:si dataset/videodatainfo_2017.json /home/si/v2d/dataset/
+COPY --chown=si:si dataset/test_videodatainfo_2017.json /home/si/v2d/dataset/
+COPY --chown=si:si src/ /home/si/v2d/src/
+WORKDIR /home/si/v2d/src
 
 # Prepares cache for pretrained model
-# COPY --chown=si:si models/ /home/si/v2d/models/
-# WORKDIR /home/si/v2d/models/
-# RUN wget -q -N 'https://github.com/scopeInfinity/Video2Description/releases/download/models/ResNet_D512L512_G128G64_D1024D0.20BN_BDGRU1024_D0.2L1024DVS_model.dat_4983_loss_2.350_Cider0.355_Blue0.353_Rouge0.571_Meteor0.247_TOTAL_1.558_BEST'
-# RUN echo "Available Models:"
-# RUN ls -1 /home/si/v2d/models
+COPY --chown=si:si models/ /home/si/v2d/models/
+WORKDIR /home/si/v2d/models/
+RUN wget -q -N 'https://github.com/scopeInfinity/Video2Description/releases/download/models/ResNet_D512L512_G128G64_D1024D0.20BN_BDGRU1024_D0.2L1024DVS_model.dat_4983_loss_2.350_Cider0.355_Blue0.353_Rouge0.571_Meteor0.247_TOTAL_1.558_BEST'
+RUN echo "Available Models:"
+RUN ls -1 /home/si/v2d/models
 
-# WORKDIR /home/si/v2d/src/
-# RUN conda run -n V2D python -m backend.parser server --init-only -m /home/si/v2d/models/ResNet_D512L512_G128G64_D1024D0.20BN_BDGRU1024_D0.2L1024DVS_model.dat_4983_loss_2.350_Cider0.355_Blue0.353_Rouge0.571_Meteor0.247_TOTAL_1.558_BEST
+WORKDIR /home/si/v2d/src/
+RUN conda run -n V2D python -m backend.parser server --init-only -m /home/si/v2d/models/ResNet_D512L512_G128G64_D1024D0.20BN_BDGRU1024_D0.2L1024DVS_model.dat_4983_loss_2.350_Cider0.355_Blue0.353_Rouge0.571_Meteor0.247_TOTAL_1.558_BEST
