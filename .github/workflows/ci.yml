@@ -3,12 +3,13 @@ name: CI
 on:
   push:
     branches:
-    - VideoCaption
-    - actions
+      - VideoCaption
+      - actions
+      - speedo
  
   pull_request:
     branches:
-    - VideoCaption 
+      - VideoCaption 
   
   workflow_dispatch:
 
