@@ -25,6 +25,8 @@ jobs:
 
       - uses: docker://scopeinfinity/video2description:frontend
       - uses: docker://scopeinfinity/video2description:deploy
+      - uses: docker://scopeinfinity/video2description:ffmpeg_builder
+      - uses: docker://scopeinfinity/video2description:glove_builder
       
       - name: Install dependencies
         run: |
