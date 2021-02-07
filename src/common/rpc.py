@@ -30,7 +30,7 @@ def close_framework():
 
 def register_server(framework):
     print('Preparing for Register Server')
-    server = xmlrpc_server.SimpleXMLRPCServer((SERVER_RUNAS, PORT))
+    server = SimpleXMLRPCServer((SERVER_RUNAS, PORT))
     print('Listening to %d' % PORT)
     server.register_function(rpc_decorator(framework.predict_fnames), 'predict_fnames')
     server.register_function(rpc_decorator(framework.predict_ids), 'predict_ids')
