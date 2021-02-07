@@ -143,7 +143,7 @@ class Preprocessor:
             assert False
         random.shuffle(ids)
         arr_counter = [0]
-        count = (len(ids)+batch_size-1)/batch_size
+        count = (len(ids)+batch_size-1)//batch_size
         assert count > 0
         logger.debug("Max Batches of type %d : %d " % (typeSet, count))
         while True:
@@ -167,7 +167,7 @@ class Preprocessor:
         else:
             assert False
         random.shuffle(ids)
-        count = (len(ids) + batch_size - 1)/batch_size
+        count = (len(ids) + batch_size - 1)//batch_size
         assert count > 0
         if start == -1:
             start = random.randint(0,count)

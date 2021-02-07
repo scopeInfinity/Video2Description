@@ -1,4 +1,4 @@
-FROM python:2 as frontend
+FROM python:3 as frontend
 RUN pip install enum34 flask waitress
 
 RUN useradd -m -s /bin/bash si

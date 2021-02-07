@@ -15,7 +15,7 @@ showepoch = True
 if len(sys.argv)>=5:
     showepoch = (sys.argv[4] == 'yo')
 
-print "Fname %s " % fname
+print("Fname %s " % fname)
 
 batch = []
 loss = []
@@ -30,10 +30,10 @@ with open(fname,'r') as f:
         ndata.append(rr)
 
 ndata = np.array(ndata, dtype='float')
-print np.shape(ndata)
+print(np.shape(ndata))
 step = 1
 if len(ndata[0]) > MXPOINT:
-    step = len(ndata[0]) / MXPOINT
+    step = len(ndata[0]) // MXPOINT
 [batch, loss, acc, val_loss, val_acc,cider,bleu4,rouge,meteor] = [y[::step] for y in np.matrix.transpose(ndata)][:9]
 
 x = range(len(batch))

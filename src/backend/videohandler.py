@@ -6,7 +6,7 @@ import numpy as np
 import shutil
 import os
 import urllib
-import urlparse
+import urllib.parse
 import librosa
 
 from pprint import pprint
@@ -135,8 +135,8 @@ class VideoHandler:
         return self.test_ids
 
     def getYoutubeId(self,url):
-        query = urlparse.parse_qs(urlparse.urlparse(url).query)
-        print query
+        query = urllib.parse.parse_qs(urllib.parse.urlparse(url).query)
+        print(query)
         return query['v'][0]
 
     def downloadVideo(self, _id, logs = True):
@@ -147,21 +147,21 @@ class VideoHandler:
         sfname = "%s/%d.mp4" % (self.vdir, _id)
         if os.path.exists(sfname):
             if logs:
-                print "Video Id [%d] Already Downloaded" % _id
+                print("Video Id [%d] Already Downloaded" % _id)
             return sfname
         youtubeId = self.getYoutubeId(url)
         turl = "curl 'https://hesetube.com/download.php?id=%s'" % (youtubeId)
         durl = "https://hesetube.com/video/%s.mp4?start=%f&end=%f" % (youtubeId, stime, etime) 
-        print durl
-        print turl
+        print(durl)
+        print(turl)
         os.system(turl)
         cont = urllib.urlopen(durl).read()
         with open(sfname,"wb") as f:
             f.write(cont)
-            print "Video Id [%d] Downloaded : %s " % (_id, youtubeId)
+            print("Video Id [%d] Downloaded : %s " % (_id, youtubeId))
         fs = os.path.getsize(sfname)
         if fs < VideoHandler.STHRES:
-            print "Crosscheck failed, File Size : %d" % fs
+            print("Crosscheck failed, File Size : %d" % fs)
             with open(self.logfile,"a") as f:
                 f.write("Crosscheck file %d, %s with size %d\n" % (_id, youtubeId, fs))
             os.remove(sfname)
@@ -206,13 +206,13 @@ class VideoHandler:
 
     def cached_iframe(self, _id, frames):
         cfname = "%s/%d.npy" % (self.cdir, _id)
-        print "Cached %s" % cfname
+        print("Cached %s" % cfname)
         with open(cfname, 'wb') as f:
             np.save(f,frames)
 
     def cached_audio(self, _id, feature):
         afname = "%s/%d.npy" % (self.adir, _id)
-        print "Cached %s" % afname
+        print("Cached %s" % afname)
         with open(afname, 'wb') as f:
             np.save(f,feature)
 
@@ -226,12 +226,12 @@ class VideoHandler:
                 break
             allframes.append(cv2.resize(frame, VideoHandler.SHAPE))
         if len(allframes) < self.LIMIT_FRAMES:
-            print "File [%s] with limited frames (%d)" % (sfname, len(allframes))
+            print("File [%s] with limited frames (%d)" % (sfname, len(allframes)))
             # Ignore those videos
             os.system("touch %s_ignore" % sfname)
             return None
 
-        period = len(allframes) / self.LIMIT_FRAMES
+        period = len(allframes) // self.LIMIT_FRAMES
         rframes = allframes[:period * self.LIMIT_FRAMES:period]
         frames_out = self.vmodel.preprocess_partialmodel(rframes)
         return frames_out
@@ -241,7 +241,7 @@ class VideoHandler:
         afeatures = librosa.feature.mfcc(y=audio_y, sr=sr, n_mfcc=self.AUDIO_FEATURE[1])
         afeatures = np.transpose(afeatures)
         ll = len(afeatures)
-        parts = ll/self.AUDIO_FEATURE[0]
+        parts = ll//self.AUDIO_FEATURE[0]
         division = []
         for i in range(self.AUDIO_FEATURE[0] - 1):
             division.append((i+1)*parts)
@@ -253,7 +253,7 @@ class VideoHandler:
             afeature_out.append(np.mean(np.array(af),axis = 0))
         afeature_out = np.asarray(afeature_out)
         if np.shape(afeature_out) != self.AUDIO_FEATURE:
-            print "File [%s] with audio problem (%s)" % (sfname, str(np.shape(afeature_out)))
+            print("File [%s] with audio problem (%s)" % (sfname, str(np.shape(afeature_out))))
             # Ignore videos
             os.system("touch %s_ignore" % sfname)
         return afeature_out
@@ -311,13 +311,13 @@ class VideoHandler:
         cmd = "ffmpeg -i %s -vf fps=%d -s %dx%d %s/0_%%03d.jpg &> /dev/null" % (
                    sfname, 5, VideoHandler.SHAPE[0], VideoHandler.SHAPE[1], edir) #&> /dev/null
         if logs:
-            print cmd
+            print(cmd)
         returnStatus = os.system(cmd)
         if returnStatus != 0:
-            print "Extracting Failed : %s" % sfname
+            print("Extracting Failed : %s" % sfname)
             if os.path.exists(edir):
-                print cmd
-                print "Dir Exists"
+                print(cmd)
+                print("Dir Exists")
                 #shutil.rmtree(edir)
             return None
         files = os.listdir(edir)
@@ -341,19 +341,19 @@ class VideoHandler:
                 print(str(e))
 
 def autodownload():
-    print "Current Downloaded files"
-    print vHandler.getDownloadedIds()
+    print("Current Downloaded files")
+    print(vHandler.getDownloadedIds())
     #vHandler.takebreak()
-    print "Downloading More!!!"
+    print("Downloading More!!!")
     allIds = vHandler.getAllIds()
     tot =  len(allIds)
     for i,_id in enumerate(allIds):
         vHandler.downloadVideo(_id)
         percent = 100.0*(i+1)/tot
-        print "%.3f Completed!" % percent
+        print("%.3f Completed!" % percent)
 
 def cache_videoid(_id, percent):
-    print "%.3f caching scheduled!" % percent
+    print("%.3f caching scheduled!" % percent)
     vHandler.get_iframes_audio(_id = _id)
 
 def autocache():
@@ -378,9 +378,9 @@ def autocache():
     print("Caching Completed!")
 
 def show_counts():
-    print "Training Videos   : %d " % len(vHandler.getTrainingIds())
-    print "Validation Videos : %d " % len(vHandler.getValidationIds())
-    print "Test Videos       : %d " % len(vHandler.getTestIds())
+    print("Training Videos   : %d " % len(vHandler.getTrainingIds()))
+    print("Validation Videos : %d " % len(vHandler.getValidationIds()))
+    print("Test Videos       : %d " % len(vHandler.getTestIds()))
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -406,13 +406,13 @@ if __name__ == "__main__":
         autocache()
         exit()
     if args.show_train:
-        print "Train Ids"
+        print("Train Ids")
         pprint(vHandler.getTrainingIds())
     if args.show_test:
-        print "Test Ids"
+        print("Test Ids")
         pprint(vHandler.getTestIds())
     if args.show_val:
-        print "Validation Ids"
+        print("Validation Ids")
         pprint(vHandler.getValidationIds())
 
 

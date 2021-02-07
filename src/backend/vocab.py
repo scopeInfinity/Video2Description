@@ -15,6 +15,19 @@ GLOVE_FILE = get_vocab_config()['GLOVE_FILE']
 WORD_EMBEDDED_CACHE = get_vocab_config()['WORD_EMBEDDED_CACHE']
 VOCAB_FILE = get_vocab_config()['VOCAB_FILE']
 
+def loadFromPickleIfExists(fname):
+    if not os.path.exists(fname):
+        logger.debug("Not loading pickle object from %s, file not found." % fname)
+        return None
+    try:
+        with open(fname,'rb') as f:
+            data = pickle.load(f)
+            logger.debug("Loading pickle object from %s done." % fname)
+            return data
+    except Exception as e:
+        logger.error("Exception in loading pickle object from %s: %s" % (fname, e))
+    return None
+
 class Vocab:
     OUTDIM_EMB = 300
     WORD_MIN_FREQ = 5
@@ -31,22 +44,19 @@ class Vocab:
         self.specialWords['EXTRA'] = '___'
 
         freshWordEmbedding = self.loadWordEmbedding(GLOVE_FILE)
-        for word,enc in self.specialWords.iteritems():
+        for word,enc in self.specialWords.items():
             assert enc in self.wordEmbedding.keys()
         self.buildVocab(data, train_ids, freshWordEmbedding)
         logger.debug("Vocab Build Completed")
 
     def loadWordEmbedding(self, glove_file):
-        isEmbeddingPresent = os.path.exists(WORD_EMBEDDED_CACHE)
-        logger.debug("Embedding Present %s " % isEmbeddingPresent)
-        if isEmbeddingPresent:
-            with open(WORD_EMBEDDED_CACHE, 'r') as f:
-                self.wordEmbedding = pickle.load(f)
-            logger.debug("Emdedding Loaded")
+        self.wordEmbedding = loadFromPickleIfExists(WORD_EMBEDDED_CACHE)
+        if self.wordEmbedding:
+            logger.debug("Embedding Loaded")
             return False
         else:
             self.wordEmbedding = dict()
-            with open(glove_file,'r') as f:
+            with open(glove_file, 'r', encoding='utf-8') as f:
                 for i,line in enumerate(f):
                     tokens = line.split()
                     tokens = [tok.__str__() for tok in tokens]
@@ -62,30 +72,26 @@ class Vocab:
             logger.info("Mapping minVal[%f], maxVal[%f] to [-1,1]  " % (minVal,maxVal))
             for w in self.wordEmbedding:
                 self.wordEmbedding[w] = mapper(self.wordEmbedding[w])
-            print "Cross Check"
-            print self.wordEmbedding['good']
+            print("Cross Check")
+            print(self.wordEmbedding['good'])
             self.saveEmbedding()
             return True
 
     def saveEmbedding(self):
-            with open(WORD_EMBEDDED_CACHE,'w') as f:
-                pickle.dump(self.wordEmbedding,f)
-                logger.info("Embedding Saved!")
+        with open(WORD_EMBEDDED_CACHE, 'wb') as f:
+            pickle.dump(self.wordEmbedding,f)
+            logger.info("Embedding Saved!")
 
     def buildVocab(self, data, train_ids, trimEmbedding):
-        if os.path.exists(VOCAB_FILE):
-            with open(VOCAB_FILE,'r') as f:
-                logger.debug("Vocab Loading from File")
-                self.ind2word = pickle.load(f)
-                logger.debug("Vocab Loaded")
-        else:
+        self.ind2word = loadFromPickleIfExists(VOCAB_FILE)
+        if not self.ind2word:
             logger.debug("Building Vocab")
             x = {}
             allWords = set()
             for w in self.wordEmbedding.keys():
                 allWords.add(w)
             logger.debug("Cached all Embedded Words")
-            for _id,captions in data.iteritems():
+            for _id,captions in data.items():
                 if _id not in train_ids:
                     continue
                 for cap in captions:
@@ -100,10 +106,10 @@ class Vocab:
             assert 'tshirt' not in allWords
             logger.debug("Iterated over all captions")
             self.ind2word = []
-            for w,enc in self.specialWords.iteritems():
+            for w,enc in self.specialWords.items():
                 self.ind2word.append(enc)
             self.ind2word.extend([w for w in x.keys() if x[w]>=Vocab.WORD_MIN_FREQ])
-            with open(VOCAB_FILE,'w') as f:
+            with open(VOCAB_FILE,'wb') as f:
                 pickle.dump(self.ind2word,f)
                 logger.debug("Vocab File saved")
         logger.info("Vocab Size : %d"%len(self.ind2word))

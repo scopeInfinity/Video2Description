@@ -10,7 +10,7 @@ class Parser:
 
     def init_framework(self, model_fname = None, train_mode = False):
         if not hasattr(self,'framework'):
-            from framework import Framework
+            from backend.framework import Framework
             if model_fname is not None:
                 self.framework = Framework(model_load = model_fname, train_mode = train_mode)
             else:
@@ -28,7 +28,7 @@ class Parser:
             self.server()
         if args.command == 'predict_all_model':
             self.predict_all_model()
-        print args.command
+        print(args.command)
 
     def train(self):
         logger.debug("Training Mode")
@@ -37,7 +37,7 @@ class Parser:
 
     def predict_all_model(self):
         import glob, os
-        from framework import Framework, MFNAME
+        from backend.framework import Framework, MFNAME
  
         logger.debug("PredictAllModel Mode")
         result_dir = 'CombinedResults'

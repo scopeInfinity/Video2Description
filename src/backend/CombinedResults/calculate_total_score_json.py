@@ -5,4 +5,4 @@ for x in a.keys():
 	if x[-1] == '3' or x[-1] == '2' or x[-1] == '1':
 		continue
 	z+=a[x]
-print z
+print(z)

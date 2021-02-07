@@ -101,7 +101,7 @@ class ModelGeneratorCallback(callbacks.Callback):
         loss = logs['loss']
         acc  = logs['acc']
         self.lastloss = loss
-        print "Keys Logger %s " % str(logs.keys())
+        print("Keys Logger %s " % str(logs.keys()))
         self.tlogs.add([batch, loss, acc, valloss, valacc])
         self.state['start_batch'] += 1
         self.batchTrainedCounter += 1
@@ -217,15 +217,15 @@ class Framework():
             stringCaption.append([])
         while l < vocab.CAPTION_LEN:
             newOneHotCap = self.model.predict([embeddedCap, audioVecs, videoVecs])
-            print "Shape of out Predict Model : %s " % str(np.shape(newOneHotCap))
+            print("Shape of out Predict Model : %s " % str(np.shape(newOneHotCap)))
             for i,newOneHotWord in enumerate(newOneHotCap):
                 nword = vocab.word_fromonehot(newOneHotWord[l])
-                # print str(i)+" "+str(l)+" "+nword
+                # print(str(i)+" "+str(l)+" "+nword)
                 stringCaption[i].append( nword )
                 if l + 1 != vocab.CAPTION_LEN:
                     embeddedCap[i][l+1] = vocab.wordEmbedding[nword]
 
-            print [' '.join(cap) for cap in stringCaption]
+            print([' '.join(cap) for cap in stringCaption])
             l += 1
         logger.debug("Prediction Complete")
         captionObject = []
@@ -257,7 +257,7 @@ class Framework():
                     fnames.append(fname)
 
         batch_size = PREDICT_BATCHSIZE
-        batch_count = (len(fnames)+batch_size-1)/batch_size
+        batch_count = (len(fnames)+batch_size-1)//batch_size
         predictions,output = ([],[])
         for i in range(batch_count):
             cids = None
@@ -271,7 +271,6 @@ class Framework():
             output.extend(out)
         results = []
         for i in range(len(fnames)):
-            print()
             logger.debug("For eog %s" % fnames[i])
             predictedCaption = ' '.join(predictions[i])
             logger.debug("Predicted Caption : %s" % predictedCaption )
