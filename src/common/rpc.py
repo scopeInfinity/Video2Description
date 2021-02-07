@@ -1,8 +1,8 @@
 import threading
 import traceback
 
-import xmlrpc
-from xmlrpc.server import SimpleXMLRPCServer
+from six.moves.xmlrpc_client import ServerProxy
+from six.moves.xmlrpc_server import SimpleXMLRPCServer
 
 from common.config import get_rpc_config
 from common.logger import logger
@@ -30,7 +30,7 @@ def close_framework():
 
 def register_server(framework):
     print('Preparing for Register Server')
-    server = SimpleXMLRPCServer((SERVER_RUNAS, PORT))
+    server = xmlrpc_server.SimpleXMLRPCServer((SERVER_RUNAS, PORT))
     print('Listening to %d' % PORT)
     server.register_function(rpc_decorator(framework.predict_fnames), 'predict_fnames')
     server.register_function(rpc_decorator(framework.predict_ids), 'predict_ids')
@@ -52,5 +52,5 @@ def get_rpc():
     with lock:
         if hasattr(get_rpc, 'proxy'):
             return get_rpc.proxy
-        get_rpc.proxy = xmlrpc.client.ServerProxy("http://%s:%d/" % (SERVER_IP, PORT))
+        get_rpc.proxy = ServerProxy("http://%s:%d/" % (SERVER_IP, PORT))
         return get_rpc.proxy

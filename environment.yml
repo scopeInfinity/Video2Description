@@ -9,6 +9,7 @@ dependencies:
   - urllib3
   - waitress
   - pip:
+    - six
     - opencv-python-headless
     - numpy
     - flask

@@ -5,8 +5,8 @@ import json
 import numpy as np
 import shutil
 import os
-import urllib
-import urllib.parse
+import six.moves.urllib as urllib
+import six.moves.urllib.parse as urllibparse
 import librosa
 
 from pprint import pprint
@@ -135,7 +135,7 @@ class VideoHandler:
         return self.test_ids
 
     def getYoutubeId(self,url):
-        query = urllib.parse.parse_qs(urllib.parse.urlparse(url).query)
+        query = urllibparse.parse_qs(urllibparse.urlparse(url).query)
         print(query)
         return query['v'][0]
 
