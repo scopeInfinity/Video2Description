@@ -5,6 +5,8 @@ services:
       context: .
       dockerfile: backend.Dockerfile
       cache_from:
+        - scopeinfinity/video2description:ffmpeg_builder
+        - scopeinfinity/video2description:glove_builder
         - scopeinfinity/video2description:deploy
     image: scopeinfinity/video2description:deploy
     environment:

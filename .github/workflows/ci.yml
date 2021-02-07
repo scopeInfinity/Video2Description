@@ -24,6 +24,8 @@ jobs:
       - uses: actions/checkout@v2
 
       - uses: docker://scopeinfinity/video2description:frontend
+      - uses: docker://scopeinfinity/video2description:glove_builder
+      - uses: docker://scopeinfinity/video2description:ffmpeg_builde
       - uses: docker://scopeinfinity/video2description:deploy
       
       - name: Install dependencies
@@ -37,7 +39,7 @@ jobs:
 
       - name: Build
         run: |
-          docker-compose build
+          bash docker_build.sh
           
       - name: Test
         run: |
