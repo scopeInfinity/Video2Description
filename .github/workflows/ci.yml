@@ -25,7 +25,7 @@ jobs:
 
       - name: Docker Pull
         run: |
-          bash docker_hub.sh pull
+          bash docker_manager.sh pull
            
       - name: Install dependencies
         run: |
@@ -38,11 +38,11 @@ jobs:
 
       - name: Build
         run: |
-          bash docker_build.sh
+          bash docker_manager.sh build
           
       - name: Test
         run: |
-          bash docker_test.sh
+          bash docker_manager.sh test
 
       # Push image to docker on 'push' event only.
       - name: Deploy to Docker Hub
@@ -51,4 +51,4 @@ jobs:
           DOCKER_USERNAME: "scopeinfinity"
           DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
         run: |
-          { echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin ; } && bash docker_hub.sh push
+          { echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin ; } && bash docker_manager.sh push
