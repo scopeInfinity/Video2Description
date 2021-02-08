@@ -1,4 +1,5 @@
 #!/bin/bash
+
 set -e
 trap 'kill $(jobs -p) || echo "No background jobs"' EXIT
 

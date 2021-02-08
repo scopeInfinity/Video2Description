@@ -1,4 +1,27 @@
-FROM ubuntu:xenial
+FROM ubuntu:xenial as my_base
+RUN apt-get update
+RUN apt-get install -y libsamplerate0 curl libsndfile1 pkg-config nasm wget zip
+
+FROM my_base as ffmpeg_builder
+WORKDIR /tmp
+RUN wget https://github.com/FFmpeg/FFmpeg/archive/master.zip -O ffmpeg.zip
+RUN unzip ffmpeg.zip
+RUN rm ffmpeg.zip
+WORKDIR /tmp/FFmpeg-master/
+RUN ./configure --enable-shared
+RUN make -j32
+
+
+FROM my_base as glove_builder
+WORKDIR /tmp
+# https://nlp.stanford.edu/projects/glove/
+RUN wget http://nlp.stanford.edu/data/glove.6B.zip && \
+    unzip glove.6B.zip glove.6B.300d.txt && \
+    rm glove.6B.zip
+
+
+FROM my_base as deploy
+# FROM conda/miniconda2
 RUN apt-get update
 RUN apt-get install -y libsamplerate0 curl libsndfile1 pkg-config nasm wget zip
 RUN useradd -m -s /bin/bash si
@@ -16,25 +39,16 @@ RUN ln -s /home/si/miniconda2/bin/conda /usr/bin/
 USER si
 
 # glove
-# https://nlp.stanford.edu/projects/glove/
 RUN mkdir -p /home/si/v2d/dataset
 WORKDIR /home/si/v2d/dataset
-RUN wget http://nlp.stanford.edu/data/glove.6B.zip && \
-    unzip glove.6B.zip glove.6B.300d.txt && \
-    rm glove.6B.zip
+COPY --from=glove_builder /tmp/glove.6B.300d.txt /home/si/v2d/dataset/glove.6B.300d.txt
 
 # ffmpeg build and install
-WORKDIR /tmp
-RUN wget https://github.com/FFmpeg/FFmpeg/archive/master.zip -O ffmpeg.zip
-RUN unzip ffmpeg.zip
-RUN rm ffmpeg.zip
+COPY --from=ffmpeg_builder /tmp/FFmpeg-master/ /tmp/FFmpeg-master/
 WORKDIR /tmp/FFmpeg-master/
-RUN ./configure --enable-shared
-RUN make -j32
 USER root
 RUN make install
 USER si
-RUN rm -r /tmp/FFmpeg-master/
 RUN echo 'export LD_LIBRARY_PATH=/usr/local/lib' >> /home/si/.bashrc
 
 # coco-caption

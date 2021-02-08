@@ -66,7 +66,7 @@ def createDirs():
             raise
 
 def badLogs(msg):
-    print msg
+    print(msg)
     with open(BADLOGS,"a") as f:
         f.write(msg)
 
@@ -79,9 +79,9 @@ def addToVocab(w):
     if not isEmbeddingPresent:
         if w in embeddingIndex.keys():
             embeddingMatrix[VOCAB_SIZE] = embeddingIndex[w]
-            print embeddingMatrix[VOCAB_SIZE]
+            print(embeddingMatrix[VOCAB_SIZE])
     if VOCAB_SIZE<10:
-        print "%d : %s" % (VOCAB_SIZE, w)
+        print("%d : %s" % (VOCAB_SIZE, w))
     VOCAB_SIZE += 1
     return VOCAB_SIZE-1
 '''
@@ -111,7 +111,7 @@ def build_gloveVocab():
         logger.debug("Embedding Already Present %d " % len(embeddingIndexRef[0].keys()))
         return
     isEmbeddingPresent = os.path.exists(EMBEDDINGI_FILE)
-    print "Embedding Present %s " % isEmbeddingPresent
+    print("Embedding Present %s " % isEmbeddingPresent)
     if isEmbeddingPresent:
         
         '''with open(EMBEDDING_FILE,'r') as f:
@@ -129,16 +129,16 @@ def build_gloveVocab():
                 for x in v:
                     minVal = min(minVal,x)
                     maxVal = max(maxVal,x)
-            #print "minVal, maxVal %s " % str((minVal,maxVal))
+            #print("minVal, maxVal %s " % str((minVal,maxVal)))
             #exit()
-        print "Embedding Loaded"
+        print("Embedding Loaded")
     else:
         with open(GLOVE_FILE,'r') as f:
             for i,line in enumerate(f):
                 tokens = line.split()
-                #print tokens
+                #print(tokens)
                 tokens = [tok.__str__() for tok in tokens]
-                #print tokens
+                #print(tokens)
                 #exit()
                 #if i==200:
                 #    break
@@ -146,12 +146,12 @@ def build_gloveVocab():
                 word = tokens[0]
                 #embeddingLen = len(tokens)-1
                 if word == "none":
-                    print "YoFound you"
+                    print("YoFound you")
                 if i<5:
-                    print word
-                    #print tokens[1:]
+                    print(word)
+                    #print(tokens[1:])
                 embeddingIndex[word] = np.asarray(tokens[1:], dtype='float32') * (1.0/EMBEDDING_OUT_SCALEFACT)
-                #print embeddingIndex[word]
+                #print(embeddingIndex[word])
                 #exit()
             #exit()
         assert isEmbeddingPresent == False
@@ -160,7 +160,7 @@ def build_gloveVocab():
         #    pickle.dump(embeddingMatrix,f)
         with open(EMBEDDINGI_FILE,'w') as f:
             pickle.dump(embeddingIndex,f)
-        print "Embedding Saved!"
+        print("Embedding Saved!")
 
     #iniVocab()
     logger.debug("Completed")
@@ -177,7 +177,7 @@ def build_image_caption_pair():
     if os.path.exists(ICAPPF):
         with open(ICAPPF,'r') as f:
             x,mywords = pickle.load(f)
-            print "Image Caption Pair Data Model Loaded"
+            print("Image Caption Pair Data Model Loaded")
         return x,mywords
     
     x = {}
@@ -201,19 +201,19 @@ def build_image_caption_pair():
             count+=1
     #nmywords = wordFreq.keys()
     #sorted(nmywords, key=lambda key: wordFreq[key], reverse=True)
-    #print wordFreq.keys()
+    #print(wordFreq.keys())
     mywords = set([w for w in wordFreq.keys() if wordFreq[w]>=WORD_MIN_FREQ])
     mywords.add(ENG_SOS)
     mywords.add(ENG_EOS)
     mywords.add(ENG_NONE)
     mywords.add(ENG_EXTRA)
 
-    #print mywords
-    print len(mywords)
+    #print(mywords)
+    print(len(mywords))
     #mywords = mywords[:WORD_TOP]
     with open(ICAPPF,'w') as f:
         pickle.dump([x,mywords],f)
-        print "Image Caption Pair Data Model Saved"
+        print("Image Caption Pair Data Model Saved")
         
     
     logger.debug("Completed, Vocab Size NONE   ")#%len(v_word2ind))
@@ -233,7 +233,7 @@ def imageToVec(_id):
     #if os.path.exists(afname):
     #    with open(afname,'r') as f:
     #        return pickle.load(f)
-    #print fname
+    #print(fname)
     img = image.load_img(fname, target_size=(NEED_H, NEED_W))
     x = image.img_to_array(img)
     x /= 255.
@@ -247,11 +247,11 @@ def imageToVec(_id):
     ############################################ REMOVE HERE ###
     #img.save("temp.jpg")
     #img = cv2.imread(fname)
-    #print img
+    #print(img)
     #img = cv2.resize(img, (NEED_H, NEED_W))
     #cv2.imwrite('test.jpg',img)
     #img = np.asarray(img)
-    #print "Shape %s " % (str(np.shape(img)))
+    #print("Shape %s " % (str(np.shape(img))))
     #cv2.imwrite('temp.jpg',img)
     #vec = np.asarray(img)
     #if not vec.any():
@@ -259,14 +259,14 @@ def imageToVec(_id):
     #vec = vec/255.0
     #return vec
     #bw = rgb2gray(img)
-    #print "BW Shape %s " % (str(np.shape(bw)))
+    #print("BW Shape %s " % (str(np.shape(bw))))
 
 
 def getWord2Ind(w):
     w=w.lower()
     if w not in v_word2ind.keys():
         w=ENG_EXTRA
-    #print w
+    #print(w)
     return v_word2ind[w]
 
 def word2embd(word):
@@ -298,7 +298,7 @@ def WordToWordDistance(word1,word2):
        
 
 def onehot(vind):
-    #print "Vobab Size %d  Ind %d " % (VOCAB_SIZE[0],vind)
+    #print("Vobab Size %d  Ind %d " % (VOCAB_SIZE[0],vind))
     t =  [0]*VOCAB_SIZE[0]
     t[vind] = 1
     return t
@@ -315,9 +315,9 @@ def captionToVec(cap, addOne=False, oneHot=False):
     l = CAPTION_LEN
     if addOne:
         l = l+1
-    #print [w.lower() for w in cap.split(' ')]
+    #print([w.lower() for w in cap.split(' ')])
     cap = cap.lower().split(' ')
-    #print cap
+    #print(cap)
     cap = cap[:l]
     if len(cap)<l:
         cap.append(ENG_EOS)
@@ -347,7 +347,7 @@ def build_vocab():
             v_ind2word.update(v_ind2word_)
             v_word2ind.clear()
             v_word2ind.update(v_word2ind_)
-            print "Vocab Model Loaded"
+            print("Vocab Model Loaded")
     else:
         build_gloveVocab()
 
@@ -362,21 +362,21 @@ def build_vocab():
                 counter += 1
                 # ENG_* words present in embeddingIndex and topwords
         VOCAB_SIZE[0] = counter
-        #print "Embedding Index Len %d " % len(embeddingIndex.keys())
+        #print("Embedding Index Len %d " % len(embeddingIndex.keys()))
         #exit()
-        print "TOPWords %d " % len(topwords)
-        print "Embeddding Words %d " % len(embeddingIndex.keys())
-        print "Cal Vocab Size %d " % VOCAB_SIZE[0]
+        print("TOPWords %d " % len(topwords))
+        print("Embeddding Words %d " % len(embeddingIndex.keys()))
+        print("Cal Vocab Size %d " % VOCAB_SIZE[0])
 
         with open(VOCAB_FILE,'w') as f:
             pickle.dump([v_ind2word,v_word2ind, VOCAB_SIZE[0]],f)
-            print "Vocab Model Saved"
+            print("Vocab Model Saved")
     
     assert ENG_SOS in v_word2ind.keys()
     assert ENG_EOS in v_word2ind.keys()
     assert ENG_NONE in v_word2ind.keys()
     assert ENG_EXTRA in v_word2ind.keys()
-    print "Vocabulary Size %d for %d captions" % (VOCAB_SIZE[0], len(lst))
+    print("Vocabulary Size %d for %d captions" % (VOCAB_SIZE[0], len(lst)))
     return lst
     
 def feed_image_caption(_id,lst):
@@ -401,11 +401,11 @@ def datas_from_ids(idlst,lst):
  
 # Train for batch order 0,0,1,0,1,2,0,1,2,3,4,0,1,2,3,4,5..
 def data_generator(lst, batch_size, start=0, isTrainSet = True):
-    count = (len(lst.keys()))/batch_size
-    #print "Max Unique Batches %d " % count
+    count = (len(lst.keys()))//batch_size
+    #print("Max Unique Batches %d " % count)
     countValidation = 5#100
     countTrain = count - 100
-    print "Validation Data : %d , Train Batches %d, BatchSize %d\tBatchOffset : %d" % (countValidation, countTrain, batch_size, start)
+    print("Validation Data : %d , Train Batches %d, BatchSize %d\tBatchOffset : %d" % (countValidation, countTrain, batch_size, start))
     offset = 0
     left = countTrain
     extra = 0
@@ -418,7 +418,7 @@ def data_generator(lst, batch_size, start=0, isTrainSet = True):
         yield datas_from_ids(idlst,lst)
         return
     # Training Data
-    maxSequenceLength = countTrain*(countTrain+1)/2
+    maxSequenceLength = countTrain*(countTrain+1)//2
     cbatch = 1
     batchId = 1
     iterBatch = 0
@@ -436,7 +436,7 @@ def data_generator(lst, batch_size, start=0, isTrainSet = True):
         if iterBatch<=start:
             continue
         idlst = lst.keys()[(batchId-1)*batch_size:(batchId)*batch_size]
-        print "Batch Id %d Loaded" % (batchId-1)
+        print("Batch Id %d Loaded" % (batchId-1))
         yield datas_from_ids(idlst,lst)
     return
 
@@ -446,8 +446,8 @@ def build_dataset(lst, batch_size = -1, val_size = 0,outerepoch=random.randint(0
     #_id = lst.keys()[0]
     #imageToVec(_id)
     #capVec =  captionToVec(lst[_id])
-    #print capVec
-    #print "Shape of CapVec %s " % str(np.shape(capVec))
+    #print(capVec)
+    #print("Shape of CapVec %s " % str(np.shape(capVec)))
     train_set = []
     val_set = []
     if batch_size == -1:
@@ -457,8 +457,8 @@ def build_dataset(lst, batch_size = -1, val_size = 0,outerepoch=random.randint(0
             train_set.append( get_image_caption(_id,lst))
     else:
         tsize = batch_size
-        count = (len(lst.keys())-val_size)/tsize
-        print "Max Unique Outer Batches %d " % count
+        count = (len(lst.keys())-val_size)//tsize
+        print("Max Unique Outer Batches %d " % count)
         outerepoch = outerepoch%count
         oinds = outerepoch*tsize
         einds = (outerepoch+1)*tsize
@@ -468,7 +468,7 @@ def build_dataset(lst, batch_size = -1, val_size = 0,outerepoch=random.randint(0
         #mx = 1000 #########HERE###########
         splitKey =  tsize #int(mx*0.9)
 
-        print "Max Keys %d\tSplit keys %d" % (mx, splitKey)
+        print("Max Keys %d\tSplit keys %d" % (mx, splitKey))
         todolist = [("Train set",train_set, batch_size,0,splitKey),("Validation Set",val_set, val_size,splitKey,mx-splitKey)]
         for (s,cset, batchsz, offset, datasz) in todolist:
             #indicies = np.random.choice(datasz, batchsz, replace=False)
@@ -477,13 +477,13 @@ def build_dataset(lst, batch_size = -1, val_size = 0,outerepoch=random.randint(0
                 #_id = lst.keys()[i]
                 capimg = get_image_caption(_id,lst)
                 #if c==0:
-                #    print "%s First Image Id %s with caption : %s " % (s,str(_id), capimg[0])
+                #    print("%s First Image Id %s with caption : %s " % (s,str(_id), capimg[0]))
                 cset.append(capimg)
                 if (c*100)%batchsz == 0:
-                    print "%s %d %% Loaded!" % (s, c*100/batchsz)
-    print "BS %d, VS %d " % (batch_size, val_size)
-    print "Shape of Training Set %s " % str(np.shape(train_set))
-    print "Shape of Validation Set %s " % str(np.shape(val_set))
+                    print("%s %d %% Loaded!" % (s, c*100/batchsz))
+    print("BS %d, VS %d " % (batch_size, val_size))
+    print("Shape of Training Set %s " % str(np.shape(train_set)))
+    print("Shape of Validation Set %s " % str(np.shape(val_set)))
     logger.debug("Completed")
     return [train_set, val_set]
 
@@ -492,7 +492,7 @@ def train_generator(dataset):
     i = 0
     while i<len(dataset) and i<1:
         out = ( (dataset[i][0], dataset[i][1]), dataset[i][0] )
-        print out
+        print(out)
         yield out#((Caption,Image),Caption)
         i+=1
 '''

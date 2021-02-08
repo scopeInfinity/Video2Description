@@ -13,10 +13,10 @@ from keras.models import Sequential
 from keras.optimizers import RMSprop
 from keras.preprocessing import image
 from keras.regularizers import l2
-from vocab import Vocab
 import keras.backend as K
 import tensorflow as tf
 
+from backend.vocab import Vocab
 from common.logger import logger
 
 def sentence_distance(y_true, y_pred):

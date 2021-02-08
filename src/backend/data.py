@@ -22,10 +22,10 @@ with open('train_2017/videodatainfo_2017.json') as f:
 def download_all():
     count = 0
     for _id in _videos.keys():
-        print "Dowloading %s " % _id
+        print("Dowloading %s " % _id)
         getVideoFname(_id)
         count+=1
-        print "%3.2f %% Completed" % (100.0*count/len(_videos.keys()))
+        print("%3.2f %% Completed" % (100.0*count/len(_videos.keys())))
 
 def sz_videos():
     return len(_videos)
@@ -39,10 +39,10 @@ def getVideoFname(videoId):
         fname = DIR+"/"+videoId+".mp4"
         # Caching
         if os.path.isfile(fname):
-            print "Used cached video file %s " % fname
+            print("Used cached video file %s " % fname)
             return fname
         url = _videos[videoId]['url']
-        print "Fetching info from %s " % url
+        print("Fetching info from %s " % url)
         yt = YouTube(url)
         v = yt.filter('mp4')[0]
         # For Non mp4, NOT SUPPORTED for now
@@ -50,17 +50,17 @@ def getVideoFname(videoId):
         #     v = yt.videos()[0]
         dfname = DIR+"/"+v.filename+".mp4"
         if v:
-            print "Video Downloading %s " % videoId
+            print("Video Downloading %s " % videoId)
             v.download(DIR)
-            print "Moving %s to %s " % (dfname,fname)
+            print("Moving %s to %s " % (dfname,fname))
             os.rename(dfname,fname)
-            print "Video Downloaded"
+            print("Video Downloaded")
             return fname
         else: 
-            print "Video not Found for %s " % videoId
+            print("Video not Found for %s " % videoId)
             return None
     except Exception as e:
-        print str(e)
+        print(str(e))
         return None
         
 
@@ -72,12 +72,12 @@ def getDuration(fname):
 
 def getFrame(fname,ts):
     iname = 'Videos/frames/frame.png'
-    hr = ts/3600
+    hr = ts//3600
     ts = ts%(3600)
-    mi = ts/60
+    mi = ts//60
     ts = ts%60
     time = "%02d:%02d:%02d" % (hr,mi,ts)
-    print "getting frame for time %s " % time
+    print("getting frame for time %s " % time)
     os.popen("ffmpeg -y -ss %s -i %s -frames 1 %s" % (time,fname,iname))
     img = cv2.imread(iname)
     return img
@@ -86,12 +86,12 @@ def getVideo(videoId):
     fname = getVideoFname(videoId)
     if fname is None:
         return None
-    print "Loading Video %s " % fname
+    print("Loading Video %s " % fname)
     duration = getDuration(fname)
-    print "Duration " + str(duration) +" sec"
+    print("Duration " + str(duration) +" sec")
     COUNT = 5
     if duration < 15*COUNT:
-        print "Video too short"
+        print("Video too short")
         return None
     frames = []
     for i in range(COUNT):

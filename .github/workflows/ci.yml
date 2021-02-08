@@ -23,9 +23,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - uses: docker://scopeinfinity/video2description:frontend
-      - uses: docker://scopeinfinity/video2description:deploy
-      
+      - name: Docker Pull
+        run: |
+          bash docker_hub.sh pull
+           
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
@@ -37,7 +38,7 @@ jobs:
 
       - name: Build
         run: |
-          docker-compose build
+          bash docker_build.sh
           
       - name: Test
         run: |
@@ -50,4 +51,4 @@ jobs:
           DOCKER_USERNAME: "scopeinfinity"
           DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
         run: |
-          { echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin ; } && bash docker_push.sh
+          { echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin ; } && bash docker_hub.sh push
