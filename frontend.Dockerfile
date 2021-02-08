@@ -1,5 +1,5 @@
-FROM python:2 as frontend
-RUN pip install enum34 flask waitress
+FROM python:3 as frontend
+RUN pip install six enum34 flask waitress
 
 RUN useradd -m -s /bin/bash si
 RUN mkdir -p /home/si/v2d/uploads

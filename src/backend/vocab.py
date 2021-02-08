@@ -56,7 +56,7 @@ class Vocab:
             return False
         else:
             self.wordEmbedding = dict()
-            with open(glove_file, 'r') as f:
+            with open(glove_file, 'r', encoding='utf-8') as f:
                 for i,line in enumerate(f):
                     tokens = line.split()
                     tokens = [tok.__str__() for tok in tokens]
