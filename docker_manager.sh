@@ -26,7 +26,7 @@ docker_execute_each() {
 }
 
 docker_build() {
-    BUILD_FLAGS=("--platform linux/amd64" "--build-arg BUILDKIT_INLINE_CACHE=1")
+    BUILD_FLAGS=("--platform linux/amd64,linux/arm64" "--build-arg BUILDKIT_INLINE_CACHE=1")
     docker buildx build ${BUILD_FLAGS[@]} --target frontend        -t $REMOTE:frontend        --cache-from $REMOTE:frontend        -f frontend.Dockerfile .
     docker buildx build ${BUILD_FLAGS[@]} --target ffmpeg_builder  -t $REMOTE:ffmpeg_builder  --cache-from $REMOTE:ffmpeg_builder  -f backend.Dockerfile .
     docker buildx build ${BUILD_FLAGS[@]} --target glove_builder   -t $REMOTE:glove_builder   --cache-from $REMOTE:glove_builder   -f backend.Dockerfile .
