@@ -31,11 +31,22 @@ RUN chmod 700 /var/log/v2d
 USER si
 
 # Installing miniconda
-RUN wget -N https://repo.anaconda.com/miniconda/Miniconda2-latest-Linux-x86_64.sh -O /tmp/Miniconda2-latest-Linux-x86_64.sh
-RUN bash /tmp/Miniconda2-latest-Linux-x86_64.sh -b
-RUN rm /tmp/Miniconda2-latest-Linux-x86_64.sh
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+RUN echo "I am running on $BUILDPLATFORM, building for $TARGETPLATFORM"
+RUN bash -c "if [[ '$TARGETPLATFORM' == *'arm'* ]]; then \
+		wget -N https://github.com/Archiconda/build-tools/releases/download/0.2.3/Archiconda3-0.2.3-Linux-aarch64.sh -O /tmp/conda.sh; \
+	else \
+		wget -N https://repo.anaconda.com/miniconda/Miniconda2-latest-Linux-x86_64.sh -O /tmp/conda.sh; \
+	fi"
+RUN bash /tmp/conda.sh -b
+RUN rm /tmp/conda.sh
 USER root
-RUN ln -s /home/si/miniconda2/bin/conda /usr/bin/
+RUN bash -c "if [[ '$TARGETPLATFORM' == *'arm'* ]]; then \
+		ln -s /home/si/archiconda3/bin/conda /usr/bin/; \
+	else \
+		ln -s /home/si/miniconda2/bin/conda /usr/bin/; \
+	fi"
 USER si
 
 # glove
