@@ -11,6 +11,9 @@ on:
     branches:
     - VideoCaption 
   
+  schedule:
+  - cron: "11 7 1 * *"
+
   workflow_dispatch:
 
 jobs:
