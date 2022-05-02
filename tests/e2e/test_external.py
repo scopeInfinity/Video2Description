@@ -20,7 +20,7 @@ class TestExternal(unittest.TestCase):
     def setUp(self):
         options = Options()
         options.add_argument('-headless')
-        self.driver = Firefox(firefox_options=options)
+        self.driver = Firefox(options=options)
 
     def tearDown(self):
         self.driver.close()
